@@ -1,0 +1,163 @@
+db.createCollection("users", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["email", "password_hash", "created_at"],
+      properties: {
+        email: {
+          bsonType: "string",
+          description: "must be a string and is required"
+        },
+        password_hash: {
+          bsonType: "string"
+        },
+        role: {
+          enum: ["user", "admin"],
+          description: "must be user or admin"
+        },
+        subscription_plan: {
+          enum: ["free", "premium"]
+        },
+        subscription_status: {
+          enum: ["active", "inactive", "cancelled"]
+        },
+        created_at: {
+          bsonType: "date"
+        },
+        updated_at: {
+          bsonType: "date"
+        }
+      }
+    }
+  }
+})
+
+
+db.createCollection("profiles", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["user_id", "full_name", "date_of_birth"],
+      properties: {
+        user_id: { bsonType: "objectId" },
+        full_name: { bsonType: "string" },
+        date_of_birth: { bsonType: "string" },
+        time_of_birth: { bsonType: "string" },
+        place_of_birth: { bsonType: "string" },
+        gender: { bsonType: "string" },
+        birth_chart_data: { bsonType: "object" },
+        numerology_data: { bsonType: "object" },
+        created_at: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+
+db.createCollection("conversations", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["user_id", "created_at"],
+      properties: {
+        user_id: { bsonType: "objectId" },
+        title: { bsonType: "string" },
+        created_at: { bsonType: "date" },
+        updated_at: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+
+db.createCollection("messages", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["conversation_id", "role", "content", "created_at"],
+      properties: {
+        conversation_id: { bsonType: "objectId" },
+        role: { enum: ["user", "assistant"] },
+        content: { bsonType: "string" },
+        ai_analysis_tags: {
+          bsonType: "array",
+          items: { bsonType: "string" }
+        },
+        created_at: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+
+db.createCollection("reports", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["user_id", "report_type", "content"],
+      properties: {
+        user_id: { bsonType: "objectId" },
+        report_type: { bsonType: "string" },
+        content: { bsonType: "string" },
+        summary: { bsonType: "string" },
+        generated_at: { bsonType: "date" },
+        daily_horoscope: {
+          bsonType: "object",
+          properties: {
+            date: { bsonType: "string" },
+            zodiac_sign: { bsonType: "string" },
+            overall: { bsonType: "string" },
+            love: { bsonType: "string" },
+            career: { bsonType: "string" },
+            health: { bsonType: "string" },
+            lucky_numbers: {
+              bsonType: "array",
+              items: { bsonType: "int" }
+            },
+            lucky_color: { bsonType: "string" },
+            mood: { bsonType: "string" },
+            compatibility: { bsonType: "string" },
+            advice: { bsonType: "string" }
+          }
+        }
+      }
+    }
+  }
+})
+
+
+db.createCollection("growth_metrics", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["user_id"],
+      properties: {
+        user_id: { bsonType: "objectId" },
+        emotional_score: { bsonType: "double" },
+        dominant_theme: { bsonType: "string" },
+        risk_level: { bsonType: "string" },
+        monthly_progress_score: { bsonType: "double" },
+        updated_at: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+
+db.createCollection("compatibility_reports", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["user_id", "compatibility_score"],
+      properties: {
+        user_id: { bsonType: "objectId" },
+        partner_profile: { bsonType: "object" },
+        compatibility_score: { bsonType: "int" },
+        analysis: { bsonType: "string" },
+        created_at: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+

@@ -1,0 +1,524 @@
+📘 PRODUCT DESIGN ARCHITECTURE (PDA)
+AI-Powered Astrology & Life Intelligence Platform
+
+Target Market: India
+Language: Hindi-first
+Core Model: Local GPT-OSS 120B
+
+1. PRODUCT OVERVIEW
+1.1 Product Vision
+
+To build India’s most advanced AI-powered Life Intelligence Platform that combines:
+
+Vedic astrology aesthetics
+
+Numerology systems
+
+Scientific psychology
+
+Behavioral pattern analysis
+
+Long-term personal growth tracking
+
+The platform will not rely on blind prediction.
+It will use structured reasoning, memory, and AI-driven life mapping.
+
+1.2 Product Positioning
+
+Category:
+AI Life Intelligence Platform
+
+Not positioned as:
+
+Basic horoscope app
+
+Generic astrology chatbot
+
+Positioned as:
+
+Premium strategic life guidance system
+
+AI-powered personal insight engine
+
+Long-term life blueprint architect
+
+2. CORE DIFFERENTIATION STRATEGY
+
+To compete with traditional astrologers and astrology apps, the product must include:
+
+Behavioral tracking over time
+
+AI-based decision simulation
+
+Deep life blueprint generation
+
+Cultural intelligence for Indian users
+
+Data-driven reasoning instead of guessing
+
+3. SYSTEM ARCHITECTURE
+3.1 High-Level Architecture
+
+Frontend (React.js)
+↓
+Backend API (FastAPI)
+↓
+LLM Service Layer (GPT-OSS 120B local server)
+↓
+MongoDB Atlas (Cloud Database)
+
+4. FRONTEND ARCHITECTURE (React.js)
+4.1 Pages
+
+Landing Page
+
+Authentication (Signup/Login)
+
+Dashboard
+
+Birth Chart Page
+
+Numerology Page
+
+AI Chat Page
+
+Growth Analytics Page
+
+Compatibility Page
+
+Profile Management
+
+Admin Panel
+
+4.2 Design System
+
+Theme: Cosmic + Premium
+
+Primary Colors:
+
+Deep Space Blue
+
+Midnight Purple
+
+Gold Accent
+
+UI Elements:
+
+Animated star background
+
+Zodiac wheel visualization
+
+Gradient glow buttons
+
+Smooth transitions
+
+Mobile responsive layout
+
+5. BACKEND ARCHITECTURE (FastAPI)
+5.1 Modules
+
+auth.py
+user_profile.py
+conversation.py
+llm_engine.py
+astrology_engine.py
+numerology_engine.py
+growth_tracker.py
+compatibility_engine.py
+error_handler.py
+admin_routes.py
+
+6. DATABASE DESIGN (MongoDB Atlas)
+6.1 users Collection
+
+Fields:
+
+_id
+
+name
+
+email
+
+password_hash
+
+gender
+
+birthdate
+
+created_at
+
+updated_at
+
+subscription_type
+
+is_verified
+
+6.2 user_profiles Collection
+
+Fields:
+
+user_id
+
+age
+
+life_stage
+
+personality_summary
+
+emotional_pattern
+
+decision_style
+
+family_pressure_index
+
+confidence_index
+
+risk_appetite_score
+
+last_updated
+
+6.3 conversations Collection
+
+Fields:
+
+user_id
+
+session_id
+
+messages[]
+
+session_summary
+
+created_at
+
+6.4 growth_metrics Collection
+
+Fields:
+
+user_id
+
+confidence_score
+
+stress_score
+
+focus_score
+
+productivity_score
+
+emotional_stability_score
+
+timestamp
+
+6.5 compatibility_reports Collection
+
+Fields:
+
+user_id
+
+partner_birth_details
+
+emotional_match_score
+
+communication_score
+
+conflict_risk_score
+
+long_term_alignment_score
+
+report_generated_at
+
+6.6 system_logs Collection
+
+Fields:
+
+user_id
+
+error_type
+
+error_message
+
+response_time
+
+token_usage
+
+timestamp
+
+7. AI SYSTEM DESIGN
+7.1 LLM Core Rules
+
+Respond only in Hindi
+
+No future prediction guarantees
+
+No medical diagnosis
+
+No harmful advice
+
+Always structured response format
+
+Ask clarifying questions if insufficient data
+
+7.2 Internal AI Pipeline
+
+Extract user data
+
+Calculate age
+
+Identify life stage
+
+Detect emotional patterns
+
+Identify cognitive biases
+
+Detect recurring themes
+
+Generate structured reasoning
+
+Provide actionable steps
+
+Store conversation summary
+
+8. MAJOR FEATURE MODULES
+8.1 Deep Life Blueprint Engine
+
+Generates:
+
+Personality architecture
+
+Strength and weakness mapping
+
+Career trajectory suggestions
+
+Emotional trigger analysis
+
+Financial behavior insights
+
+5-year growth roadmap
+
+Output: 40–60 page PDF report
+
+8.2 Behavioral Pattern Detection Engine
+
+Tracks:
+
+Overthinking frequency
+
+Self-doubt patterns
+
+Decision delay behavior
+
+Risk avoidance
+
+Relationship recurring issues
+
+Uses conversation history analysis.
+
+8.3 AI Future Scenario Simulator
+
+User selects scenario:
+
+Stay in job
+
+Switch career
+
+Start business
+
+System simulates:
+
+Emotional impact
+
+Financial impact
+
+Stress level projection
+
+Growth potential
+
+8.4 Compatibility 2.0 Engine
+
+Combines:
+
+Astrology matching
+
+Psychological style alignment
+
+Emotional communication pattern
+
+Conflict resolution compatibility
+
+Outputs structured compatibility score.
+
+8.5 Growth Tracking Dashboard
+
+Tracks monthly:
+
+Confidence trend
+
+Emotional stability
+
+Productivity trend
+
+Stress intensity
+
+Decision consistency
+
+Displays charts.
+
+9. ERROR HANDLING ARCHITECTURE
+9.1 LLM Failure Handling
+
+If:
+
+Timeout > 60 seconds
+
+Empty response
+
+Token overflow
+
+Model crash
+
+System:
+
+Retry once
+
+If fails → send fallback Hindi message
+
+Log error to system_logs
+
+9.2 Safety Handling
+
+If user mentions:
+
+Self-harm
+
+Severe depression
+
+System:
+
+Override normal response
+
+Send supportive message
+
+Recommend professional help
+
+Disable advanced advice
+
+10. AUTHENTICATION SYSTEM
+10.1 Signup Flow
+
+Email validation
+
+Strong password enforcement
+
+bcrypt hashing
+
+Store hashed password
+
+Optional email verification
+
+10.2 Login Flow
+
+Validate credentials
+
+Generate JWT
+
+Access token expiry: 1 hour
+
+Refresh token support
+
+11. SECURITY MEASURES
+
+JWT authentication
+
+Rate limiting
+
+Input sanitization
+
+Prompt injection filtering
+
+HTTPS enforcement
+
+Role-based access control
+
+Data encryption at rest
+
+12. MONETIZATION MODEL
+
+Free Tier:
+
+Limited AI chat
+
+Basic birth chart
+
+Basic numerology
+
+Premium Tier:
+
+Unlimited chat
+
+Deep Life Blueprint
+
+Compatibility 2.0
+
+Growth Dashboard
+
+Scenario Simulator
+
+Pricing Model:
+
+Monthly subscription
+
+Yearly subscription
+
+One-time premium reports
+
+13. SCALING ROADMAP
+
+Phase 1:
+Hindi-only India launch
+
+Phase 2:
+Add regional languages
+
+Phase 3:
+Mobile app
+
+Phase 4:
+Enterprise API
+
+Phase 5:
+South Asia expansion
+
+14. DEPLOYMENT ARCHITECTURE
+
+Dockerized services
+
+Separate LLM server instance
+
+Nginx reverse proxy
+
+CI/CD pipeline
+
+Automated backups
+
+MongoDB Atlas cloud cluster
+
+15. SUCCESS METRICS
+
+Daily active users
+
+Chat retention rate
+
+Subscription conversion rate
+
+30-day retention
+
+Average session time
+
+Report purchase rate
+
+
+
+
+
+
+Daily AI horoscope
