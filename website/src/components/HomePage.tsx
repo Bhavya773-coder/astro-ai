@@ -5,7 +5,12 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState<{ [key: string]: boolean }>({});
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
-  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({
+    features: null,
+    testimonials: null,
+    astrology: null,
+    faq: null
+  });
 
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
@@ -345,36 +350,112 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Astrology Information Section */}
       <section 
-        ref={(el) => (sectionRefs.current['testimonials'] = el)}
-        className={`relative py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent to-white/5 transition-all duration-1000 ${
-          isVisible['testimonials'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        ref={(el) => (sectionRefs.current['astrology'] = el)}
+        className={`relative py-24 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${
+          isVisible['astrology'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white to-violet-200 bg-clip-text text-transparent">
-              Real Stories, Real Guidance
+            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
+              Discover the Wisdom of the Stars
             </h2>
-            <p className="mt-4 text-xl text-white/70">See what our community has discovered</p>
+            <p className="mt-4 text-xl text-white/70">Ancient knowledge meets modern insight</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8">
-                <div className="flex items-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <span key={i} className="text-amber-400 text-xl">⭐</span>
-                  ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* The 12 Zodiac Signs */}
+            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8">
+              <h3 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-amber-400 to-violet-400 bg-clip-text text-transparent">
+                The 12 Zodiac Signs
+              </h3>
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
+                {[
+                  { sign: 'Aries', symbol: '♈', element: 'Fire', dates: 'Mar 21 - Apr 19', traits: 'Courageous, energetic, pioneering' },
+                  { sign: 'Taurus', symbol: '♉', element: 'Earth', dates: 'Apr 20 - May 20', traits: 'Reliable, patient, practical' },
+                  { sign: 'Gemini', symbol: '♊', element: 'Air', dates: 'May 21 - Jun 20', traits: 'Adaptable, curious, communicative' },
+                  { sign: 'Cancer', symbol: '♋', element: 'Water', dates: 'Jun 21 - Jul 22', traits: 'Intuitive, emotional, protective' },
+                  { sign: 'Leo', symbol: '♌', element: 'Fire', dates: 'Jul 23 - Aug 22', traits: 'Confident, generous, dramatic' },
+                  { sign: 'Virgo', symbol: '♍', element: 'Earth', dates: 'Aug 23 - Sep 22', traits: 'Analytical, modest, hardworking' },
+                  { sign: 'Libra', symbol: '♎', element: 'Air', dates: 'Sep 23 - Oct 22', traits: 'Diplomatic, fair, social' },
+                  { sign: 'Scorpio', symbol: '♏', element: 'Water', dates: 'Oct 23 - Nov 21', traits: 'Passionate, resourceful, mysterious' },
+                  { sign: 'Sagittarius', symbol: '♐', element: 'Fire', dates: 'Nov 22 - Dec 21', traits: 'Optimistic, philosophical, adventurous' },
+                  { sign: 'Capricorn', symbol: '♑', element: 'Earth', dates: 'Dec 22 - Jan 19', traits: 'Ambitious, disciplined, responsible' },
+                  { sign: 'Aquarius', symbol: '♒', element: 'Air', dates: 'Jan 20 - Feb 18', traits: 'Innovative, humanitarian, independent' },
+                  { sign: 'Pisces', symbol: '♓', element: 'Water', dates: 'Feb 19 - Mar 20', traits: 'Compassionate, artistic, intuitive' }
+                ].map((zodiac, index) => (
+                  <div key={index} className="text-center group cursor-pointer hover:scale-105 transition-transform duration-300">
+                    <div className="text-4xl mb-2">{zodiac.symbol}</div>
+                    <h4 className="font-bold text-white mb-1">{zodiac.sign}</h4>
+                    <p className="text-xs text-white/60 mb-2">{zodiac.dates}</p>
+                    <p className="text-sm text-white/80">{zodiac.traits}</p>
+                    <div className="mt-2 text-xs text-amber-200">
+                      Element: {zodiac.element}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Planetary Information */}
+            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8">
+              <h3 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-violet-400 to-blue-400 bg-clip-text text-transparent">
+                The Planets & Their Influence
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  { planet: 'Sun', symbol: '☉', influence: 'Core identity, vitality, life purpose', color: 'gold' },
+                  { planet: 'Moon', symbol: '☽', influence: 'Emotions, intuition, subconscious', color: 'silver' },
+                  { planet: 'Mercury', symbol: '☿', influence: 'Communication, intellect, learning', color: 'gray' },
+                  { planet: 'Venus', symbol: '♀', influence: 'Love, beauty, relationships', color: 'pink' },
+                  { planet: 'Mars', symbol: '♂', influence: 'Action, passion, conflict', color: 'red' },
+                  { planet: 'Jupiter', symbol: '♃', influence: 'Growth, wisdom, expansion', color: 'orange' },
+                  { planet: 'Saturn', symbol: '♄', influence: 'Discipline, limitations, structure', color: 'brown' }
+                ].map((planet, index) => (
+                  <div key={index} className="flex items-center space-x-4 p-4 bg-gradient-to-r from-white/10 to-transparent rounded-2xl hover:from-white/20 transition-all duration-300">
+                    <div className="text-3xl" style={{ color: planet.color }}>{planet.symbol}</div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-white mb-1">{planet.planet}</h4>
+                      <p className="text-sm text-white/80">{planet.influence}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Houses & Aspects */}
+            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8">
+              <h3 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
+                The 12 Houses & Aspects
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-bold text-white mb-2">The Houses</h4>
+                  <p className="text-sm text-white/80 leading-relaxed">
+                    The 12 houses represent different areas of life, from self-identity to career, relationships, and spirituality. Each house is ruled by a zodiac sign and reveals insights about that life domain.
+                  </p>
+                  <div className="mt-3 space-y-2 text-xs text-white/60">
+                    <p>• 1st House: Self, appearance, identity</p>
+                    <p>• 7th House: Partnerships, marriage, contracts</p>
+                    <p>• 10th House: Career, public life, reputation</p>
+                  </div>
                 </div>
-                <p className="text-white/80 mb-6 italic">"{testimonial.content}"</p>
-                <div>
-                  <div className="font-semibold text-white">{testimonial.name}</div>
-                  <div className="text-white/60 text-sm">{testimonial.role}</div>
+                <div className="space-y-4">
+                  <h4 className="font-bold text-white mb-2">Major Aspects</h4>
+                  <p className="text-sm text-white/80 leading-relaxed">
+                    Planetary aspects reveal how planets interact with each other, creating harmonious or challenging energies that influence personality and life events.
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-4 text-xs text-white/60">
+                    <p>• Conjunction: Planets together, blended energy</p>
+                    <p>• Opposition: Planets opposite, tension, growth</p>
+                    <p>• Trine: Planets 120° apart, harmony, ease</p>
+                    <p>• Square: Planets 90° apart, challenges, action</p>
+                  </div>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
