@@ -90,7 +90,17 @@ module.exports = {
       borderRadius: {
         'cosmic': '20px',
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            color: '#F8F9FA',
+            maxWidth: 'none',
+          },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }

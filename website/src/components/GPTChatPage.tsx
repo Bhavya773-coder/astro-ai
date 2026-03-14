@@ -724,14 +724,59 @@ const GPTChatPage: React.FC = () => {
                             <AIAvatar />
                           </div>
                           <div className="flex-1">
-                            <p className="text-white/90 whitespace-pre-wrap leading-relaxed">
-                              {msg.content}
+                            <div className="text-white/90 whitespace-pre-wrap leading-relaxed prose prose-invert">
+                              {msg.content.split('\n').map((paragraph, index) => {
+                                // Handle headings
+                                if (paragraph.startsWith('## ')) {
+                                  return (
+                                    <h3 key={index} className="text-xl font-bold text-white mb-3 mt-4 first:mt-0">
+                                      {paragraph.replace('## ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+                                    </h3>
+                                  );
+                                }
+                                
+                                // Handle bullet points
+                                if (paragraph.startsWith('• ')) {
+                                  return (
+                                    <ul key={index} className="list-disc list-inside space-y-2 mb-3 ml-4">
+                                      <li className="text-white/80">
+                                        {paragraph.replace('• ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+                                      </li>
+                                    </ul>
+                                  );
+                                }
+                                
+                                // Handle numbered lists
+                                if (/^\d+\./.test(paragraph)) {
+                                  return (
+                                    <ol key={index} className="list-decimal list-inside space-y-2 mb-3 ml-4">
+                                      <li className="text-white/80">
+                                        {paragraph.replace(/^\d+\.\s/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+                                      </li>
+                                    </ol>
+                                  );
+                                }
+                                
+                                // Handle regular paragraphs with bold text
+                                return (
+                                  <p key={index} className="mb-3 last:mb-0">
+                                    {paragraph.split('**').map((part, i) => (
+                                      <span key={i}>
+                                        {i % 2 === 1 ? <strong className="text-white font-semibold capitalize">{part}</strong> : part}
+                                      </span>
+                                    )).reduce((acc, curr, i) => {
+                                      if (i === 0) return curr;
+                                      return <>{acc}{curr}</>;
+                                    }, null as any)}
+                                  </p>
+                                );
+                              })}
                               {isLoading && msg._id?.toString().startsWith('streaming-') && (
                                 <span className="inline-block ml-1">
                                   <TypingIndicator />
                                 </span>
                               )}
-                            </p>
+                            </div>
                           </div>
                         </>
                       )}
