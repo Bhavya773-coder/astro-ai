@@ -747,13 +747,16 @@ const GPTChatPage: React.FC = () => {
                                 }
                                 
                                 // Handle numbered lists
-                                if (/^\d+\./.test(paragraph)) {
+                                if (/^\d+\./.test(paragraph) || /^\d+\./.test(paragraph) || /^\d+\)/.test(paragraph) || /^\d+\s/.test(paragraph)) {
+                                  const cleanText = paragraph.replace(/^\d+[\.\)\s]\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                                   return (
-                                    <ol key={index} className="list-decimal list-inside space-y-2 mb-3 ml-4">
-                                      <li className="text-white/80">
-                                        {paragraph.replace(/^\d+\.\s/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
-                                      </li>
-                                    </ol>
+                                    <div key={index} className="mb-4 p-4 bg-gradient-to-r from-amber-500/10 to-violet-500/10 rounded-2xl border border-amber-400/20">
+                                      <ol className="list-decimal list-inside space-y-4 ml-4">
+                                        <li className="text-white/90 leading-relaxed font-medium">
+                                          <span dangerouslySetInnerHTML={{ __html: cleanText }} />
+                                        </li>
+                                      </ol>
+                                    </div>
                                   );
                                 }
                                 
