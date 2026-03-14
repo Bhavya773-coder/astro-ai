@@ -212,15 +212,20 @@ const MainPage: React.FC = () => {
                         <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Mood</div>
                         <div className="text-lg font-bold text-cosmic-purple">{dailyHoroscope.mood || 'Balanced'}</div>
                       </div>
-                      <div className="glass-card p-4 text-center border-cosmic-pink/30">
-                        <div className="text-3xl mb-2">⚡</div>
-                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Energy</div>
-                        <div className="text-lg font-bold text-cosmic-pink">{dailyHoroscope.energy_level || 'Medium'}</div>
-                      </div>
                       <div className="glass-card p-4 text-center border-cosmic-cyan/30">
-                        <div className="text-3xl mb-2">🍀</div>
-                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Lucky Number</div>
-                        <div className="text-lg font-bold text-cosmic-cyan">{dailyHoroscope.lucky_number || 7}</div>
+                        <div className="text-3xl mb-2">☉</div>
+                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Energy</div>
+                        <div className="text-lg font-bold text-cosmic-cyan">{dailyHoroscope.energy || 'Moderate'}</div>
+                      </div>
+                      <div className="glass-card p-4 text-center border-green-400/30">
+                        <div className="text-3xl mb-2">�</div>
+                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Lucky</div>
+                        <div className="text-lg font-bold text-green-300">{dailyHoroscope.lucky_number || 7}</div>
+                      </div>
+                      <div className="glass-card p-4 text-center border-amber-400/30">
+                        <div className="text-3xl mb-2">⭐</div>
+                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Color</div>
+                        <div className="text-lg font-bold text-amber-400">{dailyHoroscope.lucky_color || 'Blue'}</div>
                       </div>
                     </div>
 
