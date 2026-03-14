@@ -99,6 +99,36 @@ const SignUpPage: React.FC = () => {
     }
   };
 
+  // Password strength indicator component
+  const PasswordStrengthIndicator = ({ password }: { password: string }) => {
+    const validation = validatePassword(password);
+    const strengthColor = getPasswordStrengthColor(validation.strength);
+    const strengthPercent = validation.strength === 'weak' ? 25 : validation.strength === 'fair' ? 50 : validation.strength === 'good' ? 75 : 100;
+    
+    return (
+      <div className="mt-2">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-xs text-white/60">Password Strength:</span>
+          <span className={`text-xs font-semibold ${strengthColor}`}>
+            {validation.strength.toUpperCase()}
+          </span>
+        </div>
+        <div className="w-full bg-gray-700 rounded-full h-2">
+          <div 
+            className={`h-full rounded-full transition-all duration-300 ${strengthColor.replace('text-', 'bg-')}`}
+            style={{ width: `${strengthPercent}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-xs text-white/60 mt-1">
+          <span>Weak</span>
+          <span>Fair</span>
+          <span>Good</span>
+          <span>Strong</span>
+        </div>
+      </div>
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -176,7 +206,7 @@ const SignUpPage: React.FC = () => {
               <label htmlFor="password" className="block text-sm font-medium text-white/80 mb-2">
                 Password
                 {password && (
-                  <span className={`ml-2 text-xs ${getPasswordStrengthColor(validatePassword(password).strength}`}>
+                  <span className="ml-2 text-xs text-white/60">
                     {validatePassword(password).strength.toUpperCase()}
                   </span>
                 )}
@@ -198,28 +228,7 @@ const SignUpPage: React.FC = () => {
                   placeholder="Create a strong password"
                   required
                 />
-                {password && passwordFocus && (
-                  <div className="mt-2">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-xs text-white/60">Password Strength:</span>
-                      <span className={`text-xs font-semibold ${getPasswordStrengthColor(validatePassword(password).strength}`}>
-                        {validatePassword(password).strength.toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div 
-                        className={`h-full rounded-full transition-all duration-300 ${getPasswordStrengthColor(validatePassword(password).strength.replace('text-', 'bg-')}`}
-                        style={{ width: `${(validatePassword(password).strength === 'weak' ? 25 : validatePassword(password).strength === 'fair' ? 50 : validatePassword(password).strength === 'good' ? 75 : 100)}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-xs text-white/60 mt-1">
-                      <span>Weak</span>
-                      <span>Fair</span>
-                      <span>Good</span>
-                      <span>Strong</span>
-                    </div>
-                  </div>
-                )}
+                {password && passwordFocus && <PasswordStrengthIndicator password={password} />}
               </div>
             </div>
 
