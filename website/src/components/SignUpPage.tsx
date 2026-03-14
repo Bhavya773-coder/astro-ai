@@ -11,9 +11,93 @@ const SignUpPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [passwordFocus, setPasswordFocus] = useState(false);
 
   const navigate = useNavigate();
   const { setAuth } = useAuth();
+
+  // Password validation rules
+  const validatePassword = (pwd: string): { isValid: boolean; errors: string[]; strength: 'weak' | 'fair' | 'good' | 'strong' } => {
+    const errors: string[] = [];
+    let strengthScore = 0;
+    
+    // Length requirements
+    if (pwd.length < 8) {
+      errors.push('Password must be at least 8 characters long');
+    } else if (pwd.length >= 8) {
+      strengthScore += 1;
+    }
+    if (pwd.length >= 12) {
+      strengthScore += 1;
+    }
+    if (pwd.length >= 16) {
+      strengthScore += 1;
+    }
+
+    // Character requirements
+    if (!/[A-Z]/.test(pwd)) {
+      errors.push('Password must contain at least one uppercase letter (A-Z)');
+    } else {
+      strengthScore += 1;
+    }
+    if (!/[a-z]/.test(pwd)) {
+      errors.push('Password must contain at least one lowercase letter (a-z)');
+    } else {
+      strengthScore += 1;
+    }
+    if (!/[0-9]/.test(pwd)) {
+      errors.push('Password must contain at least one number (0-9)');
+    } else {
+      strengthScore += 1;
+    }
+
+    // Special character requirements
+    if (!/[!@#$%^&*()_+=\-\[\]{}|;:'",.<>?\/]/.test(pwd)) {
+      errors.push('Password must contain at least one special character (!@#$%^&*()_+=-[]{}|;:\'",.<>?/)');
+    } else {
+      strengthScore += 1;
+    }
+
+    // Common weak passwords
+    const commonPasswords = ['password', '123456', 'qwerty', 'abc123', 'password123', 'admin', 'letmein'];
+    if (commonPasswords.includes(pwd.toLowerCase())) {
+      errors.push('Please choose a more secure password');
+      strengthScore = 0;
+    }
+
+    // No personal info
+    if (email.toLowerCase() === pwd.toLowerCase()) {
+      errors.push('Password cannot be the same as your email');
+    }
+
+    // Sequential characters
+    if (/(.)\1{2,}|(123)|(abc)|(qwer)|(asdf)|(zxcv)/i.test(pwd)) {
+      errors.push('Avoid sequential characters or common patterns');
+      strengthScore = Math.max(0, strengthScore - 1);
+    }
+
+    // Determine strength
+    let strength: 'weak' | 'fair' | 'good' | 'strong' = 'weak';
+    if (strengthScore >= 4) strength = 'strong';
+    else if (strengthScore >= 3) strength = 'good';
+    else if (strengthScore >= 2) strength = 'fair';
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      strength
+    };
+  };
+
+  const getPasswordStrengthColor = (strength: string) => {
+    switch (strength) {
+      case 'weak': return 'text-red-400';
+      case 'fair': return 'text-amber-400';
+      case 'good': return 'text-yellow-400';
+      case 'strong': return 'text-green-400';
+      default: return 'text-gray-400';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +105,12 @@ const SignUpPage: React.FC = () => {
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.errors.join('. '));
       return;
     }
 
@@ -85,6 +175,11 @@ const SignUpPage: React.FC = () => {
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-white/80 mb-2">
                 Password
+                {password && (
+                  <span className={`ml-2 text-xs ${getPasswordStrengthColor(validatePassword(password).strength}`}>
+                    {validatePassword(password).strength.toUpperCase()}
+                  </span>
+                )}
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
@@ -97,10 +192,34 @@ const SignUpPage: React.FC = () => {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setPasswordFocus(true)}
+                  onBlur={() => setPasswordFocus(false)}
                   className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30"
-                  placeholder="Create a password"
+                  placeholder="Create a strong password"
                   required
                 />
+                {password && passwordFocus && (
+                  <div className="mt-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs text-white/60">Password Strength:</span>
+                      <span className={`text-xs font-semibold ${getPasswordStrengthColor(validatePassword(password).strength}`}>
+                        {validatePassword(password).strength.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-300 ${getPasswordStrengthColor(validatePassword(password).strength.replace('text-', 'bg-')}`}
+                        style={{ width: `${(validatePassword(password).strength === 'weak' ? 25 : validatePassword(password).strength === 'fair' ? 50 : validatePassword(password).strength === 'good' ? 75 : 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-white/60 mt-1">
+                      <span>Weak</span>
+                      <span>Fair</span>
+                      <span>Good</span>
+                      <span>Strong</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -148,11 +267,43 @@ const SignUpPage: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/login')}
-              className="font-medium text-cosmic-cyan hover:text-cosmic-pink transition-colors"
+              className="text-cosmic-cyan hover:text-white transition-colors duration-300 underline"
             >
-              Sign in
+              Sign in here
             </button>
           </p>
+          
+          {/* Content Guidelines */}
+          <div className="mt-8 p-4 bg-white/5 rounded-cosmic border border-white/10">
+            <h4 className="text-sm font-semibold text-white mb-3">Community Guidelines</h4>
+            <p className="text-xs text-white/70 leading-relaxed mb-4">
+              By creating an account, you agree to our community standards:
+            </p>
+            <ul className="text-xs text-white/60 space-y-1 ml-4">
+              <li>• No hate speech, harassment, or discriminatory content</li>
+              <li>• Respect all community members and their beliefs</li>
+              <li>• No spam, advertising, or promotional content</li>
+              <li>• Keep conversations appropriate and professional</li>
+              <li>• No sharing of personal or harmful information</li>
+              <li>• Respect copyright and intellectual property</li>
+            </ul>
+          </div>
+          
+          {/* Terms of Service */}
+          <div className="mt-4 p-4 bg-white/5 rounded-cosmic border border-white/10">
+            <h4 className="text-sm font-semibold text-white mb-3">Terms of Service</h4>
+            <p className="text-xs text-white/70 leading-relaxed mb-4">
+              By using AstroAI, you agree to:
+            </p>
+            <ul className="text-xs text-white/60 space-y-1 ml-4">
+              <li>• Use the service for personal, non-commercial purposes</li>
+              <li>• Be responsible for your account security and content</li>
+              <li>• Respect astrological and spiritual diversity</li>
+              <li>• No illegal activities or harmful content</li>
+              <li>• We reserve the right to suspend accounts violating guidelines</li>
+              <li>• Content is monitored for compliance and safety</li>
+            </ul>
+          </div>
 
           <div className="mt-4 text-center">
             <button
