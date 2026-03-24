@@ -661,9 +661,9 @@ const GPTChatPage: React.FC = () => {
         </aside>
 
         {/* Main Chat Area */}
-        <main ref={mainRef} className="flex-1 flex flex-col min-w-0 bg-cosmic-deep-space/30 overflow-hidden">
+        <main ref={mainRef} className="flex-1 flex flex-col min-w-0 bg-cosmic-deep-space/30 overflow-hidden relative">
           {/* Header */}
-          <header className="flex items-center justify-between px-4 py-3 border-b border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm shrink-0">
+          <header className="flex items-center justify-between px-4 py-3 border-b border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm shrink-0 z-10">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -725,7 +725,7 @@ const GPTChatPage: React.FC = () => {
           <div 
             id="chat-messages-container" 
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-cosmic-purple/30 scrollbar-track-transparent scroll-smooth relative"
+            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-cosmic-purple/30 scrollbar-track-transparent scroll-smooth relative pb-24"
           >
             {messages.length === 0 && !isLoading ? (
               <div className="h-full flex flex-col items-center justify-center px-4 py-12">
@@ -888,8 +888,8 @@ const GPTChatPage: React.FC = () => {
             </button>
           )}
 
-          {/* Input Area */}
-          <div className="border-t border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm px-4 py-3 shrink-0">
+          {/* Input Area - Fixed Footer */}
+          <div className="absolute bottom-0 left-0 right-0 border-t border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm px-4 py-3 z-20">
             <div className="max-w-3xl mx-auto">
               <div className="relative flex items-end gap-2 bg-white/5 rounded-2xl border border-cosmic-purple/30 shadow-lg focus-within:border-cosmic-cyan/50 focus-within:shadow-cosmic-cyan/20 transition-all">
                 <textarea
