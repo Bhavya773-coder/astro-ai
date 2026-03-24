@@ -52,7 +52,7 @@ const SignUpPage: React.FC = () => {
     }
 
     // Special character requirements
-    if (!/[!@#$%^&*()_+=\-\[\]{}|;:'",.<>?\/]/.test(pwd)) {
+    if (!/[!@#$%^&*()_+=\-\[\]{}|;:'",.<>?\//]/.test(pwd)) {
       errors.push('Password must contain at least one special character (!@#$%^&*()_+=-[]{}|;:\'",.<>?/)');
     } else {
       strengthScore += 1;

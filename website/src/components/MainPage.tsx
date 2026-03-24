@@ -1,28 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProfessionalSymbol } from '../utils/professionalSymbols';
 import AppNavbar from './AppNavbar';
-import HoroscopeWidget from './HoroscopeWidget';
 import { useAppData } from '../state/AppDataContext';
 import { CosmicBackground } from './CosmicBackground';
-import { GlassCard, GradientText, LoadingSpinner, CosmicButton } from './CosmicUI';
+import { GlassCard, GradientText } from './CosmicUI';
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
   const { insightStatus, isInsightLoading } = useAppData();
   const insightsGenerated = Boolean(insightStatus?.insights_generated);
 
-  const getCurrentDate = () => {
-    return new Date().toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
-
   const handleGettingStarted = () => {
-    navigate('/onboarding/step-1');
+    navigate('/onboarding-step-1');
   };
 
   return (
@@ -42,7 +31,7 @@ const MainPage: React.FC = () => {
           
           {isInsightLoading && (
             <div className="flex items-center justify-center gap-2">
-              <LoadingSpinner size="sm" className="text-cosmic-pink" />
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cosmic-pink"></div>
               <span className="text-white/60">Loading your cosmic profile...</span>
             </div>
           )}

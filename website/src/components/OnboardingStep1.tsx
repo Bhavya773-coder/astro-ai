@@ -38,7 +38,7 @@ const OnboardingStep1: React.FC = () => {
     setError(null);
 
     try {
-      const response = await apiFetch('/api/profile/basic', {
+      await apiFetch('/api/profile/basic', {
         method: 'POST',
         body: JSON.stringify(formData)
       });

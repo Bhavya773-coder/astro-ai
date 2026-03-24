@@ -5,7 +5,6 @@ import { apiFetch } from '../api/client';
 import AppNavbar from './AppNavbar';
 import toast from 'react-hot-toast';
 import { CosmicBackground } from './CosmicBackground';
-import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
 
 interface NumerologyData {
   life_path: string;

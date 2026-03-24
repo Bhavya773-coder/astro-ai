@@ -39,7 +39,7 @@ const OnboardingStep3: React.FC = () => {
           });
         }, 800);
 
-        const response = await apiFetch('/api/profile/generate-insights', {
+        await apiFetch('/api/profile/generate-insights', {
           method: 'POST',
           body: JSON.stringify({})
         });

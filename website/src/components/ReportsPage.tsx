@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 
 const ReportsPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isLoadingBirthChart, setIsLoadingBirthChart] = useState(false);
   const [kundliReport, setKundliReport] = useState<KundliReport | null>(null);
   const [birthChartData, setBirthChartData] = useState<BirthChartResponse['data'] | null>(null);
   const navigate = useNavigate();
@@ -37,7 +36,6 @@ const ReportsPage: React.FC = () => {
   };
 
   const handleGetBirthChart = async () => {
-    setIsLoadingBirthChart(true);
     try {
       const response = await reportsApi.getBirthChart();
       if (response.success && response.data) {
@@ -49,8 +47,6 @@ const ReportsPage: React.FC = () => {
     } catch (error) {
       console.error('Error loading birth chart:', error);
       toast.error('Failed to load birth chart. Please try again.');
-    } finally {
-      setIsLoadingBirthChart(false);
     }
   };
 
