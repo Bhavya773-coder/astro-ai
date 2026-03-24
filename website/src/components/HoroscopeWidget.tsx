@@ -141,7 +141,14 @@ const HoroscopeWidget: React.FC<HoroscopeWidgetProps> = ({
             </div>
             
             <div className="flex items-center justify-between text-xs text-white/50">
-              <span>Source: Free Horoscope API</span>
+              <div className="flex items-center space-x-2">
+                <span>Source: {horoscope.horoscope.includes('Today is a day for') ? 'Mock Data' : 'Free Horoscope API'}</span>
+                {horoscope.horoscope.includes('Today is a day for') && (
+                  <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs">
+                    Fallback
+                  </span>
+                )}
+              </div>
               <span>{horoscope.date}</span>
             </div>
           </div>
