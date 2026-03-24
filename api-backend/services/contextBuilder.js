@@ -51,6 +51,11 @@ class ContextBuilder {
         
         kundliData = await KundliReport.findOne({ user_id: userId }).lean();
         console.log('[ContextBuilder] Kundli data found:', !!kundliData);
+        if (kundliData) {
+          console.log('[ContextBuilder] Moon sign from kundli:', kundliData.chart_data?.moon_sign);
+          console.log('[ContextBuilder] Sun sign from kundli:', kundliData.chart_data?.sun_sign);
+          console.log('[ContextBuilder] Nakshatra from kundli:', kundliData.chart_data?.nakshatra);
+        }
       }
     } catch (error) {
       console.error('[ContextBuilder] Error fetching kundli data:', error);

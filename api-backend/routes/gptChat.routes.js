@@ -5,7 +5,10 @@ const auth = require('../middleware/auth');
 const llmService = require('../services/llmService');
 const Message = require('../models/Message');
 const Profile = require('../models/Profile');
+const KundliReport = require('../models/KundliReport');
 const mongoose = require('mongoose');
+const aiService = require('../services/aiService');
+const chatLimiter = require('../middleware/rateLimiters').chatLimiter;
 
 const CHAT_RATE_LIMIT = 30;
 const chatLimiter = rateLimit({
@@ -25,11 +28,28 @@ function formatDateForContext(dateStr) {
   }
 }
 
-function buildUserProfileBlock(profile) {
+async function buildUserProfileBlock(profile) {
   if (!profile) return 'No profile available.';
   const lc = profile.life_context || {};
-  const bc = profile.birth_chart_data || {};
   const nd = profile.numerology_data || {};
+  
+  // Fetch kundli data
+  let kundliData = null;
+  try {
+    if (profile.user_id) {
+      const userId = typeof profile.user_id === 'string' 
+        ? new mongoose.Types.ObjectId(profile.user_id) 
+        : profile.user_id;
+      
+      kundliData = await KundliReport.findOne({ user_id: userId }).lean();
+    }
+  } catch (error) {
+    console.error('[GPTChatRoutes] Error fetching kundli data:', error);
+  }
+  
+  const bc = profile.birth_chart_data || {};
+  const kundli = kundliData?.chart_data || {};
+  
   return `
 User Profile:
 Name: ${profile.full_name || 'Not provided'}
@@ -46,11 +66,18 @@ Main Life Focus: ${(lc.main_life_focus || 'Not provided').charAt(0).toUpperCase(
 Personality Style: ${(lc.personality_style || 'Not provided').charAt(0).toUpperCase() + (lc.personality_style || '').slice(1)}
 Primary Life Concern: ${lc.primary_life_problem || 'Not provided'}
 
-Birth Chart (use for astrological analysis):
-Sun Sign: ${bc.sun_sign || 'Not set'}
-Moon Sign: ${bc.moon_sign || 'Not set'}
-Ascendant: ${bc.ascendant || 'Not set'}
-Dominant Planet: ${bc.dominant_planet || 'Not set'}
+Kundli Data (use for astrological analysis):
+Sun Sign: ${kundli.sun_sign || bc.sun_sign || 'Not set'}
+Moon Sign: ${kundli.moon_sign || bc.moon_sign || 'Not set'}
+Ascendant (Lagna): ${kundli.ascendant || bc.ascendant || 'Not set'}
+Nakshatra: ${kundli.nakshatra || 'Not set'}
+${kundli.planets ? `
+Planetary Positions:
+${Object.entries(kundli.planets).map(([planet, data]) => {
+  const sign = data.sign || data.rashi || 'Unknown';
+  const degree = data.degree || data.longitude || 'Unknown';
+  return `${planet.charAt(0).toUpperCase() + planet.slice(1)}: ${sign} (${degree})`;
+}).join('\n')}` : ''}
 
 Numerology (optional): Life Path ${nd.life_path || '—'}, Destiny ${nd.destiny || '—'}, Personal Year ${nd.personal_year || '—'}
 `.trim();
@@ -66,25 +93,31 @@ function buildConversationHistoryBlock(messages) {
 }
 
 function buildFullAstrologerPrompt(userMessage, profileBlock, conversationBlock) {
-  return `You are a professional Vedic astrologer. You are analyzing the astrology profile of the user and providing personalized guidance. You MUST answer every question. Never say "I can't help with that" or refuse to answer. Your role is to give astrology-based insights, predictions, and guidance using the user's birth data and life context.
+  return `You are a professional Vedic astrologer. You are analyzing the astrology profile of user and providing personalized guidance. You MUST answer every question. Never say "I can't help with that" or refuse to answer. Your role is to give astrology-based insights, predictions, and guidance using user's kundli data and life context.
 
 RULES:
 - Always respond as a knowledgeable, calm, and supportive astrologer.
-- Use the user's birth chart (Sun, Moon, Ascendant, dominant planet) and life context in your answer.
-- For relationship questions: reference their relationship status, emotional style, and planetary influences.
-- For career: use career stage and relevant signs. For timing: use transits and personal year if available.
-- Keep tone wise, calm, supportive, and slightly mystical but practical.
-- If some birth data is missing, work with what is provided and mention that more detail could refine the reading.
-- Never refuse. If the question is vague, give a general astrological perspective and invite a follow-up.
-
-SYSTEM CONTEXT – User's astrology profile (use this for every response):
+- Use the user's kundli data (Sun, Moon, Ascendant, Nakshatra, Planetary positions, Houses) and life context in your answer.
+- For relationship questions: reference their relationship status, emotional style (Moon sign), Venus position, and 7th house.
+- For career questions: use career stage and relevant planetary influences (Sun sign, 10th house, Saturn position).
+- For timing questions: reference their personal year and planetary transits based on kundli data.
+- Be specific to their kundli and situation - avoid generic advice.
+- If some kundli data is missing, work with what is provided and note that more detail could refine the reading.
+- Never refuse to answer. If a question is outside astrology, provide a helpful perspective.
 
 ${profileBlock}
-${conversationBlock ? '\n\n' + conversationBlock + '\n\n' : ''}
 
-Current user question: ${userMessage}
+${conversationBlock}
 
-Provide your astrological analysis and guidance now. Address the user by name if provided. Be specific to their chart and situation.`;
+User's current message: ${userMessage}
+
+RESPONSE FORMAT:
+- Start directly with your astrological insight
+- Use their specific kundli details (planets, houses, nakshatra) in your analysis
+- Keep responses conversational but authoritative
+- End with a helpful follow-up question or suggestion
+- For detailed requests, provide comprehensive analysis with multiple paragraphs
+- For regular requests, keep responses concise but thorough`;
 }
 
 // Streaming chat endpoint for real-time responses
@@ -123,7 +156,7 @@ router.post('/chat-stream', auth.requireAuth, chatLimiter, async (req, res) => {
 
     console.log('👤 Fetching user profile for:', userObjectId);
     const profile = await Profile.findOne({ user_id: userObjectId }).lean();
-    const profileBlock = buildUserProfileBlock(profile || {});
+    const profileBlock = await buildUserProfileBlock(profile || {});
 
     console.log('📜 Fetching conversation history');
     const lastMessages = await Message.find({ user_id: userObjectId })
@@ -268,7 +301,7 @@ router.post('/chat', auth.requireAuth, chatLimiter, async (req, res) => {
 
     console.log('👤 Fetching user profile for:', userObjectId);
     const profile = await Profile.findOne({ user_id: userObjectId }).lean();
-    const profileBlock = buildUserProfileBlock(profile || {});
+    const profileBlock = await buildUserProfileBlock(profile || {});
 
     console.log('📜 Fetching conversation history');
     const lastMessages = await Message.find({ user_id: userObjectId })
