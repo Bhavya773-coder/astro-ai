@@ -4,7 +4,7 @@ class LLMService {
   constructor() {
     // Update to use Ollama's chat endpoint for OpenAI compatibility
     this.modelEndpoint = process.env.LLM_MODEL_ENDPOINT || 'http://localhost:11434/api/chat';
-    this.modelName = process.env.LLM_MODEL_NAME || 'gpt-oss:120B';
+    this.modelName = process.env.LLM_MODEL_NAME || 'llama3:latest';
   }
 
   async callLLM(prompt, streamCallback = null) {

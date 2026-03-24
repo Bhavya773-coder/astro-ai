@@ -2,12 +2,12 @@ const axios = require('axios');
 
 /**
  * AI Service - Robust Ollama Integration
- * Handles communication with the local gpt-oss:120B model via Ollama
+ * Handles communication with the local llama3:latest model via Ollama
  */
 class AIService {
   constructor() {
     this.baseUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
-    this.model = process.env.OLLAMA_MODEL || 'gpt-oss:120B';
+    this.model = process.env.OLLAMA_MODEL || 'llama3:latest';
     this.timeout = parseInt(process.env.OLLAMA_TIMEOUT) || 300000; // 5 minutes default
     this.maxRetries = parseInt(process.env.OLLAMA_MAX_RETRIES) || 2;
     

@@ -37,7 +37,7 @@ const messageSchema = new mongoose.Schema({
   // Model used for AI responses
   model: {
     type: String,
-    default: 'gpt-oss:120B'
+    default: 'llama3:latest'
   },
   created_at: {
     type: Date,

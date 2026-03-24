@@ -97,7 +97,7 @@ router.post('/chat-stream', auth.requireAuth, chatLimiter, async (req, res) => {
       message_preview: req.body.message?.substring(0, 100) + '...'
     });
     
-    const { message, model = 'gpt-oss:120B' } = req.body;
+    const { message, model = 'llama3:latest' } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       console.log('❌ Invalid message provided');
@@ -174,7 +174,7 @@ router.post('/chat-stream', auth.requireAuth, chatLimiter, async (req, res) => {
           conversation_id: conversationId,
           role: 'assistant',
           content: aiResponse,
-          ai_analysis_tags: ['gpt-oss:120b', 'astrologer', 'chat'],
+          ai_analysis_tags: ['llama3:latest', 'astrologer', 'chat'],
           created_at: new Date()
         });
         
@@ -251,7 +251,7 @@ router.post('/chat', auth.requireAuth, chatLimiter, async (req, res) => {
       message_preview: req.body.message?.substring(0, 100) + '...'
     });
     
-    const { message, model = 'gpt-oss:120B' } = req.body;
+    const { message, model = 'llama3:latest' } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       console.log('❌ Invalid message provided');
@@ -339,7 +339,7 @@ router.post('/chat', auth.requireAuth, chatLimiter, async (req, res) => {
       conversation_id: conversationId,
       role: 'assistant',
       content: aiResponse,
-      ai_analysis_tags: ['gpt-oss:120b', 'astrologer', 'chat'],
+      ai_analysis_tags: ['llama3:latest', 'astrologer', 'chat'],
       created_at: new Date()
     });
     await aiMessageDoc.save();
