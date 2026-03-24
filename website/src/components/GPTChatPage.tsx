@@ -511,7 +511,7 @@ const GPTChatPage: React.FC = () => {
     : null;
 
   return (
-    <CosmicBackground className="min-h-screen">
+    <CosmicBackground className="h-screen">
       <AppNavbar />
       
       {/* Mobile Sidebar Overlay */}
@@ -522,7 +522,7 @@ const GPTChatPage: React.FC = () => {
         />
       )}
 
-      <div className="flex h-[calc(100vh-4rem)] pt-16 overflow-hidden">
+      <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
         {/* Sidebar */}
         <aside className={`
           fixed lg:static inset-y-0 left-0 z-50 w-72 
@@ -661,9 +661,9 @@ const GPTChatPage: React.FC = () => {
         </aside>
 
         {/* Main Chat Area */}
-        <main ref={mainRef} className="flex-1 flex flex-col min-w-0 bg-cosmic-deep-space/30 overflow-hidden relative">
+        <main ref={mainRef} className="flex-1 flex flex-col min-w-0 bg-cosmic-deep-space/30 overflow-hidden">
           {/* Header */}
-          <header className="flex items-center justify-between px-4 py-3 border-b border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm shrink-0 z-10">
+          <header className="flex items-center justify-between px-4 py-3 border-b border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm shrink-0">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -725,7 +725,7 @@ const GPTChatPage: React.FC = () => {
           <div 
             id="chat-messages-container" 
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-cosmic-purple/30 scrollbar-track-transparent scroll-smooth relative pb-24"
+            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-cosmic-purple/30 scrollbar-track-transparent scroll-smooth relative"
           >
             {messages.length === 0 && !isLoading ? (
               <div className="h-full flex flex-col items-center justify-center px-4 py-12">
@@ -888,8 +888,8 @@ const GPTChatPage: React.FC = () => {
             </button>
           )}
 
-          {/* Input Area - Fixed Footer */}
-          <div className="absolute bottom-0 left-0 right-0 border-t border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm px-4 py-3 z-20">
+          {/* Input Area */}
+          <div className="border-t border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm px-4 py-4 shrink-0">
             <div className="max-w-3xl mx-auto">
               <div className="relative flex items-end gap-2 bg-white/5 rounded-2xl border border-cosmic-purple/30 shadow-lg focus-within:border-cosmic-cyan/50 focus-within:shadow-cosmic-cyan/20 transition-all">
                 <textarea
@@ -906,7 +906,7 @@ const GPTChatPage: React.FC = () => {
                   type="button"
                   onClick={() => sendMessage()}
                   disabled={!inputMessage.trim() || isLoading || !currentChat}
-                  className="mr-2 p-2 rounded-xl bg-cosmic-purple hover:bg-cosmic-pink disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all hover:scale-105"
+                  className="mb-2 mr-2 p-2 rounded-xl bg-cosmic-purple hover:bg-cosmic-pink disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all hover:scale-105"
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
