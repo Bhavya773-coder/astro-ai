@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { apiFetch, getBaseUrl } from '../api/client';
 import AppNavbar from './AppNavbar';
 import { CosmicBackground } from './CosmicBackground';
@@ -84,8 +85,8 @@ const GPTChatPage: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [profileSummary, setProfileSummary] = useState<ProfileSummary | null>(null);
-  const [birthSummary, setBirthSummary] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
@@ -249,7 +250,7 @@ const GPTChatPage: React.FC = () => {
     setCurrentChat(chat);
     setSidebarOpen(false);
     setEditingChatId(null);
-    setEditingTitle('');
+    setEditTitle('');
   };
 
   const updateChatTitle = async (chatId: string, newTitle: string) => {
@@ -273,7 +274,7 @@ const GPTChatPage: React.FC = () => {
         }
         
         setEditingChatId(null);
-        setEditingTitle('');
+        setEditTitle('');
       } else {
         console.error('Failed to update chat title:', res?.message);
         alert('Failed to update chat title. Please try again.');
@@ -287,18 +288,18 @@ const GPTChatPage: React.FC = () => {
   const startEditingChat = (chat: Chat, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingChatId(chat._id);
-    setEditingTitle(chat.title || 'New Chat');
+    setEditTitle(chat.title || 'New Chat');
   };
 
   const cancelEditing = () => {
     setEditingChatId(null);
-    setEditingTitle('');
+    setEditTitle('');
   };
 
   const handleEditKeyDown = (e: React.KeyboardEvent, chatId: string) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      updateChatTitle(chatId, editingTitle);
+      updateChatTitle(chatId, editTitle);
     } else if (e.key === 'Escape') {
       cancelEditing();
     }
@@ -491,6 +492,20 @@ const GPTChatPage: React.FC = () => {
     }
   };
 
+  // Helper function to format birth date
+  const formatBirthDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   const birthSummary = profileSummary?.has_profile && profileSummary?.date_of_birth
     ? `${formatBirthDate(profileSummary.date_of_birth)}${profileSummary.place_of_birth ? ` • ${profileSummary.place_of_birth}` : ''}`
     : null;
@@ -552,17 +567,17 @@ const GPTChatPage: React.FC = () => {
                     <input
                       ref={editInputRef}
                       type="text"
-                      value={editingTitle}
-                      onChange={(e) => setEditingTitle(e.target.value)}
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
                       onKeyDown={(e) => handleEditKeyDown(e, chat._id)}
-                      onBlur={() => updateChatTitle(chat._id, editingTitle)}
+                      onBlur={() => updateChatTitle(chat._id, editTitle)}
                       className="flex-1 bg-cosmic-deep-space/80 text-white text-sm px-2 py-1 rounded border border-cosmic-cyan/50 focus:outline-none focus:border-cosmic-cyan"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        updateChatTitle(chat._id, editingTitle);
+                        updateChatTitle(chat._id, editTitle);
                       }}
                       className="p-1 rounded text-cosmic-cyan hover:bg-cosmic-cyan/20"
                     >
@@ -668,7 +683,7 @@ const GPTChatPage: React.FC = () => {
                   <button
                     onClick={() => {
                       setEditingChatId(currentChat._id);
-                      setEditingTitle(currentChat.title || 'New Chat');
+                      setEditTitle(currentChat.title || 'New Chat');
                     }}
                     className="p-1 rounded hover:bg-cosmic-cyan/20 text-white/50 hover:text-cosmic-cyan transition-all"
                     title="Rename chat"
