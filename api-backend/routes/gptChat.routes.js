@@ -92,17 +92,55 @@ function buildConversationHistoryBlock(messages) {
 }
 
 function buildFullAstrologerPrompt(userMessage, profileBlock, conversationBlock) {
-  return `You are a professional Vedic astrologer. You are analyzing the astrology profile of user and providing personalized guidance. You MUST answer every question. Never say "I can't help with that" or refuse to answer. Your role is to give astrology-based insights, predictions, and guidance using user's kundli data and life context.
+  // Get current temporal context
+  const now = new Date();
+  const today = now.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
+  const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
+  const date = now.getDate();
+  const month = now.toLocaleDateString('en-US', { month: 'long' });
+  const year = now.getFullYear();
+  
+  // Get Hindu calendar details (approximate)
+  const hinduMonth = getHinduMonth(now);
+  const paksha = getPaksha(now);
+  const tithi = getTithi(now);
+  
+  // Get current planetary positions
+  const currentPlanetaryPositions = getCurrentPlanetaryPositions(now);
+
+  return `You are a professional Vedic astrologer. You are analyzing the astrology profile of user and providing personalized guidance. You MUST answer every question. Never say "I can't help with that" or refuse to answer. Your role is to give astrology-based insights, predictions, and guidance using user's kundli data, life context, and CURRENT TIMING.
+
+CURRENT TEMPORAL CONTEXT:
+Today's Date: ${today}
+Day of Week: ${dayOfWeek}
+Gregorian Date: ${date} ${month} ${year}
+
+Hindu Calendar Context:
+Hindu Month: ${hinduMonth}
+Paksha (Fortnight): ${paksha}
+Tithi (Lunar Day): ${tithi}
+
+Current Astrological Timing:
+${currentPlanetaryPositions}
+
+CRITICAL: Use this current date and timing information for accurate predictions. Consider today's planetary positions, day of week influences, and Hindu calendar timing when providing astrological guidance.
 
 RULES:
 - Always respond as a knowledgeable, calm, and supportive astrologer.
-- Use the user's kundli data (Sun, Moon, Ascendant, Nakshatra, Planetary positions, Houses) and life context in your answer.
-- For relationship questions: reference their relationship status, emotional style (Moon sign), Venus position, and 7th house.
-- For career questions: use career stage and relevant planetary influences (Sun sign, 10th house, Saturn position).
-- For timing questions: reference their personal year and planetary transits based on kundli data.
-- Be specific to their kundli and situation - avoid generic advice.
+- Use the user's kundli data (Sun, Moon, Ascendant, Nakshatra, Planetary positions, Houses), life context, and CURRENT TIMING in your answer.
+- For relationship questions: reference their relationship status, emotional style (Moon sign), Venus position, 7th house, and current timing.
+- For career questions: use career stage, relevant planetary influences (Sun sign, 10th house, Saturn position), and current planetary day ruler.
+- For timing questions: ALWAYS reference today's date, current planetary positions, Hindu calendar timing, and personal year for accurate predictions.
+- Be specific to their kundli, current timing, and situation - avoid generic advice.
 - If some kundli data is missing, work with what is provided and note that more detail could refine the reading.
 - Never refuse to answer. If a question is outside astrology, provide a helpful perspective.
+- IMPORTANT: Your predictions must be temporally accurate - use today's actual date and astrological timing, not generic information.
 
 ${profileBlock}
 
@@ -112,11 +150,70 @@ User's current message: ${userMessage}
 
 RESPONSE FORMAT:
 - Start directly with your astrological insight
-- Use their specific kundli details (planets, houses, nakshatra) in your analysis
+- Use their specific kundli details (planets, houses, nakshatra) and current timing in your analysis
 - Keep responses conversational but authoritative
 - End with a helpful follow-up question or suggestion
 - For detailed requests, provide comprehensive analysis with multiple paragraphs
 - For regular requests, keep responses concise but thorough`;
+}
+
+// Helper functions for temporal context
+function getHinduMonth(date) {
+  const month = date.getMonth();
+  const hinduMonths = [
+    'Chaitra', 'Vaishakha', 'Jyeshtha', 'Ashadha', 
+    'Shravana', 'Bhadrapada', 'Ashwin', 'Kartika',
+    'Margashirsha', 'Pausha', 'Magha', 'Phalguna'
+  ];
+  return hinduMonths[(month + 9) % 12] || hinduMonths[month];
+}
+
+function getPaksha(date) {
+  const lunarDay = date.getDate();
+  return lunarDay <= 15 ? 'Shukla Paksha (Waxing Moon)' : 'Krishna Paksha (Waning Moon)';
+}
+
+function getTithi(date) {
+  const lunarDay = ((date.getDate() - 1) % 30) + 1;
+  return `${lunarDay} Tithi`;
+}
+
+function getCurrentPlanetaryPositions(date) {
+  const planetaryDayRulers = {
+    0: 'Sun', 1: 'Moon', 2: 'Mars', 3: 'Mercury', 
+    4: 'Jupiter', 5: 'Venus', 6: 'Saturn'
+  };
+  
+  const dayRuler = planetaryDayRulers[date.getDay()];
+  const hour = date.getHours();
+  const hourRuler = getHourRuler(hour);
+  
+  return `Day Ruler: ${dayRuler}
+Current Hour Ruler: ${hourRuler}
+Moon Phase: getMoonPhase(date)
+Season: getSeason(date)
+Note: For precise predictions, consider current transits and dasha periods if available.`;
+}
+
+function getHourRuler(hour) {
+  const rulers = ['Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon'];
+  return rulers[hour % 7];
+}
+
+function getMoonPhase(date) {
+  const lunarCycle = date.getDate();
+  if (lunarCycle <= 7) return 'New Moon to First Quarter';
+  if (lunarCycle <= 14) return 'First Quarter to Full Moon';
+  if (lunarCycle <= 21) return 'Full Moon to Last Quarter';
+  return 'Last Quarter to New Moon';
+}
+
+function getSeason(date) {
+  const month = date.getMonth();
+  if (month >= 2 && month <= 4) return 'Spring (Vasant)';
+  if (month >= 5 && month <= 7) return 'Summer (Grishma)';
+  if (month >= 8 && month <= 10) return 'Monsoon (Varsha)';
+  return 'Winter (Hemant)';
 }
 
 // Streaming chat endpoint for real-time responses
