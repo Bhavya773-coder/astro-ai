@@ -15,6 +15,7 @@ import MainPage from './components/MainPage';
 import NumerologyPage from './components/NumerologyPage';
 import BirthChartPage from './components/BirthChartPage';
 import ReportsPage from './components/ReportsPage';
+import HoroscopePage from './components/HoroscopePage';
 import SignUpPage from './components/SignUpPage';
 import ProtectedRoute from './auth/ProtectedRoute';
 import GPTChatPage from './components/GPTChatPage';
@@ -74,6 +75,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <BirthChartPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/horoscope"
+              element={
+                <ProtectedRoute>
+                  <HoroscopePage />
                 </ProtectedRoute>
               }
             />

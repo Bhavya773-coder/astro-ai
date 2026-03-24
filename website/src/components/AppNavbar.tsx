@@ -17,13 +17,15 @@ const AppNavbar: React.FC = () => {
     `${linkBase} ${isActive ? 'text-custom-yellow' : 'text-white/70 hover:text-custom-yellow'}`;
 
   return (
-    <nav className="relative bg-white/5 backdrop-blur border-b border-white/10">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/5 backdrop-blur border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <button type="button" onClick={() => navigate('/dashboard')} className="flex items-center">
-            <div className="w-10 h-10 bg-custom-yellow rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xl font-display">A</span>
-            </div>
+            <img 
+              src="/favicon.png" 
+              alt="AstroAI" 
+              className="w-10 h-10 rounded-full object-cover"
+            />
             <span className="ml-3 text-xl font-bold text-white font-display">AstroAI</span>
           </button>
 
@@ -37,6 +39,9 @@ const AppNavbar: React.FC = () => {
               </NavLink>
               <NavLink to="/birth-chart" className={linkClassName}>
                 Birth Chart
+              </NavLink>
+              <NavLink to="/horoscope" className={linkClassName}>
+                Horoscope
               </NavLink>
               <NavLink to="/ai-chat" className={linkClassName}>
                 AI Chat
