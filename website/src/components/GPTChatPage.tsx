@@ -889,7 +889,7 @@ const GPTChatPage: React.FC = () => {
           )}
 
           {/* Input Area */}
-          <div className="border-t border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm px-4 py-4 shrink-0">
+          <div className="border-t border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm px-4 py-3 shrink-0">
             <div className="max-w-3xl mx-auto">
               <div className="relative flex items-end gap-2 bg-white/5 rounded-2xl border border-cosmic-purple/30 shadow-lg focus-within:border-cosmic-cyan/50 focus-within:shadow-cosmic-cyan/20 transition-all">
                 <textarea
@@ -906,7 +906,7 @@ const GPTChatPage: React.FC = () => {
                   type="button"
                   onClick={() => sendMessage()}
                   disabled={!inputMessage.trim() || isLoading || !currentChat}
-                  className="mb-2 mr-2 p-2 rounded-xl bg-cosmic-purple hover:bg-cosmic-pink disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all hover:scale-105"
+                  className="mr-2 p-2 rounded-xl bg-cosmic-purple hover:bg-cosmic-pink disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all hover:scale-105"
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
