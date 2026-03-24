@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { apiFetch, getBaseUrl } from '../api/client';
 import AppNavbar from './AppNavbar';
 import { CosmicBackground } from './CosmicBackground';
@@ -76,25 +77,26 @@ const AIAvatar: React.FC = () => (
 );
 
 const GPTChatPage: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [chats, setChats] = useState<Chat[]>([]);
   const [currentChat, setCurrentChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [inputMessage, setInputMessage] = useState('');
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  
-  // Chat editing state
-  const [editingChatId, setEditingChatId] = useState<string | null>(null);
-  const [editingTitle, setEditingTitle] = useState('');
-  const editInputRef = useRef<HTMLInputElement>(null);
-  
   const [profileSummary, setProfileSummary] = useState<ProfileSummary | null>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const editInputRef = useRef<HTMLInputElement>(null);
   const [profileLoading, setProfileLoading] = useState(true);
-  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
   const mainRef = useRef<HTMLDivElement>(null);
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [inputMessage, setInputMessage] = useState('');
 
   // Focus edit input when editing starts
   useEffect(() => {
@@ -108,6 +110,32 @@ const GPTChatPage: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  // Handle scroll detection for showing scroll-to-bottom button
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 50;
+      setShowScrollButton(!isAtBottom && messages.length > 0);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [messages.length]);
+
+  // Scroll to bottom function
+  const scrollToBottom = () => {
+    const container = chatContainerRef.current;
+    if (container) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // Auto-resize textarea
   useEffect(() => {
@@ -222,7 +250,7 @@ const GPTChatPage: React.FC = () => {
     setCurrentChat(chat);
     setSidebarOpen(false);
     setEditingChatId(null);
-    setEditingTitle('');
+    setEditTitle('');
   };
 
   const updateChatTitle = async (chatId: string, newTitle: string) => {
@@ -246,7 +274,7 @@ const GPTChatPage: React.FC = () => {
         }
         
         setEditingChatId(null);
-        setEditingTitle('');
+        setEditTitle('');
       } else {
         console.error('Failed to update chat title:', res?.message);
         alert('Failed to update chat title. Please try again.');
@@ -260,18 +288,18 @@ const GPTChatPage: React.FC = () => {
   const startEditingChat = (chat: Chat, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingChatId(chat._id);
-    setEditingTitle(chat.title || 'New Chat');
+    setEditTitle(chat.title || 'New Chat');
   };
 
   const cancelEditing = () => {
     setEditingChatId(null);
-    setEditingTitle('');
+    setEditTitle('');
   };
 
   const handleEditKeyDown = (e: React.KeyboardEvent, chatId: string) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      updateChatTitle(chatId, editingTitle);
+      updateChatTitle(chatId, editTitle);
     } else if (e.key === 'Escape') {
       cancelEditing();
     }
@@ -362,6 +390,14 @@ const GPTChatPage: React.FC = () => {
                       : msg
                   )
                 );
+                
+                // Auto-scroll to bottom as content streams in
+                setTimeout(() => {
+                  const chatContainer = document.getElementById('chat-messages-container');
+                  if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                  }
+                }, 10);
               } else if (data.type === 'complete') {
                 setMessages(prev => 
                   prev.map(msg => 
@@ -373,6 +409,14 @@ const GPTChatPage: React.FC = () => {
                 streamCompleted = true;
                 setIsLoading(false);
                 loadChats();
+                
+                // Final scroll to ensure we're at the bottom
+                setTimeout(() => {
+                  const chatContainer = document.getElementById('chat-messages-container');
+                  if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                  }
+                }, 100);
               } else if (data.type === 'error') {
                 setMessages(prev => 
                   prev.map(msg => 
@@ -448,12 +492,26 @@ const GPTChatPage: React.FC = () => {
     }
   };
 
+  // Helper function to format birth date
+  const formatBirthDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   const birthSummary = profileSummary?.has_profile && profileSummary?.date_of_birth
     ? `${formatBirthDate(profileSummary.date_of_birth)}${profileSummary.place_of_birth ? ` • ${profileSummary.place_of_birth}` : ''}`
     : null;
 
   return (
-    <CosmicBackground className="min-h-screen">
+    <CosmicBackground className="h-screen overflow-hidden">
       <AppNavbar />
       
       {/* Mobile Sidebar Overlay */}
@@ -464,10 +522,10 @@ const GPTChatPage: React.FC = () => {
         />
       )}
 
-      <div className="flex h-[calc(100vh-4rem)] pt-16 overflow-hidden">
+      <div className="flex h-screen pt-16 overflow-hidden">
         {/* Sidebar */}
         <aside className={`
-          fixed lg:static inset-y-0 left-0 z-50 w-72 
+          fixed lg:static top-16 inset-y-0 left-0 z-50 w-72 
           bg-cosmic-deep-space/95 border-r border-cosmic-purple/30
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -509,17 +567,17 @@ const GPTChatPage: React.FC = () => {
                     <input
                       ref={editInputRef}
                       type="text"
-                      value={editingTitle}
-                      onChange={(e) => setEditingTitle(e.target.value)}
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
                       onKeyDown={(e) => handleEditKeyDown(e, chat._id)}
-                      onBlur={() => updateChatTitle(chat._id, editingTitle)}
+                      onBlur={() => updateChatTitle(chat._id, editTitle)}
                       className="flex-1 bg-cosmic-deep-space/80 text-white text-sm px-2 py-1 rounded border border-cosmic-cyan/50 focus:outline-none focus:border-cosmic-cyan"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        updateChatTitle(chat._id, editingTitle);
+                        updateChatTitle(chat._id, editTitle);
                       }}
                       className="p-1 rounded text-cosmic-cyan hover:bg-cosmic-cyan/20"
                     >
@@ -605,7 +663,7 @@ const GPTChatPage: React.FC = () => {
         {/* Main Chat Area */}
         <main ref={mainRef} className="flex-1 flex flex-col min-w-0 bg-cosmic-deep-space/30 overflow-hidden">
           {/* Header */}
-          <header className="flex items-center justify-between px-4 py-3 border-b border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm shrink-0">
+          <header className="flex items-center justify-between px-4 py-3 border-b border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -625,7 +683,7 @@ const GPTChatPage: React.FC = () => {
                   <button
                     onClick={() => {
                       setEditingChatId(currentChat._id);
-                      setEditingTitle(currentChat.title || 'New Chat');
+                      setEditTitle(currentChat.title || 'New Chat');
                     }}
                     className="p-1 rounded hover:bg-cosmic-cyan/20 text-white/50 hover:text-cosmic-cyan transition-all"
                     title="Rename chat"
@@ -664,7 +722,11 @@ const GPTChatPage: React.FC = () => {
           </header>
 
           {/* Messages Area - Fixed Scroll */}
-          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-cosmic-purple/30 scrollbar-track-transparent">
+          <div 
+            id="chat-messages-container" 
+            ref={chatContainerRef}
+            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-cosmic-purple/30 scrollbar-track-transparent scroll-smooth relative min-h-0"
+          >
             {messages.length === 0 && !isLoading ? (
               <div className="h-full flex flex-col items-center justify-center px-4 py-12">
                 <div className="text-center max-w-2xl">
@@ -725,7 +787,19 @@ const GPTChatPage: React.FC = () => {
                           </div>
                           <div className="flex-1">
                             <div className="text-white/90 whitespace-pre-wrap leading-relaxed prose prose-invert">
-                              {msg.content.split('\n').map((paragraph, index) => {
+                              {/* Show typing indicator for streaming messages */}
+                              {msg._id?.startsWith('streaming-') && (!msg.content || msg.content.length === 0) ? (
+                                <div className="flex items-center gap-2 text-cosmic-cyan/60">
+                                  <div className="flex gap-1">
+                                    <div className="w-2 h-2 bg-cosmic-cyan rounded-full animate-pulse"></div>
+                                    <div className="w-2 h-2 bg-cosmic-cyan rounded-full animate-pulse delay-75"></div>
+                                    <div className="w-2 h-2 bg-cosmic-cyan rounded-full animate-pulse delay-150"></div>
+                                  </div>
+                                  <span className="text-sm">AI is thinking...</span>
+                                </div>
+                              ) : (
+                                <>
+                                  {msg.content.split('\n').map((paragraph, index) => {
                                 // Handle headings
                                 if (paragraph.startsWith('## ')) {
                                   return (
@@ -774,10 +848,7 @@ const GPTChatPage: React.FC = () => {
                                   </p>
                                 );
                               })}
-                              {isLoading && msg._id?.toString().startsWith('streaming-') && (
-                                <span className="inline-block ml-1">
-                                  <TypingIndicator />
-                                </span>
+                              </>
                               )}
                             </div>
                           </div>
@@ -803,6 +874,19 @@ const GPTChatPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Scroll to Bottom Button */}
+          {showScrollButton && (
+            <button
+              onClick={scrollToBottom}
+              className="absolute bottom-20 right-4 bg-cosmic-purple/80 hover:bg-cosmic-purple text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 border border-cosmic-purple/50"
+              title="Scroll to bottom"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </button>
+          )}
 
           {/* Input Area */}
           <div className="border-t border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm px-4 py-4 shrink-0">

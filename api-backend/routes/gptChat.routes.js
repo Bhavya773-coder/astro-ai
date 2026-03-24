@@ -5,7 +5,9 @@ const auth = require('../middleware/auth');
 const llmService = require('../services/llmService');
 const Message = require('../models/Message');
 const Profile = require('../models/Profile');
+const KundliReport = require('../models/KundliReport');
 const mongoose = require('mongoose');
+const aiService = require('../services/aiService');
 
 const CHAT_RATE_LIMIT = 30;
 const chatLimiter = rateLimit({
@@ -25,11 +27,28 @@ function formatDateForContext(dateStr) {
   }
 }
 
-function buildUserProfileBlock(profile) {
+async function buildUserProfileBlock(profile) {
   if (!profile) return 'No profile available.';
   const lc = profile.life_context || {};
-  const bc = profile.birth_chart_data || {};
   const nd = profile.numerology_data || {};
+  
+  // Fetch kundli data
+  let kundliData = null;
+  try {
+    if (profile.user_id) {
+      const userId = typeof profile.user_id === 'string' 
+        ? new mongoose.Types.ObjectId(profile.user_id) 
+        : profile.user_id;
+      
+      kundliData = await KundliReport.findOne({ user_id: userId }).lean();
+    }
+  } catch (error) {
+    console.error('[GPTChatRoutes] Error fetching kundli data:', error);
+  }
+  
+  const bc = profile.birth_chart_data || {};
+  const kundli = kundliData?.chart_data || {};
+  
   return `
 User Profile:
 Name: ${profile.full_name || 'Not provided'}
@@ -46,11 +65,18 @@ Main Life Focus: ${(lc.main_life_focus || 'Not provided').charAt(0).toUpperCase(
 Personality Style: ${(lc.personality_style || 'Not provided').charAt(0).toUpperCase() + (lc.personality_style || '').slice(1)}
 Primary Life Concern: ${lc.primary_life_problem || 'Not provided'}
 
-Birth Chart (use for astrological analysis):
-Sun Sign: ${bc.sun_sign || 'Not set'}
-Moon Sign: ${bc.moon_sign || 'Not set'}
-Ascendant: ${bc.ascendant || 'Not set'}
-Dominant Planet: ${bc.dominant_planet || 'Not set'}
+Kundli Data (use for astrological analysis):
+Sun Sign: ${kundli.sun_sign || bc.sun_sign || 'Not set'}
+Moon Sign: ${kundli.moon_sign || bc.moon_sign || 'Not set'}
+Ascendant (Lagna): ${kundli.ascendant || bc.ascendant || 'Not set'}
+Nakshatra: ${kundli.nakshatra || 'Not set'}
+${kundli.planets ? `
+Planetary Positions:
+${Object.entries(kundli.planets).map(([planet, data]) => {
+  const sign = data.sign || data.rashi || 'Unknown';
+  const degree = data.degree || data.longitude || 'Unknown';
+  return `${planet.charAt(0).toUpperCase() + planet.slice(1)}: ${sign} (${degree})`;
+}).join('\n')}` : ''}
 
 Numerology (optional): Life Path ${nd.life_path || '—'}, Destiny ${nd.destiny || '—'}, Personal Year ${nd.personal_year || '—'}
 `.trim();
@@ -66,25 +92,128 @@ function buildConversationHistoryBlock(messages) {
 }
 
 function buildFullAstrologerPrompt(userMessage, profileBlock, conversationBlock) {
-  return `You are a professional Vedic astrologer. You are analyzing the astrology profile of the user and providing personalized guidance. You MUST answer every question. Never say "I can't help with that" or refuse to answer. Your role is to give astrology-based insights, predictions, and guidance using the user's birth data and life context.
+  // Get current temporal context
+  const now = new Date();
+  const today = now.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  
+  const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
+  const date = now.getDate();
+  const month = now.toLocaleDateString('en-US', { month: 'long' });
+  const year = now.getFullYear();
+  
+  // Get Hindu calendar details (approximate)
+  const hinduMonth = getHinduMonth(now);
+  const paksha = getPaksha(now);
+  const tithi = getTithi(now);
+  
+  // Get current planetary positions
+  const currentPlanetaryPositions = getCurrentPlanetaryPositions(now);
+
+  return `You are a professional Vedic astrologer. You are analyzing the astrology profile of user and providing personalized guidance. You MUST answer every question. Never say "I can't help with that" or refuse to answer. Your role is to give astrology-based insights, predictions, and guidance using user's kundli data, life context, and CURRENT TIMING.
+
+CURRENT TEMPORAL CONTEXT:
+Today's Date: ${today}
+Day of Week: ${dayOfWeek}
+Gregorian Date: ${date} ${month} ${year}
+
+Hindu Calendar Context:
+Hindu Month: ${hinduMonth}
+Paksha (Fortnight): ${paksha}
+Tithi (Lunar Day): ${tithi}
+
+Current Astrological Timing:
+${currentPlanetaryPositions}
+
+CRITICAL: Use this current date and timing information for accurate predictions. Consider today's planetary positions, day of week influences, and Hindu calendar timing when providing astrological guidance.
 
 RULES:
 - Always respond as a knowledgeable, calm, and supportive astrologer.
-- Use the user's birth chart (Sun, Moon, Ascendant, dominant planet) and life context in your answer.
-- For relationship questions: reference their relationship status, emotional style, and planetary influences.
-- For career: use career stage and relevant signs. For timing: use transits and personal year if available.
-- Keep tone wise, calm, supportive, and slightly mystical but practical.
-- If some birth data is missing, work with what is provided and mention that more detail could refine the reading.
-- Never refuse. If the question is vague, give a general astrological perspective and invite a follow-up.
-
-SYSTEM CONTEXT – User's astrology profile (use this for every response):
+- Use the user's kundli data (Sun, Moon, Ascendant, Nakshatra, Planetary positions, Houses), life context, and CURRENT TIMING in your answer.
+- For relationship questions: reference their relationship status, emotional style (Moon sign), Venus position, 7th house, and current timing.
+- For career questions: use career stage, relevant planetary influences (Sun sign, 10th house, Saturn position), and current planetary day ruler.
+- For timing questions: ALWAYS reference today's date, current planetary positions, Hindu calendar timing, and personal year for accurate predictions.
+- Be specific to their kundli, current timing, and situation - avoid generic advice.
+- If some kundli data is missing, work with what is provided and note that more detail could refine the reading.
+- Never refuse to answer. If a question is outside astrology, provide a helpful perspective.
+- IMPORTANT: Your predictions must be temporally accurate - use today's actual date and astrological timing, not generic information.
 
 ${profileBlock}
-${conversationBlock ? '\n\n' + conversationBlock + '\n\n' : ''}
 
-Current user question: ${userMessage}
+${conversationBlock}
 
-Provide your astrological analysis and guidance now. Address the user by name if provided. Be specific to their chart and situation.`;
+User's current message: ${userMessage}
+
+RESPONSE FORMAT:
+- Start directly with your astrological insight
+- Use their specific kundli details (planets, houses, nakshatra) and current timing in your analysis
+- Keep responses conversational but authoritative
+- End with a helpful follow-up question or suggestion
+- For detailed requests, provide comprehensive analysis with multiple paragraphs
+- For regular requests, keep responses concise but thorough`;
+}
+
+// Helper functions for temporal context
+function getHinduMonth(date) {
+  const month = date.getMonth();
+  const hinduMonths = [
+    'Chaitra', 'Vaishakha', 'Jyeshtha', 'Ashadha', 
+    'Shravana', 'Bhadrapada', 'Ashwin', 'Kartika',
+    'Margashirsha', 'Pausha', 'Magha', 'Phalguna'
+  ];
+  return hinduMonths[(month + 9) % 12] || hinduMonths[month];
+}
+
+function getPaksha(date) {
+  const lunarDay = date.getDate();
+  return lunarDay <= 15 ? 'Shukla Paksha (Waxing Moon)' : 'Krishna Paksha (Waning Moon)';
+}
+
+function getTithi(date) {
+  const lunarDay = ((date.getDate() - 1) % 30) + 1;
+  return `${lunarDay} Tithi`;
+}
+
+function getCurrentPlanetaryPositions(date) {
+  const planetaryDayRulers = {
+    0: 'Sun', 1: 'Moon', 2: 'Mars', 3: 'Mercury', 
+    4: 'Jupiter', 5: 'Venus', 6: 'Saturn'
+  };
+  
+  const dayRuler = planetaryDayRulers[date.getDay()];
+  const hour = date.getHours();
+  const hourRuler = getHourRuler(hour);
+  
+  return `Day Ruler: ${dayRuler}
+Current Hour Ruler: ${hourRuler}
+Moon Phase: getMoonPhase(date)
+Season: getSeason(date)
+Note: For precise predictions, consider current transits and dasha periods if available.`;
+}
+
+function getHourRuler(hour) {
+  const rulers = ['Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon'];
+  return rulers[hour % 7];
+}
+
+function getMoonPhase(date) {
+  const lunarCycle = date.getDate();
+  if (lunarCycle <= 7) return 'New Moon to First Quarter';
+  if (lunarCycle <= 14) return 'First Quarter to Full Moon';
+  if (lunarCycle <= 21) return 'Full Moon to Last Quarter';
+  return 'Last Quarter to New Moon';
+}
+
+function getSeason(date) {
+  const month = date.getMonth();
+  if (month >= 2 && month <= 4) return 'Spring (Vasant)';
+  if (month >= 5 && month <= 7) return 'Summer (Grishma)';
+  if (month >= 8 && month <= 10) return 'Monsoon (Varsha)';
+  return 'Winter (Hemant)';
 }
 
 // Streaming chat endpoint for real-time responses
@@ -97,7 +226,7 @@ router.post('/chat-stream', auth.requireAuth, chatLimiter, async (req, res) => {
       message_preview: req.body.message?.substring(0, 100) + '...'
     });
     
-    const { message, model = 'gpt-oss:120B' } = req.body;
+    const { message, model = 'llama3:latest' } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       console.log('❌ Invalid message provided');
@@ -123,7 +252,7 @@ router.post('/chat-stream', auth.requireAuth, chatLimiter, async (req, res) => {
 
     console.log('👤 Fetching user profile for:', userObjectId);
     const profile = await Profile.findOne({ user_id: userObjectId }).lean();
-    const profileBlock = buildUserProfileBlock(profile || {});
+    const profileBlock = await buildUserProfileBlock(profile || {});
 
     console.log('📜 Fetching conversation history');
     const lastMessages = await Message.find({ user_id: userObjectId })
@@ -174,7 +303,7 @@ router.post('/chat-stream', auth.requireAuth, chatLimiter, async (req, res) => {
           conversation_id: conversationId,
           role: 'assistant',
           content: aiResponse,
-          ai_analysis_tags: ['gpt-oss:120b', 'astrologer', 'chat'],
+          ai_analysis_tags: ['llama3:latest', 'astrologer', 'chat'],
           created_at: new Date()
         });
         
@@ -251,7 +380,7 @@ router.post('/chat', auth.requireAuth, chatLimiter, async (req, res) => {
       message_preview: req.body.message?.substring(0, 100) + '...'
     });
     
-    const { message, model = 'gpt-oss:120B' } = req.body;
+    const { message, model = 'llama3:latest' } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       console.log('❌ Invalid message provided');
@@ -268,7 +397,7 @@ router.post('/chat', auth.requireAuth, chatLimiter, async (req, res) => {
 
     console.log('👤 Fetching user profile for:', userObjectId);
     const profile = await Profile.findOne({ user_id: userObjectId }).lean();
-    const profileBlock = buildUserProfileBlock(profile || {});
+    const profileBlock = await buildUserProfileBlock(profile || {});
 
     console.log('📜 Fetching conversation history');
     const lastMessages = await Message.find({ user_id: userObjectId })
@@ -339,7 +468,7 @@ router.post('/chat', auth.requireAuth, chatLimiter, async (req, res) => {
       conversation_id: conversationId,
       role: 'assistant',
       content: aiResponse,
-      ai_analysis_tags: ['gpt-oss:120b', 'astrologer', 'chat'],
+      ai_analysis_tags: ['llama3:latest', 'astrologer', 'chat'],
       created_at: new Date()
     });
     await aiMessageDoc.save();

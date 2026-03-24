@@ -3,7 +3,7 @@ const axios = require('axios');
 class LLMService {
   constructor() {
     this.modelEndpoint = process.env.LLM_MODEL_ENDPOINT || 'http://localhost:8080/v1/chat/completions';
-    this.modelName = process.env.LLM_MODEL_NAME || 'gpt-oss:120B';
+    this.modelName = process.env.LLM_MODEL_NAME || 'llama3:latest';
   }
 
   async generateAstrologyInsights(userData) {

@@ -1,7 +1,10 @@
 /**
  * Context Builder Service
- * Builds system prompts from user astrology profiles
+ * Builds system prompts from user astrology profiles and kundli data
  */
+const mongoose = require('mongoose');
+const KundliReport = require('../models/KundliReport');
+
 class ContextBuilder {
   constructor() {
     // Keywords that trigger detailed response mode
@@ -28,26 +31,175 @@ class ContextBuilder {
   }
 
   /**
-   * Build a complete system prompt from user profile with response mode
+   * Build a complete system prompt from user profile with kundli data and response mode
    * @param {Object} profile - User profile document
    * @param {string} mode - 'short' or 'detailed'
-   * @returns {string} - Formatted system prompt
+   * @returns {Promise<string>} - Formatted system prompt
    */
-  buildSystemPrompt(profile, mode = 'short') {
+  async buildSystemPrompt(profile, mode = 'short') {
     if (!profile) {
       return this._getDefaultAstrologerPrompt(mode);
     }
 
+    // Fetch kundli data from database
+    let kundliData = null;
+    try {
+      if (profile.user_id) {
+        const userId = typeof profile.user_id === 'string' 
+          ? new mongoose.Types.ObjectId(profile.user_id) 
+          : profile.user_id;
+        
+        kundliData = await KundliReport.findOne({ user_id: userId }).lean();
+        console.log('[ContextBuilder] Kundli data found:', !!kundliData);
+        if (kundliData) {
+          console.log('[ContextBuilder] Moon sign from kundli:', kundliData.chart_data?.moon_sign);
+          console.log('[ContextBuilder] Sun sign from kundli:', kundliData.chart_data?.sun_sign);
+          console.log('[ContextBuilder] Nakshatra from kundli:', kundliData.chart_data?.nakshatra);
+        }
+      }
+    } catch (error) {
+      console.error('[ContextBuilder] Error fetching kundli data:', error);
+    }
+
     const sections = [
+      this._buildTemporalContext(),
       this._buildIdentitySection(mode),
       this._buildProfileSection(profile),
-      this._buildBirthChartSection(profile.birth_chart_data),
+      this._buildKundliSection(kundliData),
       this._buildNumerologySection(profile.numerology_data),
       this._buildLifeContextSection(profile.life_context),
       this._buildInstructionsSection(mode)
     ];
 
     return sections.filter(Boolean).join('\n\n');
+  }
+
+  /**
+   * Build temporal context section with current date and astrological timing
+   */
+  _buildTemporalContext() {
+    const now = new Date();
+    const today = now.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
+    const date = now.getDate();
+    const month = now.toLocaleDateString('en-US', { month: 'long' });
+    const year = now.getFullYear();
+    
+    // Get Hindu calendar details (approximate)
+    const hinduMonth = this._getHinduMonth(now);
+    const paksha = this._getPaksha(now);
+    const tithi = this._getTithi(now);
+    
+    // Get current planetary positions (simplified)
+    const currentPlanetaryPositions = this._getCurrentPlanetaryPositions(now);
+    
+    return `CURRENT TEMPORAL CONTEXT:
+Today's Date: ${today}
+Day of Week: ${dayOfWeek}
+Gregorian Date: ${date} ${month} ${year}
+
+Hindu Calendar Context:
+Hindu Month: ${hinduMonth}
+Paksha (Fortnight): ${paksha}
+Tithi (Lunar Day): ${tithi}
+
+Current Astrological Timing:
+${currentPlanetaryPositions}
+
+Important: Use this current date and timing information for accurate predictions. Consider today's planetary positions, day of week influences, and Hindu calendar timing when providing astrological guidance. This ensures your predictions are temporally accurate and relevant to the present moment.`;
+  }
+
+  /**
+   * Get approximate Hindu month
+   */
+  _getHinduMonth(date) {
+    const month = date.getMonth();
+    const hinduMonths = [
+      'Chaitra', 'Vaishakha', 'Jyeshtha', 'Ashadha', 
+      'Shravana', 'Bhadrapada', 'Ashwin', 'Kartika',
+      'Margashirsha', 'Pausha', 'Magha', 'Phalguna'
+    ];
+    // Approximate mapping (this would need to be calculated precisely based on lunar calendar)
+    return hinduMonths[(month + 9) % 12] || hinduMonths[month];
+  }
+
+  /**
+   * Get paksha (waxing/waning moon)
+   */
+  _getPaksha(date) {
+    // Simplified - would need actual lunar calculation
+    const lunarDay = date.getDate();
+    return lunarDay <= 15 ? 'Shukla Paksha (Waxing Moon)' : 'Krishna Paksha (Waning Moon)';
+  }
+
+  /**
+   * Get tithi (lunar day)
+   */
+  _getTithi(date) {
+    // Simplified tithi calculation
+    const lunarDay = ((date.getDate() - 1) % 30) + 1;
+    return `${lunarDay} Tithi`;
+  }
+
+  /**
+   * Get current planetary positions (simplified)
+   */
+  _getCurrentPlanetaryPositions(date) {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    
+    // This is a simplified version - in practice, you'd use an ephemeris
+    // For now, providing basic planetary day rulers
+    const planetaryDayRulers = {
+      0: 'Sun', 1: 'Moon', 2: 'Mars', 3: 'Mercury', 
+      4: 'Jupiter', 5: 'Venus', 6: 'Saturn'
+    };
+    
+    const dayRuler = planetaryDayRulers[date.getDay()];
+    const hour = date.getHours();
+    const hourRuler = this._getHourRuler(hour);
+    
+    return `Day Ruler: ${dayRuler}
+Current Hour Ruler: ${hourRuler}
+Moon Phase: ${this._getMoonPhase(date)}
+Season: ${this._getSeason(date)}
+Note: For precise predictions, consider current transits and dasha periods if available.`;
+  }
+
+  /**
+   * Get hour ruler based on planetary hours
+   */
+  _getHourRuler(hour) {
+    const rulers = ['Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon'];
+    return rulers[hour % 7];
+  }
+
+  /**
+   * Get moon phase (simplified)
+   */
+  _getMoonPhase(date) {
+    const lunarCycle = date.getDate();
+    if (lunarCycle <= 7) return 'New Moon to First Quarter';
+    if (lunarCycle <= 14) return 'First Quarter to Full Moon';
+    if (lunarCycle <= 21) return 'Full Moon to Last Quarter';
+    return 'Last Quarter to New Moon';
+  }
+
+  /**
+   * Get current season
+   */
+  _getSeason(date) {
+    const month = date.getMonth();
+    if (month >= 2 && month <= 4) return 'Spring (Vasant)';
+    if (month >= 5 && month <= 7) return 'Summer (Grishma)';
+    if (month >= 8 && month <= 10) return 'Monsoon (Varsha)';
+    return 'Winter (Hemant)';
   }
 
   /**
@@ -101,27 +253,65 @@ You provide specific, personalized guidance based on the user's birth chart.`;
   }
 
   /**
-   * Build birth chart section
+   * Build kundli section from kundli_reports collection
    */
-  _buildBirthChartSection(birthChartData) {
-    if (!birthChartData) return null;
+  _buildKundliSection(kundliData) {
+    if (!kundliData || !kundliData.chart_data) return null;
 
-    const lines = ['BIRTH CHART DATA:'];
+    const lines = ['KUNDLI DATA:'];
+    const chart = kundliData.chart_data;
     
-    if (birthChartData.sun_sign) {
-      lines.push(`Sun Sign: ${birthChartData.sun_sign}`);
+    // Basic signs
+    if (chart.sun_sign) {
+      lines.push(`Sun Sign: ${chart.sun_sign}`);
     }
-    if (birthChartData.moon_sign) {
-      lines.push(`Moon Sign: ${birthChartData.moon_sign}`);
+    if (chart.moon_sign) {
+      lines.push(`Moon Sign: ${chart.moon_sign}`);
     }
-    if (birthChartData.ascendant) {
-      lines.push(`Ascendant (Rising): ${birthChartData.ascendant}`);
+    if (chart.ascendant) {
+      lines.push(`Ascendant (Lagna): ${chart.ascendant}`);
     }
-    if (birthChartData.dominant_planet) {
-      lines.push(`Dominant Planet: ${birthChartData.dominant_planet}`);
+    if (chart.nakshatra) {
+      lines.push(`Birth Nakshatra: ${chart.nakshatra}`);
     }
 
-    return lines.length > 1 ? lines.join('\n') : null;
+    // Planetary positions
+    if (chart.planets) {
+      lines.push('\nPLANETARY POSITIONS:');
+      Object.entries(chart.planets).forEach(([planet, data]) => {
+        if (data && typeof data === 'object') {
+          const sign = data.sign || data.rashi || 'Unknown';
+          const degree = data.degree || data.longitude || 'Unknown';
+          lines.push(`${this._capitalize(planet)}: ${sign} (${degree})`);
+        }
+      });
+    }
+
+    // House positions
+    if (chart.houses) {
+      lines.push('\nHOUSE POSITIONS:');
+      Object.entries(chart.houses).forEach(([house, sign]) => {
+        if (sign) {
+          lines.push(`House ${house}: ${sign}`);
+        }
+      });
+    }
+
+    // Interpretations if available
+    if (kundliData.interpretation) {
+      const interp = kundliData.interpretation;
+      if (interp.personality) {
+        lines.push(`\nPersonality Traits: ${interp.personality.substring(0, 200)}...`);
+      }
+      if (interp.strengths) {
+        lines.push(`Key Strengths: ${interp.strengths.substring(0, 200)}...`);
+      }
+      if (interp.career) {
+        lines.push(`Career Indications: ${interp.career.substring(0, 200)}...`);
+      }
+    }
+
+    return lines.join('\n');
   }
 
   /**
@@ -181,15 +371,17 @@ You provide specific, personalized guidance based on the user's birth chart.`;
     const isDetailed = mode === 'detailed';
     
     const baseInstructions = `INSTRUCTIONS:
-1. Always use the user's birth chart data (Sun, Moon, Ascendant, Dominant Planet) in your analysis.
-2. Reference numerology data when relevant to timing or life path questions.
-3. Consider the user's life context (career stage, relationship status, main focus) in your guidance.
-4. For relationship questions: reference their relationship status and emotional style (Moon sign).
-5. For career questions: use career stage and relevant planetary influences (Sun sign, Dominant Planet).
-6. For timing questions: reference the personal year and planetary transits.
-7. Be specific to their chart and situation - avoid generic advice.
-8. If some birth data is missing, work with what is provided and note that more detail could refine the reading.
-9. Never refuse to answer. If a question is outside astrology, provide a helpful perspective.`;
+1. CRITICAL: Always use the CURRENT TEMPORAL CONTEXT provided above for accurate timing. Today's date, day, Hindu calendar details, and planetary rulers are essential for precise predictions.
+2. Always use the user's kundli data (Sun, Moon, Ascendant, Nakshatra, Planetary positions, Houses) in your analysis.
+3. Reference numerology data when relevant to timing or life path questions.
+4. Consider the user's life context (career stage, relationship status, main focus) in your guidance.
+5. For relationship questions: reference their relationship status, emotional style (Moon sign, Venus position), and current timing.
+6. For career questions: use career stage, relevant planetary influences (Sun sign, 10th house, Saturn position), and current planetary day ruler.
+7. For timing questions: ALWAYS reference today's date, current planetary positions, Hindu calendar timing, and personal year for accurate predictions.
+8. Be specific to their kundli, current timing, and situation - avoid generic advice.
+9. If some kundli data is missing, work with what is provided and note that more detail could refine the reading.
+10. Never refuse to answer. If a question is outside astrology, provide a helpful perspective.
+11. IMPORTANT: Your predictions must be temporally accurate - use today's actual date and astrological timing, not generic information.`;
 
     if (isDetailed) {
       return `${baseInstructions}
@@ -243,15 +435,15 @@ INSTRUCTIONS:
    * @param {Array} chatHistory - Previous messages
    * @param {string} currentMessage - Current user message
    * @param {Object} profile - User profile for context
-   * @returns {Array} - Messages array for Ollama
+   * @returns {Promise<Array>} - Messages array for Ollama
    */
-  buildMessagesArray(systemPrompt, chatHistory, currentMessage, profile = null) {
+  async buildMessagesArray(systemPrompt, chatHistory, currentMessage, profile = null) {
     // Detect if user wants detailed response
     const responseMode = this.detectResponseMode(currentMessage);
     
     // Rebuild system prompt with detected mode
     const contextualPrompt = profile 
-      ? this.buildSystemPrompt(profile, responseMode)
+      ? await this.buildSystemPrompt(profile, responseMode)
       : this._getDefaultAstrologerPrompt(responseMode);
     
     const messages = [

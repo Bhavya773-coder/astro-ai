@@ -85,7 +85,8 @@ const ReportsPage: React.FC = () => {
 
       <AppNavbar />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="pt-16"> {/* Add padding for sticky navbar */}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl md:text-4xl font-bold font-display">Reports</h1>
         <p className="mt-2 text-white/75 max-w-2xl">
           Generate compatibility reports and review your saved analyses.
@@ -398,6 +399,7 @@ const ReportsPage: React.FC = () => {
           </div>
         )}
       </div>
+      </div> {/* Close padding container */}
     </div>
   );
 };

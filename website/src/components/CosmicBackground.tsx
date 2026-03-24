@@ -186,7 +186,7 @@ export const CosmicBackground: React.FC<{ children: React.ReactNode; className?:
   className = '' 
 }) => {
   return (
-    <div className={`relative min-h-screen cosmic-bg ${className}`}>
+    <div className={`relative cosmic-bg ${className}`}>
       <StarField />
       <NebulaBackground />
       <ParticleField />

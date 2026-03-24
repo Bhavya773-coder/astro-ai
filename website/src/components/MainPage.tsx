@@ -2,39 +2,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProfessionalSymbol } from '../utils/professionalSymbols';
 import AppNavbar from './AppNavbar';
+import HoroscopeWidget from './HoroscopeWidget';
 import { useAppData } from '../state/AppDataContext';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner, CosmicButton } from './CosmicUI';
 
-// Animated Refresh Button Component
-const AnimatedRefreshButton: React.FC<{ onClick: () => void; isLoading: boolean; className?: string }> = ({ 
-  onClick, 
-  isLoading, 
-  className = '' 
-}) => (
-  <button
-    onClick={onClick}
-    disabled={isLoading}
-    className={`group flex items-center gap-2 px-4 py-2 bg-cosmic-purple/20 hover:bg-cosmic-purple/30 border border-cosmic-purple/40 rounded-cosmic transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-    title="Refresh horoscope"
-  >
-    <svg 
-      className={`w-4 h-4 text-cosmic-cyan transition-transform duration-500 ${isLoading ? 'animate-spin' : 'group-hover:rotate-180'}`}
-      fill="none" 
-      stroke="currentColor" 
-      viewBox="0 0 24 24"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-    </svg>
-    <span className="text-xs text-cosmic-cyan font-medium">
-      {isLoading ? 'Updating...' : 'Refresh'}
-    </span>
-  </button>
-);
-
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
-  const { insightStatus, isInsightLoading, dailyHoroscope, isHoroscopeLoading, refreshHoroscope } = useAppData();
+  const { insightStatus, isInsightLoading } = useAppData();
   const insightsGenerated = Boolean(insightStatus?.insights_generated);
 
   const getCurrentDate = () => {
@@ -53,6 +28,8 @@ const MainPage: React.FC = () => {
   return (
     <CosmicBackground>
       <AppNavbar />
+      
+      <div className="pt-16"> {/* Add padding for sticky navbar */}
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
@@ -93,16 +70,12 @@ const MainPage: React.FC = () => {
                     Your personal portal to the stars. Here, ancient astrological wisdom meets modern AI to provide you with personalized cosmic insights, daily guidance, and transformative self-discovery tools.
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-cosmic-pink/10 rounded-full">
-                      <span className="text-cosmic-pink text-sm">✨</span>
-                      <span className="text-white/80 text-xs">Daily Horoscopes</span>
-                    </div>
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-cosmic-cyan/10 rounded-full">
                       <span className="text-cosmic-cyan text-sm">☉</span>
                       <span className="text-white/80 text-xs">Birth Charts</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-cosmic-gold/10 rounded-full">
-                      <span className="text-cosmic-gold text-sm">�</span>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-cosmic-pink/10 rounded-full">
+                      <span className="text-cosmic-pink text-sm">🔢</span>
                       <span className="text-white/80 text-xs">Numerology</span>
                     </div>
                   </div>
@@ -121,125 +94,33 @@ const MainPage: React.FC = () => {
                 </div>
               </div>
             </GlassCard>
-            {/* Professional Daily Horoscope */}
-            <div className="flex justify-center mb-8">
-              <GlassCard className="w-full max-w-4xl p-6 md:p-8" glow="gold">
-                {/* Horoscope Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 pb-6 border-b border-white/10">
-                  <div className="mb-4 md:mb-0">
-                    <h3 className="font-display text-2xl md:text-3xl font-bold text-white mb-1">
-                      Daily Cosmic Guidance
-                    </h3>
-                    <p className="text-white/50 text-sm">{getCurrentDate()}</p>
+
+            {/* Horoscope Widget
+            <HoroscopeWidget 
+              birthDate={insightStatus?.date_of_birth}
+              className="mb-8"
+            /> */}
+
+            {/* Pro Upgrade Card */}
+            <GlassCard className="mb-8 p-6 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 border border-yellow-400/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">⭐</span>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-cosmic-purple/10 rounded-cosmic">
-                      <span className="text-2xl">{getProfessionalSymbol(dailyHoroscope?.zodiac_sign?.charAt(0) || '✨')}</span>
-                      <span className="text-cosmic-gold font-semibold">{dailyHoroscope?.zodiac_sign || 'Loading...'}</span>
-                    </div>
-                    <AnimatedRefreshButton 
-                      onClick={refreshHoroscope} 
-                      isLoading={isHoroscopeLoading} 
-                    />
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-1">Upgrade to Pro</h3>
+                    <p className="text-white/70 text-sm">Get unlimited chat and premium features for just ₹100/month</p>
                   </div>
                 </div>
-                
-                {isHoroscopeLoading && !dailyHoroscope ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <LoadingSpinner size="lg" className="mb-4" />
-                    <p className="text-white/60">Reading the cosmic energies...</p>
-                  </div>
-                ) : dailyHoroscope ? (
-                  <div className="space-y-6">
-                    {/* Overall Theme - Featured */}
-                    <div className="text-center py-6 bg-gradient-to-r from-cosmic-gold/10 via-cosmic-purple/10 to-cosmic-pink/10 rounded-cosmic border border-cosmic-gold/20">
-                      <div className="text-4xl mb-3">✨</div>
-                      <h4 className="text-xl md:text-2xl font-bold text-cosmic-gold mb-2">
-                        {dailyHoroscope.overall_theme || 'Cosmic Energy Today'}
-                      </h4>
-                      <p className="text-white/70 max-w-xl mx-auto px-4">
-                        {dailyHoroscope.advice || 'Trust your intuition today as the stars align in your favor.'}
-                      </p>
-                    </div>
-                    
-                    {/* Key Areas Grid - Responsive */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="group glass-card p-4 text-center hover:border-cosmic-pink/50 hover:-translate-y-0.5 transition-all duration-300">
-                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-cosmic-pink/20 flex items-center justify-center group-hover:bg-cosmic-pink/30 transition-colors">
-                          <span className="text-cosmic-pink text-xl">❤️</span>
-                        </div>
-                        <h5 className="text-cosmic-pink font-semibold text-sm mb-2">Love & Relationships</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">{dailyHoroscope.key_areas?.love || 'Focus on meaningful connections'}</p>
-                      </div>
-                      
-                      <div className="group glass-card p-4 text-center hover:border-cosmic-cyan/50 hover:-translate-y-0.5 transition-all duration-300">
-                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-cosmic-cyan/20 flex items-center justify-center group-hover:bg-cosmic-cyan/30 transition-colors">
-                          <span className="text-cosmic-cyan text-xl">💼</span>
-                        </div>
-                        <h5 className="text-cosmic-cyan font-semibold text-sm mb-2">Career & Ambition</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">{dailyHoroscope.key_areas?.career || 'Opportunities for growth await'}</p>
-                      </div>
-                      
-                      <div className="group glass-card p-4 text-center hover:border-green-400/50 hover:-translate-y-0.5 transition-all duration-300">
-                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-400/20 flex items-center justify-center group-hover:bg-green-400/30 transition-colors">
-                          <span className="text-green-300 text-xl">�</span>
-                        </div>
-                        <h5 className="text-green-300 font-semibold text-sm mb-2">Health & Wellness</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">{dailyHoroscope.key_areas?.health || 'Nurture your mind and body'}</p>
-                      </div>
-                      
-                      <div className="group glass-card p-4 text-center hover:border-yellow-400/50 hover:-translate-y-0.5 transition-all duration-300">
-                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-yellow-400/20 flex items-center justify-center group-hover:bg-yellow-400/30 transition-colors">
-                          <span className="text-yellow-300 text-xl">💰</span>
-                        </div>
-                        <h5 className="text-yellow-300 font-semibold text-sm mb-2">Finance & Abundance</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">{dailyHoroscope.key_areas?.finance || 'Wise financial decisions today'}</p>
-                      </div>
-                    </div>
-                    
-                    {/* Daily Stats - Modern Cards */}
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="glass-card p-4 text-center border-cosmic-purple/30">
-                        <div className="text-3xl mb-2">🎯</div>
-                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Mood</div>
-                        <div className="text-lg font-bold text-cosmic-purple">{dailyHoroscope.mood || 'Balanced'}</div>
-                      </div>
-                      <div className="glass-card p-4 text-center border-cosmic-pink/30">
-                        <div className="text-3xl mb-2">⚡</div>
-                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Energy</div>
-                        <div className="text-lg font-bold text-cosmic-pink">{dailyHoroscope.energy_level || 'Medium'}</div>
-                      </div>
-                      <div className="glass-card p-4 text-center border-cosmic-cyan/30">
-                        <div className="text-3xl mb-2">🍀</div>
-                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Lucky Number</div>
-                        <div className="text-lg font-bold text-cosmic-cyan">{dailyHoroscope.lucky_number || 7}</div>
-                      </div>
-                    </div>
-
-                    {dailyHoroscope.warning && (
-                      <div className="glass-card border-l-4 border-red-400 bg-red-400/5 p-4">
-                        <div className="flex items-start gap-3">
-                          <span className="text-red-400 text-xl">⚠️</span>
-                          <div>
-                            <h4 className="text-red-300 font-semibold text-sm mb-1">Cosmic Caution</h4>
-                            <p className="text-white/80 text-sm">{dailyHoroscope.warning}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="text-5xl mb-4">🌙</div>
-                    <h4 className="text-xl font-bold text-white mb-2">Horoscope Temporarily Unavailable</h4>
-                    <p className="text-white/60 mb-6 max-w-md">The cosmic energies are shifting. Please refresh to receive your daily guidance.</p>
-                    <CosmicButton onClick={refreshHoroscope} variant="primary" size="md">
-                      Refresh Horoscope
-                    </CosmicButton>
-                  </div>
-                )}
-              </GlassCard>
-            </div>
+                <button
+                  onClick={() => navigate('/pro')}
+                  className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all transform hover:scale-105"
+                >
+                  Upgrade Now
+                </button>
+              </div>
+            </GlassCard>
 
             {/* Service Cards - Enhanced Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -405,6 +286,7 @@ const MainPage: React.FC = () => {
           </>
         )}
       </div>
+      </div> {/* Close padding container */}
     </CosmicBackground>
   );
 };
