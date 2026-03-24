@@ -1,7 +1,10 @@
 /**
  * Context Builder Service
- * Builds system prompts from user astrology profiles
+ * Builds system prompts from user astrology profiles and kundli data
  */
+const mongoose = require('mongoose');
+const KundliReport = require('../models/KundliReport');
+
 class ContextBuilder {
   constructor() {
     // Keywords that trigger detailed response mode
@@ -28,20 +31,35 @@ class ContextBuilder {
   }
 
   /**
-   * Build a complete system prompt from user profile with response mode
+   * Build a complete system prompt from user profile with kundli data and response mode
    * @param {Object} profile - User profile document
    * @param {string} mode - 'short' or 'detailed'
-   * @returns {string} - Formatted system prompt
+   * @returns {Promise<string>} - Formatted system prompt
    */
-  buildSystemPrompt(profile, mode = 'short') {
+  async buildSystemPrompt(profile, mode = 'short') {
     if (!profile) {
       return this._getDefaultAstrologerPrompt(mode);
+    }
+
+    // Fetch kundli data from database
+    let kundliData = null;
+    try {
+      if (profile.user_id) {
+        const userId = typeof profile.user_id === 'string' 
+          ? new mongoose.Types.ObjectId(profile.user_id) 
+          : profile.user_id;
+        
+        kundliData = await KundliReport.findOne({ user_id: userId }).lean();
+        console.log('[ContextBuilder] Kundli data found:', !!kundliData);
+      }
+    } catch (error) {
+      console.error('[ContextBuilder] Error fetching kundli data:', error);
     }
 
     const sections = [
       this._buildIdentitySection(mode),
       this._buildProfileSection(profile),
-      this._buildBirthChartSection(profile.birth_chart_data),
+      this._buildKundliSection(kundliData),
       this._buildNumerologySection(profile.numerology_data),
       this._buildLifeContextSection(profile.life_context),
       this._buildInstructionsSection(mode)
@@ -101,27 +119,65 @@ You provide specific, personalized guidance based on the user's birth chart.`;
   }
 
   /**
-   * Build birth chart section
+   * Build kundli section from kundli_reports collection
    */
-  _buildBirthChartSection(birthChartData) {
-    if (!birthChartData) return null;
+  _buildKundliSection(kundliData) {
+    if (!kundliData || !kundliData.chart_data) return null;
 
-    const lines = ['BIRTH CHART DATA:'];
+    const lines = ['KUNDLI DATA:'];
+    const chart = kundliData.chart_data;
     
-    if (birthChartData.sun_sign) {
-      lines.push(`Sun Sign: ${birthChartData.sun_sign}`);
+    // Basic signs
+    if (chart.sun_sign) {
+      lines.push(`Sun Sign: ${chart.sun_sign}`);
     }
-    if (birthChartData.moon_sign) {
-      lines.push(`Moon Sign: ${birthChartData.moon_sign}`);
+    if (chart.moon_sign) {
+      lines.push(`Moon Sign: ${chart.moon_sign}`);
     }
-    if (birthChartData.ascendant) {
-      lines.push(`Ascendant (Rising): ${birthChartData.ascendant}`);
+    if (chart.ascendant) {
+      lines.push(`Ascendant (Lagna): ${chart.ascendant}`);
     }
-    if (birthChartData.dominant_planet) {
-      lines.push(`Dominant Planet: ${birthChartData.dominant_planet}`);
+    if (chart.nakshatra) {
+      lines.push(`Birth Nakshatra: ${chart.nakshatra}`);
     }
 
-    return lines.length > 1 ? lines.join('\n') : null;
+    // Planetary positions
+    if (chart.planets) {
+      lines.push('\nPLANETARY POSITIONS:');
+      Object.entries(chart.planets).forEach(([planet, data]) => {
+        if (data && typeof data === 'object') {
+          const sign = data.sign || data.rashi || 'Unknown';
+          const degree = data.degree || data.longitude || 'Unknown';
+          lines.push(`${this._capitalize(planet)}: ${sign} (${degree})`);
+        }
+      });
+    }
+
+    // House positions
+    if (chart.houses) {
+      lines.push('\nHOUSE POSITIONS:');
+      Object.entries(chart.houses).forEach(([house, sign]) => {
+        if (sign) {
+          lines.push(`House ${house}: ${sign}`);
+        }
+      });
+    }
+
+    // Interpretations if available
+    if (kundliData.interpretation) {
+      const interp = kundliData.interpretation;
+      if (interp.personality) {
+        lines.push(`\nPersonality Traits: ${interp.personality.substring(0, 200)}...`);
+      }
+      if (interp.strengths) {
+        lines.push(`Key Strengths: ${interp.strengths.substring(0, 200)}...`);
+      }
+      if (interp.career) {
+        lines.push(`Career Indications: ${interp.career.substring(0, 200)}...`);
+      }
+    }
+
+    return lines.join('\n');
   }
 
   /**
@@ -181,14 +237,14 @@ You provide specific, personalized guidance based on the user's birth chart.`;
     const isDetailed = mode === 'detailed';
     
     const baseInstructions = `INSTRUCTIONS:
-1. Always use the user's birth chart data (Sun, Moon, Ascendant, Dominant Planet) in your analysis.
+1. Always use the user's kundli data (Sun, Moon, Ascendant, Nakshatra, Planetary positions, Houses) in your analysis.
 2. Reference numerology data when relevant to timing or life path questions.
 3. Consider the user's life context (career stage, relationship status, main focus) in your guidance.
-4. For relationship questions: reference their relationship status and emotional style (Moon sign).
-5. For career questions: use career stage and relevant planetary influences (Sun sign, Dominant Planet).
-6. For timing questions: reference the personal year and planetary transits.
-7. Be specific to their chart and situation - avoid generic advice.
-8. If some birth data is missing, work with what is provided and note that more detail could refine the reading.
+4. For relationship questions: reference their relationship status and emotional style (Moon sign, Venus position).
+5. For career questions: use career stage and relevant planetary influences (Sun sign, 10th house, Saturn position).
+6. For timing questions: reference the personal year and planetary transits based on kundli data.
+7. Be specific to their kundli and situation - avoid generic advice.
+8. If some kundli data is missing, work with what is provided and note that more detail could refine the reading.
 9. Never refuse to answer. If a question is outside astrology, provide a helpful perspective.`;
 
     if (isDetailed) {
@@ -243,15 +299,15 @@ INSTRUCTIONS:
    * @param {Array} chatHistory - Previous messages
    * @param {string} currentMessage - Current user message
    * @param {Object} profile - User profile for context
-   * @returns {Array} - Messages array for Ollama
+   * @returns {Promise<Array>} - Messages array for Ollama
    */
-  buildMessagesArray(systemPrompt, chatHistory, currentMessage, profile = null) {
+  async buildMessagesArray(systemPrompt, chatHistory, currentMessage, profile = null) {
     // Detect if user wants detailed response
     const responseMode = this.detectResponseMode(currentMessage);
     
     // Rebuild system prompt with detected mode
     const contextualPrompt = profile 
-      ? this.buildSystemPrompt(profile, responseMode)
+      ? await this.buildSystemPrompt(profile, responseMode)
       : this._getDefaultAstrologerPrompt(responseMode);
     
     const messages = [

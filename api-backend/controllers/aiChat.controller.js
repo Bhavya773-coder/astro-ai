@@ -210,15 +210,15 @@ class AIChatController {
       const profile = await Profile.findOne({ user_id: userObjectId }).lean();
       console.log('[AIChatController] Profile found:', !!profile);
 
-      // Build system prompt with astrology context
-      const systemPrompt = contextBuilder.buildSystemPrompt(profile);
+      // Build system prompt with kundli context
+      const systemPrompt = await contextBuilder.buildSystemPrompt(profile);
 
       // Get conversation history
       const history = await chatMemory.getContextWindow(chatId);
       console.log('[AIChatController] History length:', history.length);
 
-      // Build messages array for AI with profile context
-      const messages = contextBuilder.buildMessagesArray(
+      // Build messages array for AI with kundli context
+      const messages = await contextBuilder.buildMessagesArray(
         systemPrompt,
         history,
         message.trim(),
@@ -341,7 +341,7 @@ class AIChatController {
 
       // Get profile and build context
       const profile = await Profile.findOne({ user_id: userObjectId }).lean();
-      const systemPrompt = contextBuilder.buildSystemPrompt(profile);
+      const systemPrompt = await contextBuilder.buildSystemPrompt(profile);
       const history = await chatMemory.getContextWindow(chatId);
       const messages = contextBuilder.buildMessagesArray(
         systemPrompt,
