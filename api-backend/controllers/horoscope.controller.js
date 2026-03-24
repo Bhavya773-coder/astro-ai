@@ -1,5 +1,5 @@
 const DailyHoroscope = require('../models/DailyHoroscope');
-const { getTodayDateString } = require('../services/horoscopeGenerator');
+const { generateHoroscopeForSignIfMissing, getTodayDateString } = require('../services/horoscopeGenerator');
 const Profile = require('../models/Profile');
 
 const VALID_ZODIAC_SIGNS = [
@@ -62,15 +62,30 @@ class HoroscopeController {
       const zodiacSign = this.getZodiacSignFromProfile(profile) || 'Aries';
       const today = getTodayDateString();
 
-      const record = await DailyHoroscope.findOne({
+      // Try to find existing horoscope
+      let record = await DailyHoroscope.findOne({
         zodiac_sign: zodiacSign,
         date: today
       }).lean();
 
+      // If not found, generate it on-demand
+      if (!record) {
+        console.log(`[HoroscopeController] Generating horoscope for ${zodiacSign} (${today})`);
+        try {
+          record = await generateHoroscopeForSignIfMissing(zodiacSign, today);
+        } catch (err) {
+          console.error(`[HoroscopeController] Failed to generate horoscope for ${zodiacSign}:`, err);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to generate today\'s horoscope. Please try again later.'
+          });
+        }
+      }
+
       if (!record) {
         return res.status(404).json({
           success: false,
-          message: 'Today\'s horoscope is not yet available for your zodiac sign.'
+          message: 'Unable to generate horoscope for your zodiac sign.'
         });
       }
 
@@ -87,6 +102,65 @@ class HoroscopeController {
       return res.status(500).json({
         success: false,
         message: 'Failed to load today\'s horoscope.'
+      });
+    }
+  }
+
+  // New endpoint to get horoscope for any zodiac sign
+  async getHoroscopeForSign(req, res) {
+    try {
+      const { sign } = req.params;
+      const normalizedSign = normalizeZodiacSign(sign);
+
+      if (!normalizedSign) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid zodiac sign. Please provide a valid sign like Aries, Taurus, etc.'
+        });
+      }
+
+      const today = getTodayDateString();
+
+      // Try to find existing horoscope
+      let record = await DailyHoroscope.findOne({
+        zodiac_sign: normalizedSign,
+        date: today
+      }).lean();
+
+      // If not found, generate it on-demand
+      if (!record) {
+        console.log(`[HoroscopeController] Generating horoscope for ${normalizedSign} (${today})`);
+        try {
+          record = await generateHoroscopeForSignIfMissing(normalizedSign, today);
+        } catch (err) {
+          console.error(`[HoroscopeController] Failed to generate horoscope for ${normalizedSign}:`, err);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to generate horoscope. Please try again later.'
+          });
+        }
+      }
+
+      if (!record) {
+        return res.status(404).json({
+          success: false,
+          message: 'Unable to generate horoscope for this zodiac sign.'
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          zodiac_sign: record.zodiac_sign,
+          date: record.date,
+          ...record.horoscope
+        }
+      });
+    } catch (error) {
+      console.error('Error in getHoroscopeForSign:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to load horoscope.'
       });
     }
   }

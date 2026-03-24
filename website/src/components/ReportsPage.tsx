@@ -117,7 +117,7 @@ const ReportsPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Birth Chart Card */}
+          {/* Birth Chart Card
           <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
             <div className="text-blue-400 text-sm mb-2">Birth Chart</div>
             <div className="text-white/90 mb-4">
@@ -140,17 +140,14 @@ const ReportsPage: React.FC = () => {
                 </>
               )}
             </button>
-          </div>
+          </div> */}
 
-          <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
+          {/* <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
             <div className="text-violet-200 text-sm">Compatibility Reports</div>
             <div className="mt-2 text-white/75">Coming soon</div>
-          </div>
+          </div> */}
 
-          <div className="rounded-2xl bg-white/5 border border-white/10 p-6 md:col-span-2">
-            <div className="text-emerald-200 text-sm">Growth Summaries</div>
-            <div className="mt-2 text-white/75">Coming soon</div>
-          </div>
+         
         </div>
 
         {/* Kundli Report Display */}

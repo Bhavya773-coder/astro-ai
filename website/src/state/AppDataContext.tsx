@@ -138,12 +138,21 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     inflightRef.current.horoscope = true;
     setIsHoroscopeLoading(true);
     try {
-      const res = (await apiFetch('/api/horoscope/daily')) as HoroscopeResponse;
+      // Try the new /today endpoint first
+      const res = (await apiFetch('/api/horoscope/today')) as HoroscopeResponse;
       if (res?.success && res.data) {
         setDailyHoroscope(res.data);
         writeCache({ dailyHoroscope: res.data });
+      } else {
+        // If /today fails, try the old /daily endpoint for backwards compatibility
+        const fallbackRes = (await apiFetch('/api/horoscope/daily')) as HoroscopeResponse;
+        if (fallbackRes?.success && fallbackRes.data) {
+          setDailyHoroscope(fallbackRes.data);
+          writeCache({ dailyHoroscope: fallbackRes.data });
+        }
       }
-    } catch {
+    } catch (error) {
+      console.error('Failed to fetch horoscope:', error);
       // keep existing cached state
     } finally {
       inflightRef.current.horoscope = false;

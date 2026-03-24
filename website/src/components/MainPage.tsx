@@ -166,42 +166,34 @@ const MainPage: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="group glass-card p-4 text-center hover:border-cosmic-pink/50 hover:-translate-y-0.5 transition-all duration-300">
                         <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-cosmic-pink/20 flex items-center justify-center group-hover:bg-cosmic-pink/30 transition-colors">
-                          <span className="text-cosmic-pink text-xl">♈</span>
+                          <span className="text-cosmic-pink text-xl">❤️</span>
                         </div>
-                        <h5 className="text-cosmic-pink font-semibold text-sm mb-2">The 12 Zodiac Signs</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">Discover your cosmic blueprint through detailed zodiac insights, planetary positions, and astrological wisdom.</p>
+                        <h5 className="text-cosmic-pink font-semibold text-sm mb-2">Love & Relationships</h5>
+                        <p className="text-white/80 text-sm leading-relaxed">{dailyHoroscope.key_areas?.love || 'Focus on meaningful connections'}</p>
                       </div>
                       
                       <div className="group glass-card p-4 text-center hover:border-cosmic-cyan/50 hover:-translate-y-0.5 transition-all duration-300">
                         <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-cosmic-cyan/20 flex items-center justify-center group-hover:bg-cosmic-cyan/30 transition-colors">
-                          <span className="text-cosmic-cyan text-xl">☉</span>
+                          <span className="text-cosmic-cyan text-xl">💼</span>
                         </div>
-                        <h5 className="text-cosmic-cyan font-semibold text-sm mb-2">Planetary Influences</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">Understand how Sun, Moon, and planets shape your personality and life journey.</p>
+                        <h5 className="text-cosmic-cyan font-semibold text-sm mb-2">Career & Ambition</h5>
+                        <p className="text-white/80 text-sm leading-relaxed">{dailyHoroscope.key_areas?.career || 'Opportunities for growth await'}</p>
                       </div>
                       
                       <div className="group glass-card p-4 text-center hover:border-green-400/50 hover:-translate-y-0.5 transition-all duration-300">
                         <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-400/20 flex items-center justify-center group-hover:bg-green-400/30 transition-colors">
-                          <span className="text-green-300 text-xl">⚡</span>
+                          <span className="text-green-300 text-xl">�</span>
                         </div>
-                        <h5 className="text-green-300 font-semibold text-sm mb-2">Houses & Aspects</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">Explore the 12 houses and major aspects that reveal your life patterns and potential.</p>
+                        <h5 className="text-green-300 font-semibold text-sm mb-2">Health & Wellness</h5>
+                        <p className="text-white/80 text-sm leading-relaxed">{dailyHoroscope.key_areas?.health || 'Nurture your mind and body'}</p>
                       </div>
                       
-                      <div className="group glass-card p-4 text-center hover:border-amber-400/50 hover:-translate-y-0.5 transition-all duration-300">
-                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-amber-400/20 flex items-center justify-center group-hover:bg-amber-400/30 transition-colors">
-                          <span className="text-amber-400 text-xl">�</span>
+                      <div className="group glass-card p-4 text-center hover:border-yellow-400/50 hover:-translate-y-0.5 transition-all duration-300">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-yellow-400/20 flex items-center justify-center group-hover:bg-yellow-400/30 transition-colors">
+                          <span className="text-yellow-300 text-xl">💰</span>
                         </div>
-                        <h5 className="text-amber-400 font-semibold text-sm mb-2">Numerology Insights</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">Calculate your life path number, destiny number, and unlock hidden meanings behind your birth date.</p>
-                      </div>
-                      
-                      <div className="group glass-card p-4 text-center hover:border-violet-400/50 hover:-translate-y-0.5 transition-all duration-300">
-                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-violet-400/20 flex items-center justify-center group-hover:bg-violet-400/30 transition-colors">
-                          <span className="text-violet-400 text-xl">🤖</span>
-                        </div>
-                        <h5 className="text-violet-400 font-semibold text-sm mb-2">AI Guidance</h5>
-                        <p className="text-white/80 text-sm leading-relaxed">Chat with our AI astrologer for personalized insights and answers to your cosmic questions.</p>
+                        <h5 className="text-yellow-300 font-semibold text-sm mb-2">Finance & Abundance</h5>
+                        <p className="text-white/80 text-sm leading-relaxed">{dailyHoroscope.key_areas?.finance || 'Wise financial decisions today'}</p>
                       </div>
                     </div>
                     
@@ -212,20 +204,15 @@ const MainPage: React.FC = () => {
                         <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Mood</div>
                         <div className="text-lg font-bold text-cosmic-purple">{dailyHoroscope.mood || 'Balanced'}</div>
                       </div>
-                      <div className="glass-card p-4 text-center border-cosmic-cyan/30">
-                        <div className="text-3xl mb-2">☉</div>
+                      <div className="glass-card p-4 text-center border-cosmic-pink/30">
+                        <div className="text-3xl mb-2">⚡</div>
                         <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Energy</div>
-                        <div className="text-lg font-bold text-cosmic-cyan">{dailyHoroscope.energy || 'Moderate'}</div>
+                        <div className="text-lg font-bold text-cosmic-pink">{dailyHoroscope.energy_level || 'Medium'}</div>
                       </div>
-                      <div className="glass-card p-4 text-center border-green-400/30">
-                        <div className="text-3xl mb-2">�</div>
-                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Lucky</div>
-                        <div className="text-lg font-bold text-green-300">{dailyHoroscope.lucky_number || 7}</div>
-                      </div>
-                      <div className="glass-card p-4 text-center border-amber-400/30">
-                        <div className="text-3xl mb-2">⭐</div>
-                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Color</div>
-                        <div className="text-lg font-bold text-amber-400">{dailyHoroscope.lucky_color || 'Blue'}</div>
+                      <div className="glass-card p-4 text-center border-cosmic-cyan/30">
+                        <div className="text-3xl mb-2">🍀</div>
+                        <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Lucky Number</div>
+                        <div className="text-lg font-bold text-cosmic-cyan">{dailyHoroscope.lucky_number || 7}</div>
                       </div>
                     </div>
 
@@ -383,7 +370,7 @@ const MainPage: React.FC = () => {
               </div>
             </GlassCard>
 
-            {/* Recent Activity - Enhanced */}
+            {/* Recent Activity - Enhanced
             <GlassCard className="p-6" glow="purple">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-display text-xl font-bold text-white">Recent Cosmic Activity</h3>
@@ -414,7 +401,7 @@ const MainPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </GlassCard>
+            </GlassCard> */}
           </>
         )}
       </div>
