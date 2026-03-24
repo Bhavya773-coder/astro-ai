@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "astro-ai-website",
   "builds": [
     {
       "src": "package.json",
@@ -15,8 +14,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "REACT_APP_API_URL": "@api_url"
-  }
+  ]
 }
