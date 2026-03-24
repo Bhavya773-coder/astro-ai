@@ -195,19 +195,19 @@ const HoroscopePage: React.FC = () => {
             {compareMode && (
               <div className="space-y-6">
                 <div>
-                  <label className="block text-white/70 text-sm font-medium mb-2">
+                  <label className="block text-sm font-medium text-white/80 mb-2">
                     Compare with:
                   </label>
                   <select
                     value={compareSign}
                     onChange={(e) => setCompareSign(e.target.value)}
-                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:border-custom-yellow focus:outline-none"
+                    className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 transition-all"
                   >
-                    <option value="">Select a sign to compare</option>
+                    <option value="" className="bg-cosmic-deep-space">Select a sign to compare</option>
                     {zodiacSigns
                       .filter(sign => sign.name !== selectedSign)
                       .map(sign => (
-                        <option key={sign.name} value={sign.name}>
+                        <option key={sign.name} value={sign.name} className="bg-cosmic-deep-space">
                           {HoroscopeService.getZodiacDisplayName(sign.name)} {sign.symbol}
                         </option>
                       ))}
@@ -221,7 +221,7 @@ const HoroscopePage: React.FC = () => {
                         <span>{HoroscopeService.getZodiacSymbol(selectedSign)}</span>
                         {HoroscopeService.getZodiacDisplayName(selectedSign)}
                       </h4>
-                      <div className="bg-white/5 rounded-lg p-4">
+                      <div className="bg-white/5 rounded-lg p-4 border border-white/10">
                         <p className="text-white/70 text-sm">
                           Compare horoscopes to see how cosmic energies align between different zodiac signs.
                         </p>
@@ -233,7 +233,7 @@ const HoroscopePage: React.FC = () => {
                         <span>{HoroscopeService.getZodiacSymbol(compareSign)}</span>
                         {HoroscopeService.getZodiacDisplayName(compareSign)}
                       </h4>
-                      <div className="bg-white/5 rounded-lg p-4">
+                      <div className="bg-white/5 rounded-lg p-4 border border-white/10">
                         <p className="text-white/70 text-sm">
                           Understanding astrological compatibility can help improve relationships and communication.
                         </p>
