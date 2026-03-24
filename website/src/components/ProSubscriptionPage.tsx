@@ -245,7 +245,7 @@ const ProSubscriptionPage: React.FC = () => {
             </GlassCard>
           </div>
 
-          {/* Testimonials */}
+          {/* Testimonials
           <GlassCard className="p-8 mb-16">
             <h2 className="text-2xl font-bold text-white text-center mb-8">What Our Users Say</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -277,7 +277,7 @@ const ProSubscriptionPage: React.FC = () => {
                 <p className="text-yellow-400 font-medium">- Anjali Patel</p>
               </div>
             </div>
-          </GlassCard>
+          </GlassCard> */}
 
           {/* FAQ */}
           <GlassCard className="p-8">
