@@ -8,7 +8,6 @@ const Profile = require('../models/Profile');
 const KundliReport = require('../models/KundliReport');
 const mongoose = require('mongoose');
 const aiService = require('../services/aiService');
-const chatLimiter = require('../middleware/rateLimiters').chatLimiter;
 
 const CHAT_RATE_LIMIT = 30;
 const chatLimiter = rateLimit({
