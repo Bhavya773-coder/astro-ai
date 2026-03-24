@@ -511,7 +511,7 @@ const GPTChatPage: React.FC = () => {
     : null;
 
   return (
-    <CosmicBackground className="h-screen">
+    <CosmicBackground className="h-screen overflow-hidden">
       <AppNavbar />
       
       {/* Mobile Sidebar Overlay */}
@@ -522,7 +522,7 @@ const GPTChatPage: React.FC = () => {
         />
       )}
 
-      <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+      <div className="flex h-[calc(100vh-4rem)] pt-16 overflow-hidden">
         {/* Sidebar */}
         <aside className={`
           fixed lg:static inset-y-0 left-0 z-50 w-72 
@@ -661,7 +661,7 @@ const GPTChatPage: React.FC = () => {
         </aside>
 
         {/* Main Chat Area */}
-        <main ref={mainRef} className="flex-1 flex flex-col min-w-0 bg-cosmic-deep-space/30 overflow-hidden">
+        <main ref={mainRef} className="flex-1 flex flex-col min-w-0 bg-cosmic-deep-space/30 overflow-hidden h-full">
           {/* Header */}
           <header className="flex items-center justify-between px-4 py-3 border-b border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm shrink-0">
             <div className="flex items-center gap-3">
@@ -725,7 +725,7 @@ const GPTChatPage: React.FC = () => {
           <div 
             id="chat-messages-container" 
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-cosmic-purple/30 scrollbar-track-transparent scroll-smooth relative"
+            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-cosmic-purple/30 scrollbar-track-transparent scroll-smooth relative min-h-0"
           >
             {messages.length === 0 && !isLoading ? (
               <div className="h-full flex flex-col items-center justify-center px-4 py-12">

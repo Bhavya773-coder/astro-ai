@@ -23,22 +23,13 @@ type BirthChartResponse = {
   dominantPlanet?: string;
 };
 
-type HoroscopeResponse = {
-  success: boolean;
-  data?: any;
-  cached?: boolean;
-};
-
 type AppDataState = {
   insightStatus: InsightStatus | null;
   isInsightLoading: boolean;
   birthChart: BirthChartResponse | null;
   isBirthChartLoading: boolean;
-  dailyHoroscope: any | null;
-  isHoroscopeLoading: boolean;
   refreshAll: () => Promise<void>;
   refreshBirthChart: () => Promise<void>;
-  refreshHoroscope: () => Promise<void>;
 };
 
 const AppDataContext = createContext<AppDataState | undefined>(undefined);
@@ -50,7 +41,6 @@ type CacheShape = {
   day: string;
   insightStatus?: InsightStatus | null;
   birthChart?: BirthChartResponse | null;
-  dailyHoroscope?: any | null;
 };
 
 const readCache = (): CacheShape | null => {
@@ -81,14 +71,12 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const initial = readCache();
   const [insightStatus, setInsightStatus] = useState<InsightStatus | null>(initial?.insightStatus ?? null);
   const [birthChart, setBirthChart] = useState<BirthChartResponse | null>(initial?.birthChart ?? null);
-  const [dailyHoroscope, setDailyHoroscope] = useState<any | null>(initial?.dailyHoroscope ?? null);
 
   const [isInsightLoading, setIsInsightLoading] = useState(false);
   const [isBirthChartLoading, setIsBirthChartLoading] = useState(false);
-  const [isHoroscopeLoading, setIsHoroscopeLoading] = useState(false);
 
   // Prevent duplicate overlapping requests when users switch pages quickly
-  const inflightRef = useRef<{ insight?: boolean; birthChart?: boolean; horoscope?: boolean }>({});
+  const inflightRef = useRef<{ insight?: boolean; birthChart?: boolean }>({});
 
   const fetchInsightStatus = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -132,50 +120,18 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [isAuthenticated]);
 
-  const fetchHoroscope = useCallback(async () => {
-    if (!isAuthenticated) return;
-    if (inflightRef.current.horoscope) return;
-    inflightRef.current.horoscope = true;
-    setIsHoroscopeLoading(true);
-    try {
-      // Try the new /today endpoint first
-      const res = (await apiFetch('/api/horoscope/today')) as HoroscopeResponse;
-      if (res?.success && res.data) {
-        setDailyHoroscope(res.data);
-        writeCache({ dailyHoroscope: res.data });
-      } else {
-        // If /today fails, try the old /daily endpoint for backwards compatibility
-        const fallbackRes = (await apiFetch('/api/horoscope/daily')) as HoroscopeResponse;
-        if (fallbackRes?.success && fallbackRes.data) {
-          setDailyHoroscope(fallbackRes.data);
-          writeCache({ dailyHoroscope: fallbackRes.data });
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch horoscope:', error);
-      // keep existing cached state
-    } finally {
-      inflightRef.current.horoscope = false;
-      setIsHoroscopeLoading(false);
-    }
-  }, [isAuthenticated]);
-
   const refreshAll = useCallback(async () => {
     await fetchInsightStatus();
     // Only fetch the rest if onboarding is completed
     const generated = (readCache()?.insightStatus ?? insightStatus)?.insights_generated;
     if (generated) {
-      await Promise.all([fetchBirthChart(), fetchHoroscope()]);
+      await fetchBirthChart();
     }
-  }, [fetchInsightStatus, fetchBirthChart, fetchHoroscope, insightStatus]);
+  }, [fetchInsightStatus, fetchBirthChart, insightStatus]);
 
   const refreshBirthChart = useCallback(async () => {
     await fetchBirthChart();
   }, [fetchBirthChart]);
-
-  const refreshHoroscope = useCallback(async () => {
-    await fetchHoroscope();
-  }, [fetchHoroscope]);
 
   // Prefetch core data once authenticated; keep UI warm across fast navigation
   useEffect(() => {
@@ -191,22 +147,16 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       isInsightLoading,
       birthChart,
       isBirthChartLoading,
-      dailyHoroscope,
-      isHoroscopeLoading,
       refreshAll,
-      refreshBirthChart,
-      refreshHoroscope
+      refreshBirthChart
     };
   }, [
     insightStatus,
     isInsightLoading,
     birthChart,
     isBirthChartLoading,
-    dailyHoroscope,
-    isHoroscopeLoading,
     refreshAll,
-    refreshBirthChart,
-    refreshHoroscope
+    refreshBirthChart
   ]);
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
