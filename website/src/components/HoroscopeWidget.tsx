@@ -82,18 +82,20 @@ const HoroscopeWidget: React.FC<HoroscopeWidgetProps> = ({
   return (
     <GlassCard className={`p-6 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <span className="text-3xl">{HoroscopeService.getZodiacSymbol(userZodiacSign)}</span>
-          <div>
-            <h3 className="text-xl font-bold text-white">
-              {HoroscopeService.getZodiacDisplayName(userZodiacSign)} Horoscope
-            </h3>
-            <p className="text-white/60 text-sm">
-              {horoscopeType === 'daily' && 'Today'}
-              {horoscopeType === 'weekly' && 'This Week'}
-              {horoscopeType === 'monthly' && 'This Month'}
-            </p>
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center space-x-3">
+            <span className="text-3xl">{HoroscopeService.getZodiacSymbol(userZodiacSign)}</span>
+            <div>
+              <h3 className="text-xl font-bold text-white">
+                {HoroscopeService.getZodiacDisplayName(userZodiacSign)} Horoscope
+              </h3>
+              <p className="text-white/60 text-sm">
+                {horoscopeType === 'daily' && 'Today'}
+                {horoscopeType === 'weekly' && 'This Week'}
+                {horoscopeType === 'monthly' && 'This Month'}
+              </p>
+            </div>
           </div>
         </div>
         
@@ -103,7 +105,7 @@ const HoroscopeWidget: React.FC<HoroscopeWidgetProps> = ({
             <button
               key={type}
               onClick={() => setHoroscopeType(type)}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 px-3 py-1 rounded-md text-sm font-medium transition-all ${
                 horoscopeType === type
                   ? 'bg-custom-yellow text-gray-900'
                   : 'text-white/60 hover:text-white hover:bg-white/10'
