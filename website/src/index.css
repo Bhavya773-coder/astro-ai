@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply font-body antialiased;
+    background-color: #03071E;
+    color: #F8F9FA;
+    min-height: 100vh;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply relative overflow-hidden bg-gradient-to-r from-cosmic-purple to-cosmic-pink text-white font-semibold py-3 px-6 rounded-cosmic transition-all duration-300;
+    box-shadow: 0 0 10px rgba(247, 37, 133, 0.4);
+  }
+  
+  .btn-primary:hover {
+    @apply scale-105;
+    box-shadow: 0 0 30px rgba(114, 9, 183, 0.5), 0 0 60px rgba(247, 37, 133, 0.3);
+  }
+  
+  .btn-secondary {
+    @apply relative bg-transparent border-2 border-cosmic-cyan text-cosmic-cyan font-semibold py-3 px-6 rounded-cosmic transition-all duration-300;
+  }
+  
+  .btn-secondary:hover {
+    @apply bg-cosmic-cyan/10;
+    box-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
+  }
+  
+  .btn-glass {
+    @apply relative font-semibold py-3 px-6 rounded-cosmic transition-all duration-300 border border-white/20 text-white;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(16px);
+  }
+  
+  .btn-glass:hover {
+    @apply bg-white/15;
+    border-color: rgba(247, 37, 133, 0.5);
+  }
+  
+  .glass-card {
+    @apply rounded-cosmic transition-all duration-300 border border-white/10;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+  
+  .glass-card:hover {
+    border-color: rgba(247, 37, 133, 0.3);
+    box-shadow: 0 0 30px rgba(114, 9, 183, 0.3), 0 0 60px rgba(247, 37, 133, 0.2);
+  }
+  
+  .input-cosmic {
+    @apply w-full px-4 py-3 rounded-cosmic text-cosmic-text placeholder-white/40 transition-all duration-300;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .input-cosmic:focus {
+    @apply outline-none;
+    border-color: #F72585;
+    box-shadow: 0 0 0 2px rgba(247, 37, 133, 0.3);
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 10px rgba(247, 37, 133, 0.8);
+  }
+  
+  .text-glow-cyan {
+    text-shadow: 0 0 10px rgba(76, 201, 240, 0.8);
+  }
+  
+  .text-glow-gold {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+  }
+  
+  .cosmic-bg {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg, #03071E 0%, #0d1029 50%, #03071E 100%);
+  }
+  
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, #4CC9F0, #F72585, #FFD700);
+  }
+  
+  .page-transition {
+    animation: fadeIn 0.5s ease-out;
+  }
+}
+
+@layer utilities {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(3, 7, 30, 0.5);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(114, 9, 183, 0.5);
+    border-radius: 9999px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(247, 37, 133, 0.5);
+  }
+  
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  @keyframes particle-float {
+    0%, 100% {
+      transform: translateY(0) translateX(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100vh) translateX(50px);
+      opacity: 0;
+    }
+  }
+  
+  .particle {
+    animation: particle-float 15s linear infinite;
+  }
+  
+  .backdrop-glass {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  
+  .zodiac-glow {
+    filter: drop-shadow(0 0 15px rgba(114, 9, 183, 0.6));
+  }
+  
+  .zodiac-glow-pink {
+    filter: drop-shadow(0 0 15px rgba(247, 37, 133, 0.6));
+  }
+  
+  .hover-lift {
+    @apply transition-transform duration-300;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+  
+  .focus-ring:focus-visible {
+    @apply outline-none;
+    box-shadow: 0 0 0 2px #F72585;
+  }
+  
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+}
