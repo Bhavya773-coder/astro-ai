@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiFetch } from '../api/client';
 import * as d3 from 'd3';
 import AppNavbar from './AppNavbar';
 import { CosmicBackground } from './CosmicBackground';
-import { GlassCard, GradientText } from './CosmicUI';
+import { GradientText } from './CosmicUI';
 import { reportsApi, BirthChartResponse } from '../api/reports';
 
 // Helper functions for zodiac characteristics
