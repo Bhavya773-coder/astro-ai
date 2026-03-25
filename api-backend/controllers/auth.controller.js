@@ -48,7 +48,7 @@ const sendOtpEmail = async ({ to, otp, ttlMinutes }) => {
 };
 
 const register = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, isBeliever } = req.body;
 
   if (!email || !password) {
     res.status(400);
@@ -68,14 +68,15 @@ const register = async (req, res, next) => {
     password_hash,
     role: 'user',
     subscription_plan: 'free',
-    subscription_status: 'inactive'
+    subscription_status: 'inactive',
+    isBeliever: isBeliever || null
   });
 
   const token = signToken(user);
 
   res.status(201).json({
     token,
-    user: { id: user._id, email: user.email, role: user.role }
+    user: { id: user._id, email: user.email, role: user.role, isBeliever: user.isBeliever }
   });
 };
 

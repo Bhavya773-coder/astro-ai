@@ -9,6 +9,7 @@ const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isBeliever, setIsBeliever] = useState<'believer' | 'non-believer' | ''>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [passwordFocus, setPasswordFocus] = useState(false);
@@ -133,6 +134,11 @@ const SignUpPage: React.FC = () => {
     e.preventDefault();
     setError(null);
 
+    if (!isBeliever) {
+      setError('Please select whether you are a believer or non-believer');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -146,7 +152,7 @@ const SignUpPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const res = await register(email, password);
+      const res = await register(email, password, { isBeliever });
       setAuth(res.token, res.user);
       navigate('/dashboard');
     } catch (err: any) {
@@ -251,6 +257,50 @@ const SignUpPage: React.FC = () => {
                   placeholder="Confirm your password"
                   required
                 />
+              </div>
+            </div>
+
+            {/* Believer/Non-Believer Selection */}
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-3">
+                Do you believe in astrology?
+              </label>
+              <div className="space-y-3">
+                <label className="flex items-center p-3 rounded-cosmic bg-white/5 border border-white/20 cursor-pointer transition-all duration-300 hover:bg-white/10 hover:border-cosmic-cyan group">
+                  <input
+                    type="radio"
+                    name="believer"
+                    value="believer"
+                    checked={isBeliever === 'believer'}
+                    onChange={(e) => setIsBeliever('believer')}
+                    className="w-4 h-4 text-cosmic-cyan bg-white/10 border-white/30 focus:ring-cosmic-cyan focus:ring-2"
+                  />
+                  <div className="ml-3 flex items-center">
+                    <span className="text-2xl mr-3">✨</span>
+                    <div>
+                      <span className="text-white font-medium">Believer</span>
+                      <p className="text-xs text-white/60">I believe in astrology and cosmic influences</p>
+                    </div>
+                  </div>
+                </label>
+                
+                <label className="flex items-center p-3 rounded-cosmic bg-white/5 border border-white/20 cursor-pointer transition-all duration-300 hover:bg-white/10 hover:border-cosmic-cyan group">
+                  <input
+                    type="radio"
+                    name="believer"
+                    value="non-believer"
+                    checked={isBeliever === 'non-believer'}
+                    onChange={(e) => setIsBeliever('non-believer')}
+                    className="w-4 h-4 text-cosmic-cyan bg-white/10 border-white/30 focus:ring-cosmic-cyan focus:ring-2"
+                  />
+                  <div className="ml-3 flex items-center">
+                    <span className="text-2xl mr-3">🔬</span>
+                    <div>
+                      <span className="text-white font-medium">Non-Believer</span>
+                      <p className="text-xs text-white/60">I'm curious but skeptical about astrology</p>
+                    </div>
+                  </div>
+                </label>
               </div>
             </div>
 
