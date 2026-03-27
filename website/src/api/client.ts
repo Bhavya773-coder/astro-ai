@@ -1,8 +1,7 @@
 import { AuthUser } from '../auth/AuthContext';
 
-// Production-ready API configuration
-// Uses relative paths for Nginx reverse proxy compatibility
-export const API_BASE_URL = process.env.REACT_APP_API_URL || "/api";
+export const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "/api";
 
 const TOKEN_KEY = 'astroai_token';
 
@@ -29,9 +28,7 @@ export const apiFetch = async (path: string, init?: RequestInit) => {
     try {
       const body = await res.json();
       message = body?.message || message;
-    } catch {
-      // ignore
-    }
+    } catch {}
     throw new Error(message);
   }
 
@@ -39,55 +36,18 @@ export const apiFetch = async (path: string, init?: RequestInit) => {
   return text ? JSON.parse(text) : null;
 };
 
-export const login = (email: string, password: string) => {
-  return apiFetch('/api/auth/login', {
+// ✅ NO /api here
+export const login = (email: string, password: string) =>
+  apiFetch('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password })
   }) as Promise<LoginResponse>;
-};
 
-export const register = (email: string, password: string, additionalData?: Record<string, any>) => {
-  return apiFetch('/api/auth/register', {
+export const register = (email: string, password: string, additionalData?: Record<string, any>) =>
+  apiFetch('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ email, password, ...additionalData })
   }) as Promise<LoginResponse>;
-};
 
-export const getMe = () => {
-  return apiFetch('/api/auth/me', { method: 'GET' });
-};
-
-export const forgotPassword = (email: string) => {
-  return apiFetch('/api/auth/forgot-password', {
-    method: 'POST',
-    body: JSON.stringify({ email })
-  }) as Promise<{ ok: boolean; resetUrl?: string }>;
-};
-
-export const requestOtp = (email: string) => {
-  return apiFetch('/api/auth/forgot-password/request-otp', {
-    method: 'POST',
-    body: JSON.stringify({ email })
-  }) as Promise<{ ok: boolean; otp?: string }>;
-};
-
-export const verifyOtp = (email: string, otp: string) => {
-  return apiFetch('/api/auth/forgot-password/verify-otp', {
-    method: 'POST',
-    body: JSON.stringify({ email, otp })
-  }) as Promise<{ ok: boolean; resetSessionToken?: string }>;
-};
-
-export const resetPasswordWithOtp = (password: string, resetSessionToken: string) => {
-  return apiFetch('/api/auth/reset-password-with-otp', {
-    method: 'POST',
-    body: JSON.stringify({ password, resetSessionToken })
-  }) as Promise<{ ok: boolean }>;
-};
-
-export const resetPassword = (token: string, password: string) => {
-  return apiFetch('/api/auth/reset-password', {
-    method: 'POST',
-    body: JSON.stringify({ token, password })
-  }) as Promise<{ ok: boolean }>;
-};
+export const getMe = () =>
+  apiFetch('/auth/me', { method: 'GET' });
