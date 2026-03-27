@@ -1,8 +1,8 @@
 import { AuthUser } from '../auth/AuthContext';
 
-export const getBaseUrl = () => {
-  return process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
-};
+// Production-ready API configuration
+// Uses relative paths for Nginx reverse proxy compatibility
+export const API_BASE_URL = process.env.REACT_APP_API_URL || "/api";
 
 const TOKEN_KEY = 'astroai_token';
 
@@ -12,7 +12,7 @@ export type LoginResponse = {
 };
 
 export const apiFetch = async (path: string, init?: RequestInit) => {
-  const url = `${getBaseUrl()}${path}`;
+  const url = `${API_BASE_URL}${path}`;
   const token = localStorage.getItem(TOKEN_KEY);
 
   const headers: Record<string, string> = {
