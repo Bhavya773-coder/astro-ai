@@ -16,8 +16,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 const start = async () => {
-  const dbName = process.env.MONGODB_DBNAME;
-  await connectDB(process.env.MONGODB_URI, dbName ? { dbName } : undefined);
+  await connectDB(process.env.MONGODB_URI);
 
   app.listen(PORT, () => {
     console.log(`API listening on port ${PORT}`);
