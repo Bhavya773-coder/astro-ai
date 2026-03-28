@@ -48,7 +48,7 @@ const sendOtpEmail = async ({ to, otp, ttlMinutes }) => {
 };
 
 const register = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, is_believer } = req.body;
 
   if (!email || !password) {
     res.status(400);
@@ -68,7 +68,8 @@ const register = async (req, res, next) => {
     password_hash,
     role: 'user',
     subscription_plan: 'free',
-    subscription_status: 'inactive'
+    subscription_status: 'inactive',
+    is_believer: is_believer !== undefined ? Boolean(is_believer) : true
   });
 
   const token = signToken(user);

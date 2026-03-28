@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProfessionalSymbol } from '../utils/professionalSymbols';
 import AppNavbar from './AppNavbar';
-import HoroscopeWidget from './HoroscopeWidget';
 import { useAppData } from '../state/AppDataContext';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner, CosmicButton } from './CosmicUI';
@@ -94,12 +93,6 @@ const MainPage: React.FC = () => {
                 </div>
               </div>
             </GlassCard>
-
-            {/* Horoscope Widget
-            <HoroscopeWidget 
-              birthDate={insightStatus?.date_of_birth}
-              className="mb-8"
-            /> */}
 
             {/* Pro Upgrade Card */}
             <GlassCard className="mb-8 p-6 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 border border-yellow-400/30">

@@ -48,9 +48,6 @@ const AppNavbar: React.FC = () => {
               <NavLink to="/birth-chart" className={linkClassName}>
                 Birth Chart
               </NavLink>
-              <NavLink to="/horoscope" className={linkClassName}>
-                Horoscope
-              </NavLink>
               <NavLink to="/ai-chat" className={linkClassName}>
                 AI Chat
               </NavLink>
@@ -120,13 +117,6 @@ const AppNavbar: React.FC = () => {
               className="block px-3 py-2 rounded-md text-white hover:bg-white/10 transition-colors"
             >
               Birth Chart
-            </Link>
-            <Link
-              to="/horoscope"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-md text-white hover:bg-white/10 transition-colors"
-            >
-              Horoscope
             </Link>
             <Link
               to="/ai-chat"

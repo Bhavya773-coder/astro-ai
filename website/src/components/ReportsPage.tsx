@@ -3,10 +3,12 @@ import AppNavbar from './AppNavbar';
 import { reportsApi, KundliReport, BirthChartResponse } from '../api/reports';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { generateKundliPDF } from '../utils/kundliPDFGenerator';
 
 const ReportsPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingBirthChart, setIsLoadingBirthChart] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [kundliReport, setKundliReport] = useState<KundliReport | null>(null);
   const [birthChartData, setBirthChartData] = useState<BirthChartResponse['data'] | null>(null);
   const navigate = useNavigate();
@@ -51,6 +53,24 @@ const ReportsPage: React.FC = () => {
       toast.error('Failed to load birth chart. Please try again.');
     } finally {
       setIsLoadingBirthChart(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!kundliReport) {
+      toast.error('Please generate a Kundli report first');
+      return;
+    }
+
+    setIsGeneratingPDF(true);
+    try {
+      await generateKundliPDF(kundliReport);
+      toast.success('PDF downloaded successfully!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -154,7 +174,28 @@ const ReportsPage: React.FC = () => {
         {/* Kundli Report Display */}
         {kundliReport && (
           <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6 text-center">Your Kundli Report</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-center">Your Kundli Report</h2>
+              <button
+                onClick={handleDownloadPDF}
+                disabled={isGeneratingPDF}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200 flex items-center gap-2"
+              >
+                {isGeneratingPDF ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download PDF
+                  </>
+                )}
+              </button>
+            </div>
             
             {/* Birth Details Section */}
             <div className="mb-8">

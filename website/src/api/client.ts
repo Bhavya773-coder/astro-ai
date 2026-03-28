@@ -46,10 +46,10 @@ export const login = (email: string, password: string) => {
   }) as Promise<LoginResponse>;
 };
 
-export const register = (email: string, password: string) => {
+export const register = (email: string, password: string, is_believer?: boolean) => {
   return apiFetch('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password, is_believer })
   }) as Promise<LoginResponse>;
 };
 

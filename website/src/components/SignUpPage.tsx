@@ -9,6 +9,7 @@ const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isBeliever, setIsBeliever] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [passwordFocus, setPasswordFocus] = useState(false);
@@ -146,7 +147,7 @@ const SignUpPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const res = await register(email, password);
+      const res = await register(email, password, isBeliever);
       setAuth(res.token, res.user);
       navigate('/dashboard');
     } catch (err: any) {
@@ -228,7 +229,7 @@ const SignUpPage: React.FC = () => {
                   placeholder="Create a strong password"
                   required
                 />
-                {password && passwordFocus && <PasswordStrengthIndicator password={password} />}
+                {password && <PasswordStrengthIndicator password={password} />}
               </div>
             </div>
 
@@ -251,6 +252,42 @@ const SignUpPage: React.FC = () => {
                   placeholder="Confirm your password"
                   required
                 />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white/80 mb-3">
+                Belief Preference
+              </label>
+              <div className="space-y-3">
+                <label className="flex items-center p-3 rounded-lg border border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                  <input
+                    type="radio"
+                    name="believer"
+                    checked={isBeliever === true}
+                    onChange={() => setIsBeliever(true)}
+                    className="mr-3 text-cosmic-cyan focus:ring-cosmic-cyan"
+                  />
+                  <div className="flex-1">
+                    <div className="text-white font-medium">Believer</div>
+                    <div className="text-white/60 text-sm">I believe in astrology and spiritual insights</div>
+                  </div>
+                  <div className="text-2xl">🔮</div>
+                </label>
+                <label className="flex items-center p-3 rounded-lg border border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                  <input
+                    type="radio"
+                    name="believer"
+                    checked={isBeliever === false}
+                    onChange={() => setIsBeliever(false)}
+                    className="mr-3 text-cosmic-cyan focus:ring-cosmic-cyan"
+                  />
+                  <div className="flex-1">
+                    <div className="text-white font-medium">Non-Believer</div>
+                    <div className="text-white/60 text-sm">I'm curious and open to exploring</div>
+                  </div>
+                  <div className="text-2xl">🔍</div>
+                </label>
               </div>
             </div>
 

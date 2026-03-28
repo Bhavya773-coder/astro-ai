@@ -17,6 +17,7 @@ const UserSchema = new mongoose.Schema(
       enum: ['active', 'inactive', 'cancelled'],
       default: 'inactive'
     },
+    is_believer: { type: Boolean, default: true },
     created_at: { type: Date, required: true, default: Date.now },
     updated_at: { type: Date }
   },
