@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { register } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
-import { CosmicBackground } from './CosmicBackground';
 import { CosmicButton, GlassCard, LoadingSpinner } from './CosmicUI';
 
 const SignUpPage: React.FC = () => {
@@ -149,7 +148,7 @@ const SignUpPage: React.FC = () => {
     try {
       const res = await register(email, password, isBeliever);
       setAuth(res.token, res.user);
-      navigate('/dashboard');
+      navigate('/onboarding/step-1');
     } catch (err: any) {
       setError(err?.message || 'Sign up failed');
     } finally {
@@ -158,17 +157,38 @@ const SignUpPage: React.FC = () => {
   };
 
   return (
-    <CosmicBackground className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md animate-slide-up">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-pink mb-4 shadow-cosmic animate-pulse-glow">
+    <div className="min-h-screen text-white relative overflow-hidden" style={{ height: '100vh' }}>
+      {/* Video Background Only */}
+      <div className="absolute inset-0">
+        <video
+          autoPlay
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            filter: 'brightness(0.7) contrast(1.1)',
+            transform: 'scale(1.05)',
+            objectFit: 'cover'
+          }}
+          onError={(e) => console.error('Video loading error:', e)}
+        >
+          <source src="/Astroai-Background.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      {/* Signup Content with Scroll */}
+      <div className="relative z-10 flex items-start justify-center px-4 overflow-y-auto pt-8 sm:pt-12" style={{ height: '100vh', minHeight: '100vh' }}>
+        <div className="w-full max-w-md animate-slide-up py-8" style={{ minHeight: 'fit-content' }}>
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-pink mb-4 shadow-cosmic animate-pulse-glow">
             <span className="text-white text-3xl font-bold font-display">A</span>
           </div>
-          <h1 className="font-display text-3xl font-bold text-white mb-2 text-glow">Create Account</h1>
-          <p className="text-white/60 font-body">Begin your cosmic journey</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-2 text-glow">Create Account</h1>
+          <p className="text-sm sm:text-base text-white/60 font-body">Begin your cosmic journey</p>
         </div>
 
-        <GlassCard className="p-8" glow="cyan">
+        <GlassCard className="p-6 sm:p-8" glow="cyan">
           {error ? (
             <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-300">
               <div className="flex items-center gap-2">
@@ -180,13 +200,13 @@ const SignUpPage: React.FC = () => {
             </div>
           ) : null}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-2">
+              <label htmlFor="email" className="block text-sm sm:text-sm font-medium text-white/80 mb-2 sm:mb-2">
                 Email Address
               </label>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
+                <div className="absolute left-4 sm:left-4 top-1/2 -translate-y-1/2 text-white/40">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                   </svg>
@@ -196,7 +216,7 @@ const SignUpPage: React.FC = () => {
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30"
+                  className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 text-sm sm:text-base"
                   placeholder="Enter your email"
                   required
                 />
@@ -204,16 +224,11 @@ const SignUpPage: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white/80 mb-2">
+              <label htmlFor="password" className="block text-sm sm:text-sm font-medium text-white/80 mb-2 sm:mb-2">
                 Password
-                {password && (
-                  <span className="ml-2 text-xs text-white/60">
-                    {validatePassword(password).strength.toUpperCase()}
-                  </span>
-                )}
               </label>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
+                <div className="absolute left-4 sm:left-4 top-1/2 -translate-y-1/2 text-white/40">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
@@ -223,24 +238,21 @@ const SignUpPage: React.FC = () => {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setPasswordFocus(true)}
-                  onBlur={() => setPasswordFocus(false)}
-                  className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30"
-                  placeholder="Create a strong password"
+                  className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 text-sm sm:text-base"
+                  placeholder="Enter your password"
                   required
                 />
-                {password && <PasswordStrengthIndicator password={password} />}
               </div>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-white/80 mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm sm:text-sm font-medium text-white/80 mb-2 sm:mb-2">
                 Confirm Password
               </label>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
+                <div className="absolute left-4 sm:left-4 top-1/2 -translate-y-1/2 text-white/40">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
                 <input
@@ -248,53 +260,50 @@ const SignUpPage: React.FC = () => {
                   id="confirmPassword"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30"
+                  className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 text-sm sm:text-base"
                   placeholder="Confirm your password"
                   required
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-white/80 mb-3">
-                Belief Preference
-              </label>
-              <div className="space-y-3">
-                <label className="flex items-center p-3 rounded-lg border border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm sm:text-sm text-white/80">
                   <input
                     type="radio"
                     name="believer"
-                    checked={isBeliever === true}
-                    onChange={() => setIsBeliever(true)}
-                    className="mr-3 text-cosmic-cyan focus:ring-cosmic-cyan"
+                    checked={isBeliever}
+                    onChange={(e) => setIsBeliever(e.target.value === 'true')}
+                    className="w-4 h-4 text-cosmic-cyan focus:ring-cosmic-cyan"
                   />
-                  <div className="flex-1">
-                    <div className="text-white font-medium">Believer</div>
-                    <div className="text-white/60 text-sm">I believe in astrology and spiritual insights</div>
-                  </div>
-                  <div className="text-2xl">🔮</div>
+                  <span className="ml-2">Believer</span>
                 </label>
-                <label className="flex items-center p-3 rounded-lg border border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                <label className="flex items-center gap-2 text-sm sm:text-sm text-white/80">
                   <input
                     type="radio"
                     name="believer"
-                    checked={isBeliever === false}
-                    onChange={() => setIsBeliever(false)}
-                    className="mr-3 text-cosmic-cyan focus:ring-cosmic-cyan"
+                    checked={!isBeliever}
+                    onChange={(e) => setIsBeliever(e.target.value === 'true')}
+                    className="w-4 h-4 text-cosmic-cyan focus:ring-cosmic-cyan"
                   />
-                  <div className="flex-1">
-                    <div className="text-white font-medium">Non-Believer</div>
-                    <div className="text-white/60 text-sm">I'm curious and open to exploring</div>
-                  </div>
-                  <div className="text-2xl">🔍</div>
+                  <span className="ml-2">Non-Believer</span>
                 </label>
               </div>
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="text-sm sm:text-sm text-cosmic-cyan hover:text-cosmic-pink transition-colors"
+              >
+                Already have an account?
+              </button>
             </div>
 
+            {/* Submit Button */}
             <CosmicButton
               type="submit"
               variant="primary"
-              className="w-full"
+              className="w-full py-3 sm:py-3 text-sm sm:text-base"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -319,37 +328,7 @@ const SignUpPage: React.FC = () => {
             </button>
           </p>
           
-          {/* Content Guidelines */}
-          <div className="mt-8 p-4 bg-white/5 rounded-cosmic border border-white/10">
-            <h4 className="text-sm font-semibold text-white mb-3">Community Guidelines</h4>
-            <p className="text-xs text-white/70 leading-relaxed mb-4">
-              By creating an account, you agree to our community standards:
-            </p>
-            <ul className="text-xs text-white/60 space-y-1 ml-4">
-              <li>• No hate speech, harassment, or discriminatory content</li>
-              <li>• Respect all community members and their beliefs</li>
-              <li>• No spam, advertising, or promotional content</li>
-              <li>• Keep conversations appropriate and professional</li>
-              <li>• No sharing of personal or harmful information</li>
-              <li>• Respect copyright and intellectual property</li>
-            </ul>
-          </div>
           
-          {/* Terms of Service */}
-          <div className="mt-4 p-4 bg-white/5 rounded-cosmic border border-white/10">
-            <h4 className="text-sm font-semibold text-white mb-3">Terms of Service</h4>
-            <p className="text-xs text-white/70 leading-relaxed mb-4">
-              By using AstroAI, you agree to:
-            </p>
-            <ul className="text-xs text-white/60 space-y-1 ml-4">
-              <li>• Use the service for personal, non-commercial purposes</li>
-              <li>• Be responsible for your account security and content</li>
-              <li>• Respect astrological and spiritual diversity</li>
-              <li>• No illegal activities or harmful content</li>
-              <li>• We reserve the right to suspend accounts violating guidelines</li>
-              <li>• Content is monitored for compliance and safety</li>
-            </ul>
-          </div>
 
           <div className="mt-4 text-center">
             <button
@@ -362,7 +341,8 @@ const SignUpPage: React.FC = () => {
           </div>
         </GlassCard>
       </div>
-    </CosmicBackground>
+      </div>
+    </div>
   );
 };
 

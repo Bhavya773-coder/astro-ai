@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { apiFetch, getBaseUrl } from '../api/client';
-import AppNavbar from './AppNavbar';
+import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, LoadingSpinner, GradientText } from './CosmicUI';
 
@@ -98,7 +98,28 @@ const GPTChatPage: React.FC = () => {
   const [editTitle, setEditTitle] = useState('');
   const [inputMessage, setInputMessage] = useState('');
 
-  // Focus edit input when editing starts
+  // Handle initial message from navigation (when coming from MainPage dashboard)
+  useEffect(() => {
+    const initialMessage = (location.state as any)?.initialMessage;
+    if (initialMessage && !isLoading) {
+      // Clear the location state to prevent re-triggering
+      navigate(location.pathname, { replace: true, state: {} });
+      
+      // Wait for chats to load, then send the message
+      const sendInitialMessage = async () => {
+        // Create new chat if none exists
+        if (!currentChat) {
+          await createNewChat();
+        }
+        // Send the message after a short delay to ensure chat is ready
+        setTimeout(() => {
+          sendMessage(initialMessage);
+        }, 300);
+      };
+      
+      sendInitialMessage();
+    }
+  }, [location.state, currentChat, isLoading]);
   useEffect(() => {
     if (editingChatId && editInputRef.current) {
       editInputRef.current.focus();
@@ -151,6 +172,39 @@ const GPTChatPage: React.FC = () => {
     loadChats();
   }, []);
 
+  // Handle URL query parameter for chatId
+  useEffect(() => {
+    const handleUrlChatId = async () => {
+      const params = new URLSearchParams(location.search);
+      const chatIdFromUrl = params.get('chatId');
+      
+      if (chatIdFromUrl) {
+        // First try to find in current chats
+        let chat = chats.find(c => c._id === chatIdFromUrl);
+        
+        // If not found, reload chats and try again
+        if (!chat) {
+          const freshChats = await loadChats();
+          chat = freshChats.find((c: Chat) => c._id === chatIdFromUrl);
+        }
+        
+        if (chat) {
+          setCurrentChat(chat);
+        } else {
+          // Chat not found even after reload, create new chat
+          console.log('Chat not found, creating new chat');
+          await createNewChat();
+        }
+      } else if (chats.length > 0 && !currentChat) {
+        // No chatId in URL and no current chat, select first
+        setCurrentChat(chats[0]);
+        navigate(`/ai-chat?chatId=${chats[0]._id}`, { replace: true });
+      }
+    };
+    
+    handleUrlChatId();
+  }, [location.search]);
+
   // Load messages when current chat changes
   useEffect(() => {
     if (currentChat?._id) {
@@ -178,13 +232,12 @@ const GPTChatPage: React.FC = () => {
       const res = await apiFetch('/api/ai-chat/list');
       if (res?.success && Array.isArray(res?.data)) {
         setChats(res.data);
-        if (res.data.length > 0 && !currentChat) {
-          setCurrentChat(res.data[0]);
-        }
+        return res.data; // Return fresh data
       }
     } catch (err) {
       console.error('Failed to load chats:', err);
     }
+    return [];
   }, []);
 
   const loadMessages = async (chatId: string) => {
@@ -217,6 +270,8 @@ const GPTChatPage: React.FC = () => {
         setCurrentChat(newChat);
         setMessages([]);
         setSidebarOpen(false);
+        // Update URL with new chat ID
+        navigate(`/ai-chat?chatId=${newChat._id}`, { replace: true });
       }
     } catch (err) {
       console.error('Failed to create chat:', err);
@@ -236,9 +291,8 @@ const GPTChatPage: React.FC = () => {
       if (res?.success) {
         setChats(prev => prev.filter(c => c._id !== chatId));
         if (currentChat?._id === chatId) {
-          const remaining = chats.filter(c => c._id !== chatId);
-          setCurrentChat(remaining.length > 0 ? remaining[0] : null);
-          setMessages([]);
+          // Create new chat instead of going to another chat
+          await createNewChat();
         }
       }
     } catch (err) {
@@ -251,6 +305,8 @@ const GPTChatPage: React.FC = () => {
     setSidebarOpen(false);
     setEditingChatId(null);
     setEditTitle('');
+    // Update URL with selected chat ID
+    navigate(`/ai-chat?chatId=${chat._id}`, { replace: true });
   };
 
   const updateChatTitle = async (chatId: string, newTitle: string) => {
@@ -512,159 +568,16 @@ const GPTChatPage: React.FC = () => {
 
   return (
     <CosmicBackground className="h-screen overflow-hidden">
-      <AppNavbar />
-      
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <div className="flex h-screen pt-16 overflow-hidden">
+      <div className="flex min-h-screen overflow-hidden">
         {/* Sidebar */}
-        <aside className={`
-          fixed lg:static top-16 inset-y-0 left-0 z-50 w-72 
-          bg-cosmic-deep-space/95 border-r border-cosmic-purple/30
-          transform transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          flex flex-col h-full
-        `}>
-          {/* New Chat Button */}
-          <div className="p-4">
-            <button
-              onClick={createNewChat}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-cosmic border border-cosmic-purple/50 text-white hover:bg-cosmic-purple/20 transition-all duration-300 hover:border-cosmic-cyan/50"
-            >
-              <svg className="w-5 h-5 text-cosmic-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <span>New chat</span>
-            </button>
-          </div>
-
-          {/* Chat List */}
-          <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1 scrollbar-thin scrollbar-thumb-cosmic-purple/30 scrollbar-track-transparent">
-            {chats.map(chat => (
-              <div
-                key={chat._id}
-                onClick={() => editingChatId !== chat._id && selectChat(chat)}
-                className={`
-                  group flex items-center gap-3 px-3 py-2 rounded-cosmic cursor-pointer transition-all duration-200
-                  ${currentChat?._id === chat._id 
-                    ? 'bg-cosmic-purple/30 border border-cosmic-purple/50' 
-                    : 'hover:bg-white/5 border border-transparent'
-                  }
-                `}
-              >
-                <svg className="w-4 h-4 text-cosmic-cyan/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                
-                {editingChatId === chat._id ? (
-                  <div className="flex-1 min-w-0 flex items-center gap-2">
-                    <input
-                      ref={editInputRef}
-                      type="text"
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      onKeyDown={(e) => handleEditKeyDown(e, chat._id)}
-                      onBlur={() => updateChatTitle(chat._id, editTitle)}
-                      className="flex-1 bg-cosmic-deep-space/80 text-white text-sm px-2 py-1 rounded border border-cosmic-cyan/50 focus:outline-none focus:border-cosmic-cyan"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateChatTitle(chat._id, editTitle);
-                      }}
-                      className="p-1 rounded text-cosmic-cyan hover:bg-cosmic-cyan/20"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        cancelEditing();
-                      }}
-                      className="p-1 rounded text-white/50 hover:text-white hover:bg-white/10"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white/90 truncate">
-                        {chat.title || 'New Chat'}
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={(e) => startEditingChat(chat, e)}
-                        className="p-1.5 rounded hover:bg-cosmic-cyan/20 text-white/50 hover:text-cosmic-cyan transition-all"
-                        title="Rename chat"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={(e) => deleteChat(chat._id, e)}
-                        className="p-1.5 rounded hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all ml-1"
-                        title="Delete chat"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-            
-            {chats.length === 0 && (
-              <div className="text-center py-8 text-white/50 text-sm">
-                <p>No chats yet</p>
-                <p className="mt-1">Start a new conversation!</p>
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar Footer - User Info */}
-          <div className="p-3 border-t border-cosmic-purple/30">
-            {!profileLoading && profileSummary?.has_profile && (
-              <div className="flex items-center gap-3 px-3 py-2">
-                <UserAvatar name={profileSummary.full_name} />
-                <div className="flex-1 min-w-0">
-                  {profileSummary.full_name && (
-                    <p className="text-white/90 text-sm font-medium truncate">
-                      {profileSummary.full_name}
-                    </p>
-                  )}
-                  {profileSummary.sun_sign && (
-                    <p className="text-cosmic-gold text-xs">
-                      {profileSummary.sun_sign} Sun
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </aside>
-
-        {/* Main Chat Area */}
-        <main ref={mainRef} className="flex-1 flex flex-col min-w-0 bg-cosmic-deep-space/30 overflow-hidden">
-          {/* Header */}
-          <header className="flex items-center justify-between px-4 py-3 border-b border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm flex-shrink-0">
-            <div className="flex items-center gap-3">
+        <Sidebar />
+        
+        {/* Main Content */}
+        <div className="flex-1 lg:ml-20 transition-all duration-300 overflow-y-auto h-screen" id="main-content">
+          <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-white/10 bg-slate-950/50 backdrop-blur-sm">
+              {/* Mobile Menu Button */}
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden p-2 rounded-lg hover:bg-white/10 text-white/70 transition-colors"
@@ -674,255 +587,156 @@ const GPTChatPage: React.FC = () => {
                 </svg>
               </button>
               
-              <div>
+              {/* Chat Title with inline editing */}
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-semibold text-white">
-                  {currentChat?.title || 'AstroAI Chat'}
-                </h1>
-                {currentChat && (
-                  <button
-                    onClick={() => {
-                      setEditingChatId(currentChat._id);
-                      setEditTitle(currentChat.title || 'New Chat');
-                    }}
-                    className="p-1 rounded hover:bg-cosmic-cyan/20 text-white/50 hover:text-cosmic-cyan transition-all"
-                    title="Rename chat"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-                {birthSummary && (
-                  <p className="text-xs text-cosmic-gold/80">{birthSummary}</p>
-                )}
-              </div>
-            </div>
-            
-            {currentChat && (
-              <button
-                onClick={() => {
-                  if (window.confirm('Delete this chat?')) {
-                    apiFetch(`/api/ai-chat/${currentChat._id}`, { method: 'DELETE' })
-                      .then(() => {
-                        setChats(prev => prev.filter(c => c._id !== currentChat._id));
-                        setCurrentChat(null);
-                        setMessages([]);
-                      });
-                  }
-                }}
-                className="p-2 rounded-lg text-white/50 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            )}
-          </header>
-
-          {/* Messages Area - Fixed Scroll */}
-          <div 
-            id="chat-messages-container" 
-            ref={chatContainerRef}
-            className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-cosmic-purple/30 scrollbar-track-transparent scroll-smooth relative min-h-0"
-          >
-            {messages.length === 0 && !isLoading ? (
-              <div className="h-full flex flex-col items-center justify-center px-4 py-12">
-                <div className="text-center max-w-2xl">
-                  <div className="mb-8">
-                    <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-pink flex items-center justify-center text-white mb-6 shadow-neon-pink">
-                      <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                      </svg>
-                    </div>
-                    <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-3">
-                      How can I <GradientText>help</GradientText> you today?
-                    </h2>
-                    <p className="text-white/60 mb-8 max-w-lg mx-auto">
-                      Ask me anything about your astrology chart, career, relationships, or life path.
-                    </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {SUGGESTIONS.map((s, i) => (
+                {editingChatId === currentChat?._id ? (
+                  <input
+                    ref={editInputRef}
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    onKeyDown={(e) => handleEditKeyDown(e, currentChat._id)}
+                    onBlur={() => updateChatTitle(currentChat._id, editTitle)}
+                    autoFocus
+                    className="text-lg font-semibold text-white bg-transparent border-b border-cosmic-cyan focus:outline-none px-1"
+                  />
+                ) : (
+                  <>
+                    <h1 className="text-lg font-semibold text-white">
+                      {currentChat?.title || 'AstroAI Chat'}
+                    </h1>
+                    {currentChat && (
                       <button
-                        key={i}
-                        onClick={() => sendMessage(s)}
-                        className="px-4 py-3 rounded-cosmic border border-cosmic-purple/40 text-white/80 text-sm hover:bg-cosmic-purple/20 hover:border-cosmic-cyan/50 transition-all text-left group"
+                        onClick={() => {
+                          setEditingChatId(currentChat._id);
+                          setEditTitle(currentChat.title || 'New Chat');
+                        }}
+                        className="p-1 rounded hover:text-cosmic-cyan text-white/50 transition-all"
+                        title="Rename chat"
                       >
-                        <span className="group-hover:text-cosmic-cyan transition-colors">{s}</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+              
+              {/* Profile Info */}
+              {profileSummary && (
+                <div className="hidden sm:flex items-center gap-4 text-sm text-white/60">
+                  {profileSummary.full_name && (
+                    <span>{profileSummary.full_name}</span>
+                  )}
+                  {birthSummary && (
+                    <span>{birthSummary}</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Chat Messages Container */}
+            <div 
+              id="chat-messages-container"
+              ref={chatContainerRef}
+              className="flex-1 overflow-y-auto p-4 space-y-4"
+            >
+              {/* Messages will be rendered here */}
+              {messages.map((message) => {
+                // Skip rendering placeholder messages with empty content (streaming placeholder)
+                if (message._id?.toString().startsWith('streaming-') && !message.content) {
+                  return null;
+                }
+                return (
+                  <div
+                    key={message._id}
+                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {message.role === 'assistant' && <AIAvatar />}
+                    <div
+                      className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                        message.role === 'user'
+                          ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white'
+                          : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
+                      }`}
+                    >
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                        {message.content}
+                      </p>
+                    </div>
+                    {message.role === 'user' && <UserAvatar name={profileSummary?.full_name} />}
+                  </div>
+                );
+              })}
+              
+              {/* Typing Indicator */}
+              {isLoading && (
+                <div className="flex gap-3 justify-start">
+                  <AIAvatar />
+                  <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3">
+                    <TypingIndicator />
+                  </div>
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className="p-4 w-full">
+              {/* Suggestions */}
+              {messages.length === 0 && !isLoading && (
+                <div className="mb-4">
+                  <p className="text-white/60 text-sm mb-2">Try asking:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {SUGGESTIONS.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        onClick={() => setInputMessage(suggestion)}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-full text-sm transition-colors"
+                      >
+                        {suggestion}
                       </button>
                     ))}
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="max-w-3xl mx-auto py-4">
-                {messages.map((msg, i) => (
-                  <div
-                    key={msg._id || i}
-                    className={`
-                      px-4 py-4 
-                      ${msg.role === 'user' 
-                        ? 'bg-cosmic-purple/10' 
-                        : 'bg-transparent'
-                      }
-                    `}
-                  >
-                    <div className="max-w-3xl mx-auto flex gap-4">
-                      {msg.role === 'user' ? (
-                        <>
-                          <div className="flex-1 text-right order-2">
-                            <p className="text-white whitespace-pre-wrap">{msg.content}</p>
-                          </div>
-                          <div className="order-1">
-                            <UserAvatar name={profileSummary?.full_name} />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div>
-                            <AIAvatar />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-white/90 whitespace-pre-wrap leading-relaxed prose prose-invert">
-                              {/* Show typing indicator for streaming messages */}
-                              {msg._id?.startsWith('streaming-') && (!msg.content || msg.content.length === 0) ? (
-                                <div className="flex items-center gap-2 text-cosmic-cyan/60">
-                                  <div className="flex gap-1">
-                                    <div className="w-2 h-2 bg-cosmic-cyan rounded-full animate-pulse"></div>
-                                    <div className="w-2 h-2 bg-cosmic-cyan rounded-full animate-pulse delay-75"></div>
-                                    <div className="w-2 h-2 bg-cosmic-cyan rounded-full animate-pulse delay-150"></div>
-                                  </div>
-                                  <span className="text-sm">AI is thinking...</span>
-                                </div>
-                              ) : (
-                                <>
-                                  {msg.content.split('\n').map((paragraph, index) => {
-                                // Handle headings
-                                if (paragraph.startsWith('## ')) {
-                                  return (
-                                    <h3 key={index} className="text-xl font-bold text-white mb-3 mt-4 first:mt-0">
-                                      {paragraph.replace('## ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
-                                    </h3>
-                                  );
-                                }
-                                
-                                // Handle bullet points
-                                if (paragraph.startsWith('• ')) {
-                                  return (
-                                    <ul key={index} className="list-disc list-inside space-y-2 mb-3 ml-4">
-                                      <li className="text-white/80">
-                                        {paragraph.replace('• ', '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
-                                      </li>
-                                    </ul>
-                                  );
-                                }
-                                
-                                // Handle numbered lists
-                                if (/^\d+\./.test(paragraph) || /^\d+\./.test(paragraph) || /^\d+\)/.test(paragraph) || /^\d+\s/.test(paragraph)) {
-                                  const cleanText = paragraph.replace(/^\d+[\.\)\s]\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                                  return (
-                                    <div key={index} className="mb-4 p-4 bg-gradient-to-r from-amber-500/10 to-violet-500/10 rounded-2xl border border-amber-400/20">
-                                      <ol className="list-decimal list-inside space-y-4 ml-4">
-                                        <li className="text-white/90 leading-relaxed font-medium">
-                                          <span dangerouslySetInnerHTML={{ __html: cleanText }} />
-                                        </li>
-                                      </ol>
-                                    </div>
-                                  );
-                                }
-                                
-                                // Handle regular paragraphs with bold text
-                                return (
-                                  <p key={index} className="mb-3 last:mb-0">
-                                    {paragraph.split('**').map((part, i) => (
-                                      <span key={i}>
-                                        {i % 2 === 1 ? <strong className="text-white font-semibold capitalize">{part}</strong> : part}
-                                      </span>
-                                    )).reduce((acc, curr, i) => {
-                                      if (i === 0) return curr;
-                                      return <>{acc}{curr}</>;
-                                    }, null as any)}
-                                  </p>
-                                );
-                              })}
-                              </>
-                              )}
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                
-                {/* Loading state when no streaming placeholder yet */}
-                {isLoading && !messages.some(m => m._id?.toString().startsWith('streaming-')) && (
-                  <div className="px-4 py-4">
-                    <div className="max-w-3xl mx-auto flex gap-4">
-                      <AIAvatar />
-                      <div className="flex-1">
-                        <TypingIndicator />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                <div ref={messagesEndRef} className="h-4" />
-              </div>
-            )}
-          </div>
-
-          {/* Scroll to Bottom Button */}
-          {showScrollButton && (
-            <button
-              onClick={scrollToBottom}
-              className="absolute bottom-20 right-4 bg-cosmic-purple/80 hover:bg-cosmic-purple text-white p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 border border-cosmic-purple/50"
-              title="Scroll to bottom"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-            </button>
-          )}
-
-          {/* Input Area */}
-          <div className="border-t border-cosmic-purple/30 bg-cosmic-deep-space/50 backdrop-blur-sm px-4 py-4 shrink-0">
-            <div className="max-w-3xl mx-auto">
-              <div className="relative flex items-end gap-2 bg-white/5 rounded-2xl border border-cosmic-purple/30 shadow-lg focus-within:border-cosmic-cyan/50 focus-within:shadow-cosmic-cyan/20 transition-all">
+              )}
+              
+              {/* Input */}
+              <div className="flex gap-2 max-w-4xl mx-auto items-end">
                 <textarea
                   ref={inputRef}
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={currentChat ? "Message AstroAI..." : "Create a new chat to start..."}
-                  disabled={isLoading || !currentChat}
+                  placeholder="Type your message..."
+                  className={`flex-1 resize-none rounded-2xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 transition-all scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent ${
+                    inputMessage.split('\n').length > 3 || inputMessage.length > 120 
+                      ? 'overflow-y-auto' 
+                      : 'overflow-hidden'
+                  }`}
                   rows={1}
-                  className="flex-1 bg-transparent text-white placeholder-white/40 px-4 py-3.5 resize-none focus:outline-none max-h-[200px] min-h-[48px]"
+                  style={{ 
+                    minHeight: '48px', 
+                    maxHeight: '120px',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+                  }}
                 />
                 <button
-                  type="button"
                   onClick={() => sendMessage()}
-                  disabled={!inputMessage.trim() || isLoading || !currentChat}
-                  className="mb-2 mr-2 p-2 rounded-xl bg-cosmic-purple hover:bg-cosmic-pink disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all hover:scale-105"
+                  disabled={!inputMessage.trim() || isLoading}
+                  className="w-12 h-12 bg-gradient-to-r from-cosmic-purple to-cosmic-pink text-white rounded-2xl hover:from-cosmic-purple/80 hover:to-cosmic-pink/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 shrink-0 flex items-center justify-center"
                 >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                  )}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
-              <p className="text-center text-white/40 text-xs mt-2">
-                AI responses are based on your AstroAI profile. Say "explain in detail" for more depth.
-              </p>
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </CosmicBackground>
   );

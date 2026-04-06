@@ -68,6 +68,34 @@ const getInsightStatus = async (req, res, next) => {
   }
 };
 
+// Get user profile
+const getProfile = async (req, res, next) => {
+  try {
+    console.log('Profile API - getProfile called');
+    const userId = req.user.userId;
+
+    const profile = await Profile.findOne({ user_id: userId });
+    
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Profile not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: profile
+    });
+  } catch (error) {
+    console.error('Error getting profile:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get profile'
+    });
+  }
+};
+
 // Save basic profile information
 const saveBasicProfile = async (req, res, next) => {
   try {
@@ -284,19 +312,45 @@ const generateInsights = async (req, res, next) => {
       dominant_patterns: {}
     };
     const userObjectId = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : userId;
-    await Report.findOneAndUpdate(
-      { user_id: userObjectId, report_type: 'birth_chart' },
-      { 
-        $set: { 
+    
+    // Save to reports collection - wrapped in try-catch to handle validation issues
+    try {
+      // First check if document exists
+      const existingReport = await Report.findOne({ user_id: userObjectId, report_type: 'birth_chart' });
+      
+      if (existingReport) {
+        // Update existing document
+        await Report.updateOne(
+          { user_id: userObjectId, report_type: 'birth_chart' },
+          { 
+            $set: { 
+              content: birthChart, 
+              summary: `Birth chart for ${profile.full_name}`, 
+              updated_at: new Date() 
+            } 
+          }
+        );
+        console.log('✅ Birth chart updated in reports for user:', userId);
+      } else {
+        // Create new document - use insertOne with all required fields
+        const newReport = new Report({
+          user_id: userObjectId,
+          report_type: 'birth_chart',
           content: birthChart, 
           summary: `Birth chart for ${profile.full_name}`, 
           generated_at: new Date(), 
           updated_at: new Date() 
-        } 
-      },
-      { upsert: true, new: true, runValidators: false }
-    );
-    console.log('Birth chart saved to reports for user:', userId);
+        });
+        await newReport.save({ validateBeforeSave: false });
+        console.log('✅ Birth chart saved to reports for user:', userId);
+      }
+    } catch (reportError) {
+      console.error('⚠️ Failed to save to reports collection (non-critical):', reportError.message);
+      if (reportError.code === 121) {
+        console.error('MongoDB Validation Error on reports collection:', JSON.stringify(reportError.errInfo, null, 2));
+      }
+      // Continue - this is not critical as KundliReport is the main storage
+    }
 
     console.log('Insights generated and saved for user:', userId);
 
@@ -308,14 +362,19 @@ const generateInsights = async (req, res, next) => {
 
   } catch (error) {
     console.error('Error generating insights:', error);
+    if (error.code === 121) {
+      console.error('MongoDB Validation Error Details:', error.errInfo);
+    }
     res.status(500).json({
       success: false,
-      message: 'Failed to generate insights'
+      message: 'Failed to generate insights',
+      error: error.message
     });
   }
 };
 
 module.exports = {
+  getProfile,
   getInsightStatus,
   saveBasicProfile,
   saveLifeContext,

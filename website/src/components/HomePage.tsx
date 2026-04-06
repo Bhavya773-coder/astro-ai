@@ -5,6 +5,7 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState<{ [key: string]: boolean }>({});
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({
     features: null,
     testimonials: null,
@@ -90,38 +91,48 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
-      {/* Hero Section with Background Images */}
-      <div className="relative overflow-hidden">
-        {/* Background Effects with Images */}
+      {/* Hero Section with Video Background */}
+      <div className="relative overflow-hidden" style={{ height: '100vh' }}>
+        {/* Background Effects with Video */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 via-transparent to-amber-600/20" />
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,139,250,0.1)_0%,transparent_70%)]" />
           
-          {/* Background Images - Blended with UI */}
+          {/* Video Background */}
           <div className="absolute inset-0">
-            {/* First background layer */}
-            <div 
-              className="absolute inset-0 opacity-40"
+            <video
+              autoPlay
+              muted
+              playsInline
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
               style={{
-                background: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(/download.jpg)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                filter: 'blur(30px) brightness(0.8)'
+                filter: 'brightness(0.7) contrast(1.1)',
+                transform: 'scale(1.05)'
               }}
-            />
+              onLoadedData={() => setVideoLoaded(true)}
+              onError={(e) => console.error('Video loading error:', e)}
+            >
+              <source src="/Astroai-Background.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
             
-            {/* Second background layer */}
+            {/* Loading placeholder while video loads */}
+            {!videoLoaded && (
+              <div 
+                className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900"
+                style={{
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                }}
+              />
+            )}
+            
+            {/* Minimal Overlay for text readability */}
             <div 
-              className="absolute inset-0 opacity-30"
+              className="absolute inset-0"
               style={{
-                background: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(/ast-compressed.jpg)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'top right',
-                backgroundRepeat: 'no-repeat',
-                filter: 'blur(50px) brightness(0.9)'
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.1) 100%)'
               }}
             />
           </div>
@@ -129,30 +140,30 @@ const HomePage: React.FC = () => {
 
         {/* Navigation */}
         <header className="relative z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg">
-                <span className="text-slate-900 font-bold text-xl font-display">A</span>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg">
+                <span className="text-slate-900 font-bold text-lg sm:text-xl font-display">A</span>
               </div>
-              <div>
-                <div className="text-xl font-bold font-display bg-gradient-to-r from-amber-400 to-violet-400 bg-clip-text text-transparent">
+              <div className="px-3 sm:px-4 py-2 sm:py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20">
+                <div className="text-lg sm:text-xl font-bold font-display bg-gradient-to-r from-amber-400 to-violet-400 bg-clip-text text-transparent">
                   AstroAI
                 </div>
-                <div className="text-xs text-white/70">Connect with Universe</div>
+                <div className="text-xs sm:text-sm text-white/90 block sm:hidden">Connect with Universe</div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
-                onClick={() => navigate('/login')}
-                className="px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-sm font-medium transition-all duration-300 backdrop-blur-sm"
+                onClick={() => navigate('/referral', { state: { destination: '/login' } })}
+                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-sm sm:text-sm font-medium transition-all duration-300 backdrop-blur-sm"
               >
                 Sign In
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/signup')}
-                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-900 text-sm font-semibold transition-all duration-300 shadow-lg"
+                onClick={() => navigate('/referral', { state: { destination: '/signup' } })}
+                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-900 text-sm sm:text-sm font-semibold transition-all duration-300 shadow-lg"
               >
                 Get Started Free
               </button>
@@ -160,114 +171,93 @@ const HomePage: React.FC = () => {
           </div>
         </header>
 
-        {/* Main Content */}
-        <main className="relative z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
-            <div className="text-center max-w-4xl mx-auto">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500/20 to-violet-500/20 border border-amber-400/30 px-6 py-3 text-sm text-amber-200 backdrop-blur-sm">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                ✨ Personalized cosmic insights in minutes
-              </div>
-
-              {/* Main Heading */}
-              <h1 className="mt-8 text-5xl sm:text-6xl lg:text-7xl font-bold font-display leading-tight">
-                <span className="block bg-gradient-to-r from-white via-amber-200 to-white bg-clip-text text-transparent">
-                  Connect with
-                </span>
-                <span className="block bg-gradient-to-r from-amber-400 via-violet-400 to-amber-400 bg-clip-text text-transparent mt-2">
-                  Universe
-                </span>
-                <span className="block text-3xl sm:text-4xl lg:text-5xl mt-4 text-white/90">
-                  Explore Your Inner Self
-                </span>
-              </h1>
-
-              {/* Description */}
-              <p className="mt-8 text-xl text-white/80 leading-relaxed max-w-2xl mx-auto">
-                Unlock daily tarot readings, moon phase guidance, crystal ball insights, and personalized birth chart analysis to find clarity and reconnect with your intuition.
-              </p>
-
-              {/* CTA Buttons */}
-              <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  type="button"
-                  onClick={() => navigate('/signup')}
-                  className="px-8 py-4 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-900 text-lg font-semibold transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
-                >
-                  Start Your Journey
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/login')}
-                  className="px-8 py-4 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-lg font-medium transition-all duration-300 backdrop-blur-sm"
-                >
-                  I Already Have an Account
-                </button>
-              </div>
-            </div>
+        {/* Main Content - Minimal to showcase video */}
+        <main className="relative z-10 flex items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
+          <div className="text-center">
+           
           </div>
         </main>
       </div>
 
-      {/* Image Gallery Section */}
+      {/* Upcoming Features Section */}
       <section className="relative py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,139,250,0.1)_0%,transparent_70%)]" />
+        
+        <div className="relative z-10 max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold font-display bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
-              Cosmic Gallery
+              Coming Soon
             </h2>
-            <p className="mt-4 text-lg text-white/70">Explore the mystical beauty of the cosmos</p>
+            <p className="mt-4 text-lg text-white/90">Exciting new features on the horizon</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Coffee Reading */}
             <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-violet-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative overflow-hidden rounded-3xl border border-white/10">
-                <img 
-                  src="/download.jpg" 
-                  alt="Cosmic background 1" 
-                  className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-transparent to-black/50" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                  <h3 className="text-white font-semibold">Stellar Gateway</h3>
-                  <p className="text-white/70 text-sm">Journey through the stars</p>
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-6 hover:border-amber-400/30 transition-all duration-300">
+                <div className="relative overflow-hidden rounded-2xl mb-4">
+                  <img 
+                    src="./coffee.jpg" 
+                    alt="Coffee Reading" 
+                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Coffee Reading</h3>
+                <p className="text-white/70 text-sm">Discover insights through the ancient art of coffee</p>
+                <div className="mt-4">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold">
+                    Coming Soon
+                  </span>
                 </div>
               </div>
             </div>
 
+            {/* Palm Reading */}
             <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-blue-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative overflow-hidden rounded-3xl border border-white/10">
-                <img 
-                  src="/download (1).jpg" 
-                  alt="Cosmic background 2" 
-                  className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-transparent to-black/50" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                  <h3 className="text-white font-semibold">Nebula Dreams</h3>
-                  <p className="text-white/70 text-sm">Where magic begins</p>
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-6 hover:border-violet-400/30 transition-all duration-300">
+                <div className="relative overflow-hidden rounded-2xl mb-4">
+                  <img 
+                    src="./PalmReading.webp" 
+                    alt="Palm Reading" 
+                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Palm Reading</h3>
+                <p className="text-white/70 text-sm">Unveil your destiny through the lines of your hand</p>
+                <div className="mt-4">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-violet-500/20 text-violet-300 text-xs font-semibold">
+                    Coming Soon
+                  </span>
                 </div>
               </div>
             </div>
 
+            {/* Face Reading */}
             <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-green-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative overflow-hidden rounded-3xl border border-white/10">
-                <img 
-                  src="/ast-compressed.jpg" 
-                  alt="Cosmic background 3" 
-                  className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-transparent to-black/50" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                  <h3 className="text-white font-semibold">Cosmic Energy</h3>
-                  <p className="text-white/70 text-sm">Universal connection</p>
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-6 hover:border-cyan-400/30 transition-all duration-300">
+                <div className="relative overflow-hidden rounded-2xl mb-4">
+                  <img 
+                    src="./face-reading.jpg" 
+                    alt="Face Reading" 
+                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Face Reading</h3>
+                <p className="text-white/70 text-sm">Explore personality traits through facial analysis</p>
+                <div className="mt-4">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-semibold">
+                    Coming Soon
+                  </span>
                 </div>
               </div>
             </div>

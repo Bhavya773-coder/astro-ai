@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getProfessionalSymbol } from '../utils/professionalSymbols';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/client';
-import AppNavbar from './AppNavbar';
+import Sidebar from './Sidebar';
 import toast from 'react-hot-toast';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
@@ -223,138 +223,19 @@ const NumerologyPage: React.FC = () => {
 
   return (
     <CosmicBackground>
-      <AppNavbar />
-
-      <div className="pt-16"> {/* Add padding for sticky navbar */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="flex min-h-screen overflow-hidden">
+        <Sidebar />
+        
+        <div className="flex-1 lg:ml-20 transition-all duration-300 overflow-y-auto h-screen" id="main-content">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl md:text-4xl font-bold font-display">Numerology</h1>
         <p className="mt-2 text-white/75 max-w-2xl">
           Discover the ancient wisdom of numbers and how they reveal your life's purpose, personality, and destiny.
         </p>
 
-        {/* What is Numerology Section */}
-        <div className="mt-12 bg-white/5 border border-white/10 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">What is Numerology?</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
-              <p className="text-white/70 leading-relaxed mb-4">
-                <strong>Numerology</strong> is an ancient mystical science that studies the hidden meaning of numbers and their influence on human life. It's based on the belief that numbers are not just mathematical quantities, but carry specific vibrations and energies that shape our destiny.
-              </p>
-              <p className="text-white/70 leading-relaxed mb-4">
-                This sacred science has been practiced for thousands of years across various civilizations, including ancient Egypt, Greece, China, and India. Each number from 1 to 9 (along with master numbers 11, 22, and 33) carries unique characteristics and energies.
-              </p>
-              <p className="text-white/70 leading-relaxed">
-                Through numerology, we can uncover our life's purpose, understand our personality traits, predict future trends, and make better life decisions by aligning with our numerical vibrations.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <div className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-400/30 rounded-xl p-4">
-                <h3 className="text-violet-300 font-semibold mb-2">{getProfessionalSymbol('🌟')} Core Principle</h3>
-                <p className="text-white/60 text-sm">Everything in the universe vibrates at specific frequencies, and numbers are the language of these vibrations.</p>
-              </div>
-              <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/30 rounded-xl p-4">
-                <h3 className="text-purple-300 font-semibold mb-2">{getProfessionalSymbol('📊')} Mathematical Foundation</h3>
-                <p className="text-white/60 text-sm">Your birth date and name are reduced to single digits (except master numbers) to reveal your core numbers.</p>
-              </div>
-              <div className="bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-400/30 rounded-xl p-4">
-                <h3 className="text-pink-300 font-semibold mb-2">{getProfessionalSymbol('🎯')} Life Application</h3>
-                <p className="text-white/60 text-sm">Use your numbers to understand relationships, career paths, timing, and personal growth opportunities.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* History and Origins Section */}
-        <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">The History of Numerology</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-amber-400 text-2xl">🔺</span>
-              </div>
-              <h3 className="text-amber-300 font-semibold mb-2">Ancient Egypt</h3>
-              <p className="text-white/60 text-sm">Egyptian priests used numerology to understand divine messages and predict future events.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-400 text-2xl">{getProfessionalSymbol('🏛️')}</span>
-              </div>
-              <h3 className="text-blue-300 font-semibold mb-2">Greek Philosophy</h3>
-              <p className="text-white/60 text-sm">Pythagoras, the "Father of Mathematics," developed the modern system of numerology we use today.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-emerald-400 text-2xl">{getProfessionalSymbol('🕉️')}</span>
-              </div>
-              <h3 className="text-emerald-300 font-semibold mb-2">Eastern Wisdom</h3>
-              <p className="text-white/60 text-sm">Chinese numerology and Indian Vedic traditions have long recognized the power of numbers in daily life.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* How It Works Section */}
-        <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">How Numerology Works</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-4">The Calculation Process</h3>
-              <div className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-violet-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-violet-400 text-xs">1</span>
-                  </div>
-                  <div>
-                    <h4 className="text-white/80 font-medium">Birth Date Analysis</h4>
-                    <p className="text-white/60 text-sm">Your date of birth is reduced to single digits to reveal your Life Path Number and Personal Year.</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-purple-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-purple-400 text-xs">2</span>
-                  </div>
-                  <div>
-                    <h4 className="text-white/80 font-medium">Name Numerology</h4>
-                    <p className="text-white/60 text-sm">Each letter in your name corresponds to a number, revealing your Destiny Number and personality traits.</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-pink-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-pink-400 text-xs">3</span>
-                  </div>
-                  <div>
-                    <h4 className="text-white/80 font-medium">Master Numbers</h4>
-                    <p className="text-white/60 text-sm">Numbers 11, 22, and 33 are not reduced and carry special spiritual significance and potential.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-4">Number Meanings</h3>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { num: '1', meaning: 'Leadership', color: 'text-red-400' },
-                  { num: '2', meaning: 'Cooperation', color: 'text-orange-400' },
-                  { num: '3', meaning: 'Creativity', color: 'text-yellow-400' },
-                  { num: '4', meaning: 'Stability', color: 'text-green-400' },
-                  { num: '5', meaning: 'Freedom', color: 'text-blue-400' },
-                  { num: '6', meaning: 'Harmony', color: 'text-indigo-400' },
-                  { num: '7', meaning: 'Spirituality', color: 'text-purple-400' },
-                  { num: '8', meaning: 'Success', color: 'text-pink-400' },
-                  { num: '9', meaning: 'Humanity', color: 'text-rose-400' }
-                ].map((item) => (
-                  <div key={item.num} className="bg-white/5 border border-white/10 rounded-lg p-3 text-center">
-                    <div className={`text-2xl font-bold ${item.color} mb-1`}>{item.num}</div>
-                    <div className="text-white/60 text-xs">{item.meaning}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8">
-        {isLoading ? (
-          <div className="text-center py-16">
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-16 mt-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-violet-400/20 rounded-full mb-6 animate-pulse">
               <span className="text-violet-400 text-2xl">{getProfessionalSymbol('✨')}</span>
             </div>
@@ -363,8 +244,11 @@ const NumerologyPage: React.FC = () => {
               We're retrieving your personalized numerology data...
             </p>
           </div>
-        ) : error ? (
-          <div className="text-center py-16">
+        )}
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <div className="text-center py-16 mt-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500/20 rounded-full mb-6">
               <span className="text-red-400 text-2xl">{getProfessionalSymbol('⚠️')}</span>
             </div>
@@ -387,12 +271,15 @@ const NumerologyPage: React.FC = () => {
               </button>
             </div>
           </div>
-        ) : numerology ? (
-          <div>
+        )}
+
+        {/* Numerology Data - Display at top when available */}
+        {numerology && !isLoading && !error && (
+          <div className="mt-8">
             {/* Success Header */}
             <div className="text-center mb-12">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500/20 rounded-full mb-6">
-                <span className="text-green-400 text-3xl">{getProfessionalSymbol('✨')}</span>
+              <div className="flex justify-center mb-6">
+                <img src="/favicon.png" alt="Astro AI" className="w-24 h-24" />
               </div>
               <h3 className="text-3xl font-bold text-white mb-4">Your Personal Numerology Blueprint</h3>
               <p className="text-white/60 max-w-3xl mx-auto text-lg">
@@ -593,6 +480,126 @@ const NumerologyPage: React.FC = () => {
                 </div>
               </div>
             )}
+            {/* What is Numerology Section */}
+        <div className="mt-12 bg-white/5 border border-white/10 rounded-2xl p-8">
+          <h2 className="text-2xl font-bold text-white mb-6">What is Numerology?</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+              <p className="text-white/70 leading-relaxed mb-4">
+                <strong>Numerology</strong> is an ancient mystical science that studies the hidden meaning of numbers and their influence on human life. It's based on the belief that numbers are not just mathematical quantities, but carry specific vibrations and energies that shape our destiny.
+              </p>
+              <p className="text-white/70 leading-relaxed mb-4">
+                This sacred science has been practiced for thousands of years across various civilizations, including ancient Egypt, Greece, China, and India. Each number from 1 to 9 (along with master numbers 11, 22, and 33) carries unique characteristics and energies.
+              </p>
+              <p className="text-white/70 leading-relaxed">
+                Through numerology, we can uncover our life's purpose, understand our personality traits, predict future trends, and make better life decisions by aligning with our numerical vibrations.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-400/30 rounded-xl p-4">
+                <h3 className="text-violet-300 font-semibold mb-2">{getProfessionalSymbol('🌟')} Core Principle</h3>
+                <p className="text-white/60 text-sm">Everything in the universe vibrates at specific frequencies, and numbers are the language of these vibrations.</p>
+              </div>
+              <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/30 rounded-xl p-4">
+                <h3 className="text-purple-300 font-semibold mb-2">{getProfessionalSymbol('📊')} Mathematical Foundation</h3>
+                <p className="text-white/60 text-sm">Your birth date and name are reduced to single digits (except master numbers) to reveal your core numbers.</p>
+              </div>
+              <div className="bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-400/30 rounded-xl p-4">
+                <h3 className="text-pink-300 font-semibold mb-2">{getProfessionalSymbol('🎯')} Life Application</h3>
+                <p className="text-white/60 text-sm">Use your numbers to understand relationships, career paths, timing, and personal growth opportunities.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* History and Origins Section */}
+        <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-8">
+          <h2 className="text-2xl font-bold text-white mb-6">The History of Numerology</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-amber-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-amber-400 text-2xl">🔺</span>
+              </div>
+              <h3 className="text-amber-300 font-semibold mb-2">Ancient Egypt</h3>
+              <p className="text-white/60 text-sm">Egyptian priests used numerology to understand divine messages and predict future events.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-blue-400 text-2xl">{getProfessionalSymbol('🏛️')}</span>
+              </div>
+              <h3 className="text-blue-300 font-semibold mb-2">Greek Philosophy</h3>
+              <p className="text-white/60 text-sm">Pythagoras, the "Father of Mathematics," developed the modern system of numerology we use today.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-emerald-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-emerald-400 text-2xl">{getProfessionalSymbol('🕉️')}</span>
+              </div>
+              <h3 className="text-emerald-300 font-semibold mb-2">Eastern Wisdom</h3>
+              <p className="text-white/60 text-sm">Chinese numerology and Indian Vedic traditions have long recognized the power of numbers in daily life.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* How It Works Section */}
+        <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-8">
+          <h2 className="text-2xl font-bold text-white mb-6">How Numerology Works</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-4">The Calculation Process</h3>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-violet-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-violet-400 text-xs">1</span>
+                  </div>
+                  <div>
+                    <h4 className="text-white/80 font-medium">Birth Date Analysis</h4>
+                    <p className="text-white/60 text-sm">Your date of birth is reduced to single digits to reveal your Life Path Number and Personal Year.</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-purple-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-purple-400 text-xs">2</span>
+                  </div>
+                  <div>
+                    <h4 className="text-white/80 font-medium">Name Numerology</h4>
+                    <p className="text-white/60 text-sm">Each letter in your name corresponds to a number, revealing your Destiny Number and personality traits.</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-pink-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-pink-400 text-xs">3</span>
+                  </div>
+                  <div>
+                    <h4 className="text-white/80 font-medium">Master Numbers</h4>
+                    <p className="text-white/60 text-sm">Numbers 11, 22, and 33 are not reduced and carry special spiritual significance and potential.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-4">Number Meanings</h3>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { num: '1', meaning: 'Leadership', color: 'text-red-400' },
+                  { num: '2', meaning: 'Cooperation', color: 'text-orange-400' },
+                  { num: '3', meaning: 'Creativity', color: 'text-yellow-400' },
+                  { num: '4', meaning: 'Stability', color: 'text-green-400' },
+                  { num: '5', meaning: 'Freedom', color: 'text-blue-400' },
+                  { num: '6', meaning: 'Harmony', color: 'text-indigo-400' },
+                  { num: '7', meaning: 'Spirituality', color: 'text-purple-400' },
+                  { num: '8', meaning: 'Success', color: 'text-pink-400' },
+                  { num: '9', meaning: 'Humanity', color: 'text-rose-400' }
+                ].map((item) => (
+                  <div key={item.num} className="bg-white/5 border border-white/10 rounded-lg p-3 text-center">
+                    <div className={`text-2xl font-bold ${item.color} mb-1`}>{item.num}</div>
+                    <div className="text-white/60 text-xs">{item.meaning}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        <br />
 
             {/* Next Steps */}
             <div className="text-center">
@@ -611,8 +618,11 @@ const NumerologyPage: React.FC = () => {
               </button>
             </div>
           </div>
-        ) : (
-          <div className="text-center py-16">
+        )}
+
+        {/* Generate Insights CTA - when no data */}
+        {!numerology && !isLoading && !error && (
+          <div className="text-center py-16 mt-8">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-violet-400/20 rounded-full mb-8">
               <span className="text-violet-400 text-3xl">🔮</span>
             </div>
@@ -628,9 +638,14 @@ const NumerologyPage: React.FC = () => {
             </button>
           </div>
         )}
-        </div> {/* Close conditional content container */}
-      </div> {/* Close main content container */}
-      </div> {/* Close padding container */}
+
+        
+
+        <div className="mt-8">
+        </div>
+        </div>
+      </div>
+      </div>
     </CosmicBackground>
   );
 };

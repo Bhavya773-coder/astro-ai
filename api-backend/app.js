@@ -24,6 +24,8 @@ const gptChatRoutes = require('./routes/gptChat.routes');
 const aiChatRoutes = require('./routes/aiChat.routes');
 const aiChatHealthRoutes = require('./routes/aiChatHealth.routes');
 const reportsRoutes = require('./routes/reports.routes');
+const horoscopeRoutes = require('./routes/horoscope.routes');
+const dressingStylerRoutes = require('./routes/dressingStyler.routes');
 
 const app = express();
 
@@ -67,6 +69,8 @@ app.use('/api/gpt', gptChatRoutes);
 app.use('/api/ai-chat', aiChatRoutes);
 app.use('/api/ai-chat', aiChatHealthRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/horoscope', horoscopeRoutes);
+app.use('/api/dressing-styler', dressingStylerRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

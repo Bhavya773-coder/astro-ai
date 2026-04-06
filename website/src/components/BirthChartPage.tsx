@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/client';
 import * as d3 from 'd3';
-import AppNavbar from './AppNavbar';
+import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText } from './CosmicUI';
 import { reportsApi, BirthChartResponse } from '../api/reports';
@@ -740,9 +740,9 @@ const BirthChartPage: React.FC = () => {
 
   if (isLoading && !birthChartData) {
     return (
-      <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
-        <AppNavbar />
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+      <div className="flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
+        <Sidebar />
+        <div className="flex-1 lg:ml-20 overflow-y-auto h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
             <p className="text-white text-lg">Loading Birth Chart...</p>
@@ -754,9 +754,9 @@ const BirthChartPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
-        <AppNavbar />
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+      <div className="flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
+        <Sidebar />
+        <div className="flex-1 lg:ml-20 overflow-y-auto h-screen flex items-center justify-center">
           <div className="text-center max-w-md mx-auto p-8">
             <div className="text-red-400 text-6xl mb-6">⚠️</div>
             <h2 className="text-2xl font-bold text-white mb-4">Birth Chart Error</h2>
@@ -776,23 +776,10 @@ const BirthChartPage: React.FC = () => {
   // User doesn't have birth chart data - show educational content
   if (!birthChartData) {
     return (
-      <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-25 pointer-events-none">
-          <svg className="h-full w-full" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="chart_g1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(560 380) rotate(90) scale(420 640)">
-                <stop stopColor="#F59E0B" stopOpacity="0.33" />
-                <stop offset="1" stopColor="#0B1026" stopOpacity="0" />
-              </radialGradient>
-            </defs>
-            <rect width="1200" height="800" fill="url(#chart_g1)" />
-          </svg>
-        </div>
-
-        <AppNavbar />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
+        <Sidebar />
+        <div className="flex-1 lg:ml-20 overflow-y-auto h-screen">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold font-display mb-6">
@@ -908,6 +895,7 @@ const BirthChartPage: React.FC = () => {
             </div>
           </div>
         </div>
+        </div>
       </div>
     );
   }
@@ -915,10 +903,10 @@ const BirthChartPage: React.FC = () => {
   // User has birth chart data - display their cosmic chart
   return (
     <CosmicBackground>
-      <AppNavbar />
-
-      <div className="pt-16"> {/* Add padding for sticky navbar */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="flex min-h-screen overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 lg:ml-20 overflow-y-auto h-screen" id="main-content">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
@@ -1260,8 +1248,9 @@ const BirthChartPage: React.FC = () => {
                 )}
           </div>
         </div>
+        </div>
       </div>
-      </div> {/* Close padding container */}
+      </div>
     </CosmicBackground>
   );
 };

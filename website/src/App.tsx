@@ -18,8 +18,10 @@ import ReportsPage from './components/ReportsPage';
 import ProSubscriptionPage from './components/ProSubscriptionPage';
 import SubscriptionSuccessPage from './components/SubscriptionSuccessPage';
 import SignUpPage from './components/SignUpPage';
+import ReferralCodePage from './components/ReferralCodePage';
 import ProtectedRoute from './auth/ProtectedRoute';
 import GPTChatPage from './components/GPTChatPage';
+import DressingStylerPage from './components/DressingStylerPage';
 import { AppDataProvider } from './state/AppDataContext';
 
 function App() {
@@ -52,6 +54,7 @@ function App() {
         <AppDataProvider>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/referral" element={<ReferralCodePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/verify-otp" element={<VerifyOtpPage />} />
@@ -92,6 +95,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <GPTChatPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dressing-styler"
+              element={
+                <ProtectedRoute>
+                  <DressingStylerPage />
                 </ProtectedRoute>
               }
             />

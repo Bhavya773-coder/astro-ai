@@ -284,7 +284,17 @@ const getBirthChart = asyncHandler(async (req, res) => {
   const kundliReport = new KundliReport({
     user_id: userId,
     birth_details: birthDetails,
-    chart_data
+    chart_data,
+    interpretation: {
+      personality: `Based on your ${chart_data.ascendant} ascendant and ${chart_data.moon_sign} moon sign, you have a unique personality blending practical ambition with emotional depth.`,
+      strengths: `Your ${chart_data.sun_sign} sun sign provides natural leadership qualities and determination.`,
+      challenges: 'Balancing professional ambitions with personal relationships is a key challenge.',
+      career: 'Careers requiring analytical thinking and creativity are well-suited for you.',
+      relationships: 'You seek deep emotional connections and value loyalty in relationships.',
+      health: 'Regular exercise and stress management through meditation and yoga are beneficial.',
+      spiritual_path: 'Your spiritual journey involves integrating practical wisdom with emotional intelligence.',
+      important_yogas: []
+    }
   });
 
   await kundliReport.save();
