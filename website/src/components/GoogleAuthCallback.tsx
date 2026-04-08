@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { apiFetch } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import { CosmicBackground } from './CosmicBackground';
 import { LoadingSpinner } from './CosmicUI';
 
 const GoogleAuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setAuth } = useAuth();
 
   useEffect(() => {
     const handleGoogleCallback = async () => {
@@ -31,8 +33,7 @@ const GoogleAuthCallback: React.FC = () => {
         });
 
         if (response?.token && response?.user) {
-          localStorage.setItem('astroai_token', response.token);
-          localStorage.setItem('astroai_user', JSON.stringify(response.user));
+          setAuth(response.token, response.user);
           navigate('/dashboard');
         } else {
           navigate('/login?error=invalid_response');
@@ -43,7 +44,7 @@ const GoogleAuthCallback: React.FC = () => {
     };
 
     handleGoogleCallback();
-  }, [location.search, navigate]);
+  }, [location.search, navigate, setAuth]);
 
   return (
     <CosmicBackground className="min-h-screen flex items-center justify-center px-4">

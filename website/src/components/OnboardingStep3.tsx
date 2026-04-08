@@ -54,7 +54,7 @@ const OnboardingStep3: React.FC = () => {
         toast.success('✨ Your insights are ready! Explore them in the Numerology tab.');
 
         setTimeout(() => {
-          navigate('/numerology');
+          navigate('/dashboard');
         }, 1500);
 
       } catch (err: any) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { useAuth } from './auth/AuthContext';
 import HomePage from './components/HomePage';
 import LoginPage from './components/LoginPage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
@@ -23,6 +24,36 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import GPTChatPage from './components/GPTChatPage';
 import DressingStylerPage from './components/DressingStylerPage';
 import { AppDataProvider } from './state/AppDataContext';
+
+// Wrapper component to handle authenticated redirect for homepage
+const HomePageWrapper: React.FC = () => {
+  const { isAuthenticated, isInitializing } = useAuth();
+  
+  if (isInitializing) {
+    return null;
+  }
+  
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <HomePage />;
+};
+
+// Wrapper for auth pages (login/signup) - redirect to dashboard if already logged in
+const AuthPageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isInitializing } = useAuth();
+  
+  if (isInitializing) {
+    return null;
+  }
+  
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <>{children}</>;
+};
 
 function App() {
   return (
@@ -53,19 +84,47 @@ function App() {
         />
         <AppDataProvider>
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<HomePageWrapper />} />
             <Route path="/referral" element={<ReferralCodePage />} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<AuthPageWrapper><LoginPage /></AuthPageWrapper>} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/verify-otp" element={<VerifyOtpPage />} />
             <Route path="/new-password" element={<NewPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/onboarding/step-1" element={<OnboardingStep1 />} />
-            <Route path="/onboarding/step-2" element={<OnboardingStep2 />} />
-            <Route path="/onboarding/step-3" element={<OnboardingStep3 />} />
-            <Route path="/dashboard" element={<MainPage />} />
+            <Route path="/signup" element={<AuthPageWrapper><SignUpPage /></AuthPageWrapper>} />
+            <Route
+              path="/onboarding/step-1"
+              element={
+                <ProtectedRoute>
+                  <OnboardingStep1 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/onboarding/step-2"
+              element={
+                <ProtectedRoute>
+                  <OnboardingStep2 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/onboarding/step-3"
+              element={
+                <ProtectedRoute>
+                  <OnboardingStep3 />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <MainPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/numerology"
               element={

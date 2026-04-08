@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { verifyOtp } from '../api/client';
-import { CosmicBackground } from './CosmicBackground';
 import { CosmicButton, GlassCard, LoadingSpinner } from './CosmicUI';
 
 const VerifyOtpPage: React.FC = () => {
@@ -55,77 +54,114 @@ const VerifyOtpPage: React.FC = () => {
   };
 
   return (
-    <CosmicBackground className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md animate-slide-up">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-cosmic-gold to-cosmic-pink mb-4 shadow-neon-gold">
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h1 className="font-display text-3xl font-bold text-white mb-2 text-glow-gold">Verify Code</h1>
-          <p className="text-white/60 font-body">Enter the 6-digit code sent to {email}</p>
-        </div>
-
-        <GlassCard className="p-8" glow="gold">
-          {error ? (
-            <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-300">
-              {error}
-            </div>
-          ) : null}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-white/80 mb-4 text-center">
-                Verification Code
-              </label>
-              <div className="flex justify-center gap-3">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    id={`otp-${index}`}
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-14 text-center text-2xl font-bold bg-white/5 border-2 border-white/20 rounded-xl text-white focus:outline-none focus:border-cosmic-gold focus:ring-2 focus:ring-cosmic-gold/30 transition-all duration-300"
-                    required
-                  />
-                ))}
-              </div>
-            </div>
-
-            <CosmicButton
-              type="submit"
-              variant="primary"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <LoadingSpinner size="sm" />
-                  Verifying...
-                </span>
-              ) : (
-                'Verify Code'
-              )}
-            </CosmicButton>
-
-            <CosmicButton
-              type="button"
-              variant="glass"
-              className="w-full"
-              onClick={() => navigate('/forgot-password')}
-            >
-              Back
-            </CosmicButton>
-          </form>
-        </GlassCard>
+    <div className="min-h-screen text-white relative overflow-hidden" style={{ height: '100vh' }}>
+      {/* Video Background Only */}
+      <div className="absolute inset-0">
+        <video
+          autoPlay
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            filter: 'brightness(0.7) contrast(1.1)',
+            transform: 'scale(1.05)',
+            objectFit: 'cover'
+          }}
+          onError={(e) => console.error('Video loading error:', e)}
+        >
+          <source src="/Astroai-Background.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       </div>
-    </CosmicBackground>
+
+      {/* Content with Scroll */}
+      <div className="relative z-10 flex items-start justify-center px-4 overflow-y-auto pt-8 sm:pt-12" style={{ height: '100vh', minHeight: '100vh' }}>
+        <div className="w-full max-w-md animate-slide-up py-8" style={{ minHeight: 'fit-content' }}>
+          {/* Logo/Brand Section */}
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-pink mb-4 shadow-cosmic animate-pulse-glow">
+              <span className="text-white text-3xl font-bold font-display">A</span>
+            </div>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-2 text-glow">Verify Code</h1>
+            <p className="text-sm sm:text-base text-white/60 font-body">Enter the 6-digit code sent to {email}</p>
+          </div>
+
+          <GlassCard className="p-6 sm:p-8" glow="pink">
+            {error ? (
+              <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-300 animate-shake">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {error}
+                </div>
+              </div>
+            ) : null}
+
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-4 text-center">
+                  Verification Code
+                </label>
+                <div className="flex justify-center gap-2 sm:gap-3">
+                  {otp.map((digit, index) => (
+                    <input
+                      key={index}
+                      id={`otp-${index}`}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold bg-white/5 border-2 border-white/20 rounded-xl text-white focus:outline-none focus:border-cosmic-pink focus:ring-2 focus:ring-cosmic-pink/30 transition-all duration-300"
+                      required
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <CosmicButton
+                type="submit"
+                variant="primary"
+                className="w-full py-3 sm:py-3 text-sm sm:text-base"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <LoadingSpinner size="sm" />
+                    Verifying...
+                  </span>
+                ) : (
+                  'Verify Code'
+                )}
+              </CosmicButton>
+
+              <CosmicButton
+                type="button"
+                variant="glass"
+                className="w-full py-3 sm:py-3 text-sm sm:text-base"
+                onClick={() => navigate('/forgot-password')}
+              >
+                Back
+              </CosmicButton>
+            </form>
+
+            {/* Back to home */}
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="text-sm text-white/40 hover:text-white/60 transition-colors"
+              >
+                ← Back to home
+              </button>
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,29 +1,24 @@
+
 require('dotenv').config();
 
 const { connectDB } = require('./config/db');
-const { app } = require('./app');
 
-const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
+async function start() {
+  try {
+    const { app } = require('./app'); // moved inside function
 
-// Add global error handlers
-process.on('uncaughtException', (err) => {
-  console.error('💥 Uncaught Exception:', err);
-  console.error('Stack:', err.stack);
-});
+    await connectDB(process.env.MONGODB_URI);
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
-});
+    const PORT = process.env.PORT || 5001;
 
-const start = async () => {
-  await connectDB(process.env.MONGODB_URI);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 API running on port ${PORT}`);
+    });
 
-  app.listen(PORT, () => {
-    console.log(`API listening on port ${PORT}`);
-  });
-};
+  } catch (err) {
+    console.error('💥 Server startup failed:', err);
+    process.exit(1);
+  }
+}
 
-start().catch((err) => {
-  console.error('💥 Server startup failed:', err);
-  process.exit(1);
-});
+start();
