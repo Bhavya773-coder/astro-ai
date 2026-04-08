@@ -14,6 +14,7 @@ const SignUpPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [passwordFocus, setPasswordFocus] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const navigate = useNavigate();
   const { setAuth } = useAuth();
@@ -146,6 +147,12 @@ const SignUpPage: React.FC = () => {
       return;
     }
 
+    // Show Terms & Conditions instead of registering immediately
+    setShowTerms(true);
+  };
+
+  const handleAcceptTerms = async () => {
+    setShowTerms(false);
     setIsLoading(true);
     try {
       const res = await register(email, password, isBeliever);
@@ -376,6 +383,63 @@ const SignUpPage: React.FC = () => {
         </GlassCard>
       </div>
       </div>
+
+      {/* Terms & Conditions Modal */}
+      {showTerms && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <GlassCard className="w-full max-w-2xl max-h-[85vh] flex flex-col p-6 sm:p-8" glow="purple">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-display font-bold text-white mb-2 text-glow">Terms and Conditions</h2>
+              <p className="text-sm text-white/60">Please read and accept our terms to begin your cosmic journey</p>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto pr-4 space-y-5 text-white/80 text-sm pb-4">
+              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                <p className="font-semibold text-white mb-2">Legal Disclaimer & Terms of Service</p>
+                <p>Welcome to Astro AI. By creating an account, you agree to these terms. Please read them carefully.</p>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-2 text-glow">1. Entertainment Purposes Only</h3>
+                <p className="leading-relaxed">The astrological readings, tarot interpretations, and face-reading analyses provided by Astro AI are designed strictly for entertainment purposes. They do not constitute professional advice. You agree not to use the information provided on this platform as a substitute for professional financial, medical, psychological, or legal advice. If you are facing serious personal, health, or financial challenges, please consult a qualified professional.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-2 text-glow">2. Artificial Intelligence Limitations</h3>
+                <p className="leading-relaxed">Astro AI utilizes advanced artificial intelligence models to generate insights based on astrological traditions. However, AI is imperfect and may occasionally hallucinate, provide inconsistent interpretations, or fail to accurately capture complex astrological nuances. We make no guarantees about the accuracy, reliability, or completeness of any reading.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-2 text-glow">3. Data Usage and Privacy</h3>
+                <p className="leading-relaxed">To compute precise planetary positions and personalized insights, Astro AI requires personal data including your date of birth, time of birth, and location. By proceeding, you consent to the processing of this data for the purpose of generating your personalized cosmic profile. We value your privacy and implement security measures, but you acknowledge standard internet risks apply.</p>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-2 text-glow">4. Limitation of Liability</h3>
+                <p className="leading-relaxed">Astro AI, its creators, and affiliates shall not be held liable for any decisions, actions, or life choices you make based on the content provided by our platform. Your life choices and paths are ultimately your own responsibility.</p>
+              </div>
+            </div>
+            
+            <div className="pt-6 mt-4 border-t border-white/10 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
+              <button
+                type="button"
+                onClick={() => setShowTerms(false)}
+                className="w-full sm:w-auto px-6 py-3 sm:py-2 rounded-cosmic text-white/60 hover:text-white transition-colors border border-white/10 hover:border-white/30 bg-white/5 hover:bg-white/10"
+              >
+                Decline
+              </button>
+              <CosmicButton
+                type="button"
+                onClick={handleAcceptTerms}
+                variant="primary"
+                className="w-full sm:w-auto px-8 py-3 sm:py-2"
+              >
+                Accept & Continue
+              </CosmicButton>
+            </div>
+          </GlassCard>
+        </div>
+      )}
     </div>
   );
 };
