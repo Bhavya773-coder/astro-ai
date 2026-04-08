@@ -231,9 +231,8 @@ const Sidebar: React.FC = () => {
         />
       )}
 
-      {/* Sidebar */}
       <div className={`
-        fixed top-0 left-0 h-screen bg-slate-950/90 backdrop-blur-xl border-r border-white/10 z-50
+        fixed top-0 left-0 h-screen bg-white/5 backdrop-blur-lg border-r border-white/10 z-50
         transform transition-all duration-300 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:h-screen lg:z-auto lg:overflow-hidden

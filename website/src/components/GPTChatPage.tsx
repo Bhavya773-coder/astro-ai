@@ -684,17 +684,17 @@ const GPTChatPage: React.FC = () => {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 w-full">
+            <div className="p-4 md:p-6 w-full">
               {/* Suggestions */}
               {messages.length === 0 && !isLoading && (
-                <div className="mb-4">
-                  <p className="text-white/60 text-sm mb-2">Try asking:</p>
+                <div className="mb-6 max-w-3xl mx-auto w-full">
+                  <p className="text-white/60 text-sm mb-3">Try asking:</p>
                   <div className="flex flex-wrap gap-2">
                     {SUGGESTIONS.map((suggestion) => (
                       <button
                         key={suggestion}
                         onClick={() => setInputMessage(suggestion)}
-                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-full text-sm transition-colors"
+                        className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-sm transition-colors border border-white/10"
                       >
                         {suggestion}
                       </button>
@@ -703,36 +703,36 @@ const GPTChatPage: React.FC = () => {
                 </div>
               )}
               
-              {/* Input */}
-              <div className="flex gap-2 max-w-4xl mx-auto items-end">
-                <textarea
-                  ref={inputRef}
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Type your message..."
-                  className={`flex-1 resize-none rounded-2xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 transition-all scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent ${
-                    inputMessage.split('\n').length > 3 || inputMessage.length > 120 
-                      ? 'overflow-y-auto' 
-                      : 'overflow-hidden'
-                  }`}
-                  rows={1}
-                  style={{ 
-                    minHeight: '48px', 
-                    maxHeight: '120px',
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: 'rgba(255,255,255,0.2) transparent'
-                  }}
-                />
-                <button
-                  onClick={() => sendMessage()}
-                  disabled={!inputMessage.trim() || isLoading}
-                  className="w-12 h-12 bg-gradient-to-r from-cosmic-purple to-cosmic-pink text-white rounded-2xl hover:from-cosmic-purple/80 hover:to-cosmic-pink/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 shrink-0 flex items-center justify-center"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </button>
+              {/* Floating Pill Input */}
+              <div className="w-full relative max-w-3xl mx-auto bg-transparent pb-4 md:pb-6">
+                <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="w-full relative flex items-end">
+                  <textarea
+                    ref={inputRef}
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask AstroAI anything..."
+                    className={`w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] pl-6 pr-14 py-5 text-white placeholder-white/50 focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all shadow-2xl shadow-black/50 resize-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent ${
+                      inputMessage.split('\n').length > 3 || inputMessage.length > 120 
+                        ? 'overflow-y-auto' 
+                        : 'overflow-hidden'
+                    }`}
+                    rows={1}
+                    style={{ 
+                      minHeight: '64px',
+                      maxHeight: '160px',
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!inputMessage.trim() || isLoading}
+                    className="absolute right-3 bottom-3.5 p-2 bg-white text-black rounded-full hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-white transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
+                  >
+                    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                    </svg>
+                  </button>
+                </form>
               </div>
             </div>
           </div>

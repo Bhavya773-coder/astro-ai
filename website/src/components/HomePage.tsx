@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CosmicBackground from './CosmicBackground';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -90,7 +91,7 @@ const HomePage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
+    <CosmicBackground>
       {/* Hero Section with Video Background */}
       <div className="relative overflow-hidden" style={{ height: '100vh' }}>
         {/* Background Effects with Video */}
@@ -99,7 +100,7 @@ const HomePage: React.FC = () => {
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,139,250,0.1)_0%,transparent_70%)]" />
-          
+
           {/* Video Background */}
           <div className="absolute inset-0">
             <video
@@ -117,19 +118,19 @@ const HomePage: React.FC = () => {
               <source src="/Astroai-Background.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
-            
+
             {/* Loading placeholder while video loads */}
             {!videoLoaded && (
-              <div 
+              <div
                 className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900"
                 style={{
                   animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                 }}
               />
             )}
-            
+
             {/* Minimal Overlay for text readability */}
-            <div 
+            <div
               className="absolute inset-0"
               style={{
                 background: 'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.1) 100%)'
@@ -174,16 +175,13 @@ const HomePage: React.FC = () => {
         {/* Main Content - Minimal to showcase video */}
         <main className="relative z-10 flex items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
           <div className="text-center">
-           
+
           </div>
         </main>
       </div>
 
       {/* Upcoming Features Section */}
       <section className="relative py-16 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,139,250,0.1)_0%,transparent_70%)]" />
-        
         <div className="relative z-10 max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold font-display bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
@@ -198,9 +196,9 @@ const HomePage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
               <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-6 hover:border-amber-400/30 transition-all duration-300">
                 <div className="relative overflow-hidden rounded-2xl mb-4">
-                  <img 
-                    src="./coffee.jpg" 
-                    alt="Coffee Reading" 
+                  <img
+                    src="./coffee.jpg"
+                    alt="Coffee Reading"
                     className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
@@ -221,9 +219,9 @@ const HomePage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
               <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-6 hover:border-violet-400/30 transition-all duration-300">
                 <div className="relative overflow-hidden rounded-2xl mb-4">
-                  <img 
-                    src="./PalmReading.webp" 
-                    alt="Palm Reading" 
+                  <img
+                    src="./PalmReading.webp"
+                    alt="Palm Reading"
                     className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
@@ -244,9 +242,9 @@ const HomePage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
               <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-6 hover:border-cyan-400/30 transition-all duration-300">
                 <div className="relative overflow-hidden rounded-2xl mb-4">
-                  <img 
-                    src="./face-reading.jpg" 
-                    alt="Face Reading" 
+                  <img
+                    src="./face-reading.jpg"
+                    alt="Face Reading"
                     className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
@@ -266,11 +264,10 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section 
+      <section
         ref={(el) => (sectionRefs.current['features'] = el)}
-        className={`relative py-24 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${
-          isVisible['features'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
+        className={`relative py-24 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${isVisible['features'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -341,11 +338,10 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Astrology Information Section */}
-      <section 
+      <section
         ref={(el) => (sectionRefs.current['astrology'] = el)}
-        className={`relative py-24 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${
-          isVisible['astrology'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
+        className={`relative py-24 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${isVisible['astrology'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -451,11 +447,10 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* FAQ Section */}
-      <section 
+      <section
         ref={(el) => (sectionRefs.current['faq'] = el)}
-        className={`relative py-24 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${
-          isVisible['faq'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
+        className={`relative py-24 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${isVisible['faq'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
       >
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
@@ -561,7 +556,7 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </footer>
-    </div>
+    </CosmicBackground>
   );
 };
 

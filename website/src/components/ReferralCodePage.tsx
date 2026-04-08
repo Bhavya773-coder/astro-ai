@@ -81,7 +81,7 @@ const ReferralCodePage: React.FC = () => {
                 </div>
               </div>
             ) : null}
-            
+
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               {/* Referral Code Field */}
               <div>

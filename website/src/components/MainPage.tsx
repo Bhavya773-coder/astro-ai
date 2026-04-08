@@ -488,36 +488,26 @@ const MainPage: React.FC = () => {
           </div>
         </div>
 
-        {/* FIXED CHAT INPUT at bottom - like GPT Chat */}
-        <div className="p-4 w-full">
-          <div className="max-w-4xl mx-auto w-full">
-            <form onSubmit={handleAskQuestion} className="w-full">
-              <div className="flex items-center gap-3 w-full">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cosmic-cyan to-cosmic-purple flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                  </svg>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <input
-                    type="text"
-                    value={questionInput}
-                    onChange={(e) => setQuestionInput(e.target.value)}
-                    placeholder="Ask AstroAI anything..."
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 transition-all"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={!questionInput.trim()}
-                  className="px-4 py-3 bg-gradient-to-r from-cosmic-purple to-cosmic-pink text-white rounded-xl hover:from-cosmic-purple/80 hover:to-cosmic-pink/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 shrink-0"
-                >
-                  <span className="hidden sm:inline font-medium whitespace-nowrap">Ask</span>
-                  <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                  </svg>
-                </button>
-              </div>
+        {/* FLOATING CHAT INPUT - GPT Style */}
+        <div className="p-4 md:p-8 w-full bg-transparent pb-6">
+          <div className="max-w-3xl mx-auto w-full relative">
+            <form onSubmit={handleAskQuestion} className="w-full relative flex items-center">
+              <input
+                type="text"
+                value={questionInput}
+                onChange={(e) => setQuestionInput(e.target.value)}
+                placeholder="Ask AstroAI anything..."
+                className="w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-full pl-6 pr-14 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all shadow-2xl shadow-black/50"
+              />
+              <button
+                type="submit"
+                disabled={!questionInput.trim()}
+                className="absolute right-2.5 p-2 bg-white text-black rounded-full hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-white transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
+              >
+                <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                </svg>
+              </button>
             </form>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { reportsApi, KundliReport, BirthChartResponse } from '../api/reports';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { generateKundliPDF } from '../utils/kundliPDFGenerator';
+import { CosmicBackground } from './CosmicBackground';
 
 const ReportsPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -85,16 +86,8 @@ const ReportsPage: React.FC = () => {
   );
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
-      <div className="absolute inset-0 pointer-events-none">
-        <img 
-          src="/ast-compressed.jpg" 
-          alt="" 
-          className="w-full h-full object-cover opacity-25"
-        />
-      </div>
-
-      <div className="flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
+    <CosmicBackground>
+      <div className="flex min-h-screen overflow-hidden text-white">
         <Sidebar />
         <div className="flex-1 lg:ml-20 overflow-y-auto h-screen" id="main-content">
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -433,7 +426,7 @@ const ReportsPage: React.FC = () => {
         </div>
         </div>
       </div>
-    </div>
+    </CosmicBackground>
   );
 };
 
