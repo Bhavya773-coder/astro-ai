@@ -72,13 +72,16 @@ app.use('/api/reports', reportsRoutes);
 app.use('/api/horoscope', horoscopeRoutes);
 app.use('/api/dressing-styler', dressingStylerRoutes);
 
-app.use(notFound);
-app.use(errorHandler);
-
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../website/build')));
-app.get('*', (req, res) => {
+app.get('*', (req, res, next) => {
+  if (req.originalUrl.startsWith('/api/')) {
+    return notFound(req, res, next);
+  }
   res.sendFile(path.join(__dirname, '../website/build/index.html'));
 });
+
+app.use(notFound);
+app.use(errorHandler);
 
 module.exports = { app };

@@ -1,6 +1,9 @@
 import { AuthUser } from '../auth/AuthContext';
 
 export const getBaseUrl = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.REACT_APP_API_BASE_URL || '';
+  }
   return process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
 };
 
