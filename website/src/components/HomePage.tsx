@@ -155,14 +155,14 @@ const HomePage: React.FC = () => {
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
-                onClick={() => navigate('/referral', { state: { destination: '/login' } })}
+                onClick={() => navigate('/login')}
                 className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-sm sm:text-sm font-medium transition-all duration-300 backdrop-blur-sm"
               >
                 Sign In
               </button>
               <button
                 type="button"
-                onClick={() => navigate('/referral', { state: { destination: '/signup' } })}
+                onClick={() => navigate('/signup')}
                 className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-900 text-sm sm:text-sm font-semibold transition-all duration-300 shadow-lg"
               >
                 Get Started Free

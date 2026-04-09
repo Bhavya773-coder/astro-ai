@@ -29,7 +29,10 @@ const GoogleAuthCallback: React.FC = () => {
       try {
         const response = await apiFetch('/api/auth/google', {
           method: 'POST',
-          body: JSON.stringify({ code })
+          body: JSON.stringify({ 
+            code,
+            redirectUri: window.location.origin + window.location.pathname
+          })
         });
 
         if (response?.token && response?.user) {

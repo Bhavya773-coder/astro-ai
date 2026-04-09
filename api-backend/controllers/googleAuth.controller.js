@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const googleAuth = async (req, res, next) => {
-  const { code } = req.body;
+  const { code, redirectUri } = req.body;
 
   console.log('[Google Auth] Received authorization code');
 
@@ -17,12 +17,15 @@ const googleAuth = async (req, res, next) => {
     // Exchange authorization code for access token
     console.log('[Google Auth] Exchanging code for tokens...');
     
+    // Use the redirectUri from frontend if provided, otherwise fallback to env
+    const finalRedirectUri = redirectUri || `${process.env.FRONTEND_BASE_URL || 'http://localhost:3000'}/auth/google/callback`;
+    
     const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
       client_id: process.env.GOOGLE_CLIENT_ID,
       client_secret: process.env.GOOGLE_CLIENT_SECRET,
       code,
       grant_type: 'authorization_code',
-      redirect_uri: `${process.env.FRONTEND_BASE_URL || 'http://localhost:3000'}/auth/google/callback`
+      redirect_uri: finalRedirectUri
     });
 
     const { access_token, id_token } = tokenResponse.data;
