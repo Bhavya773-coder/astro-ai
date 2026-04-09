@@ -108,19 +108,22 @@ const HomePage: React.FC = () => {
               autoPlay
               muted
               playsInline
+              loop
+              preload="auto"
+              poster="/cosmic_poster.png"
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
               style={{
                 filter: 'brightness(0.7) contrast(1.1)',
                 transform: 'scale(1.05)'
               }}
-              onLoadedData={() => setVideoLoaded(true)}
+              onCanPlayThrough={() => setVideoLoaded(true)}
               onError={(e) => console.error('Video loading error:', e)}
             >
               <source src="/Astroai-Background.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
 
-            {/* Loading placeholder while video loads */}
+            {/* Loading placeholder while video loads (only shows if poster fails) */}
             {!videoLoaded && (
               <div
                 className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900"
@@ -129,7 +132,6 @@ const HomePage: React.FC = () => {
                 }}
               />
             )}
-
             {/* Minimal Overlay for text readability */}
             <div
               className="absolute inset-0"

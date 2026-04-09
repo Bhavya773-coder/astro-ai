@@ -25,16 +25,21 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     <div 
       className={`
         rounded-cosmic 
-        border border-white/15
+        border border-white/10
         backdrop-blur-glass
-        transition-all duration-300
-        ${hover ? `hover:border-cosmic-${glow === 'none' ? 'pink' : glow}/40 ${glowStyles[glow]} hover:-translate-y-1` : ''}
+        transition-all duration-500
+        group relative overflow-hidden
+        ${hover ? `hover:border-cosmic-${glow === 'none' ? 'pink' : glow}/50 ${glowStyles[glow]} hover:-translate-y-2` : ''}
         ${className}
       `}
       style={{
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)',
       }}
     >
+      {/* Decorative inner glow for premium feel */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+      
       {children}
     </div>
   );
@@ -96,12 +101,17 @@ export const CosmicButton: React.FC<CosmicButtonProps> = ({
         ${variantClasses[variant]}
         rounded-cosmic
         transition-all duration-300
+        relative overflow-hidden
         disabled:opacity-50 disabled:cursor-not-allowed
         ${className}
       `}
       {...props}
     >
-      {children}
+      {/* Subtle shimmer effect on primary buttons */}
+      {variant === 'primary' && (
+        <div className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-[150%] animate-[shimmer_3s_infinite]" />
+      )}
+      <span className="relative z-10">{children}</span>
     </button>
   );
 };
