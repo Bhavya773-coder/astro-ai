@@ -4,6 +4,7 @@ import { apiFetch } from '../api/client';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard } from './CosmicUI';
 import toast from 'react-hot-toast';
+import { AlertTriangle, Telescope } from 'lucide-react';
 
 const OnboardingStep3: React.FC = () => {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ const OnboardingStep3: React.FC = () => {
         localStorage.removeItem('onboarding_basic');
         localStorage.removeItem('onboarding_context');
 
-        toast.success('✨ Your insights are ready! Explore them in the Numerology tab.');
+        toast.success('Your insights are ready! Explore them in the Numerology tab.');
 
         setTimeout(() => {
           navigate('/dashboard');
@@ -72,7 +73,7 @@ const OnboardingStep3: React.FC = () => {
         <div className="w-full max-w-md">
           <GlassCard className="p-8 text-center" glow="pink">
             <div className="w-16 h-16 rounded-full bg-red-500/20 mx-auto mb-4 flex items-center justify-center">
-              <span className="text-2xl">⚠️</span>
+              <AlertTriangle className="w-7 h-7 text-red-400" />
             </div>
             <h1 className="font-display text-2xl font-bold text-white mb-4">Generation Failed</h1>
             <p className="text-white/60 mb-6">{error}</p>
@@ -127,7 +128,7 @@ const OnboardingStep3: React.FC = () => {
                 style={{ transform: `rotate(${progress * 3.6}deg)` }}
               ></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-3xl">🔮</span>
+                <Telescope className="w-10 h-10 text-violet-300" />
               </div>
             </div>
             

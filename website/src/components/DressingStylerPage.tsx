@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
 import { apiFetch } from '../api/client';
+import { Shirt, Sparkles, Palette, Scissors, Footprints, ShoppingBag, Gem, Wand2, Clover, Star, Moon, Hash, Zap, Clock } from 'lucide-react';
 
 interface DressingSuggestion {
   headline: string;
@@ -120,7 +121,7 @@ const DressingStylerPage: React.FC = () => {
             <div className="text-center mb-10">
               <div className="flex justify-center mb-4">
                 <div className="w-20 h-20 bg-gradient-to-br from-pink-400/20 to-purple-400/20 rounded-full flex items-center justify-center">
-                  <span className="text-4xl">👗</span>
+                  <Shirt className="w-10 h-10 text-pink-300" />
                 </div>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold font-display">
@@ -135,8 +136,8 @@ const DressingStylerPage: React.FC = () => {
             {/* Generate Button or Countdown */}
             {!hasGeneratedToday ? (
               <GlassCard className="p-8 text-center mb-8" glow="pink">
-                <div className="mb-6">
-                  <span className="text-5xl">✨</span>
+                <div className="mb-6 flex justify-center">
+                  <Sparkles className="w-12 h-12 text-pink-300" />
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-4">
                   Discover Your Perfect Look for Today
@@ -157,7 +158,7 @@ const DressingStylerPage: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <span className="text-xl">👗</span>
+                      <Shirt className="w-5 h-5" />
                       <span>Generate Today's Style</span>
                     </>
                   )}
@@ -166,7 +167,7 @@ const DressingStylerPage: React.FC = () => {
             ) : (
               <div className="text-center mb-8">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-cosmic-cyan/30 rounded-full">
-                  <span className="text-cosmic-cyan">⏰</span>
+                  <Clock className="w-4 h-4 text-cosmic-cyan" />
                   <span className="text-white/80 text-sm">Next suggestion available in: {countdown}</span>
                 </div>
               </div>
@@ -205,7 +206,7 @@ const DressingStylerPage: React.FC = () => {
                 {/* Overview */}
                 <GlassCard className="p-6" glow="purple">
                   <h3 className="text-lg font-semibold text-cosmic-pink mb-3 flex items-center gap-2">
-                    <span>✨</span> Today's Cosmic Vibe
+                    <Sparkles className="w-4 h-4" /> Today's Cosmic Vibe
                   </h3>
                   <p className="text-white/80 leading-relaxed">{suggestion.overview}</p>
                 </GlassCard>
@@ -213,7 +214,7 @@ const DressingStylerPage: React.FC = () => {
                 {/* Color Palette */}
                 <GlassCard className="p-6" glow="cyan">
                   <h3 className="text-lg font-semibold text-cosmic-cyan mb-3 flex items-center gap-2">
-                    <span>🎨</span> Your Power Colors
+                    <Palette className="w-4 h-4" /> Your Power Colors
                   </h3>
                   <p className="text-white/80 leading-relaxed whitespace-pre-line">{suggestion.color_palette}</p>
                 </GlassCard>
@@ -222,21 +223,21 @@ const DressingStylerPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <GlassCard className="p-5" glow="pink">
                     <h4 className="text-pink-300 font-semibold mb-2 flex items-center gap-2">
-                      <span>👕</span> Top
+                      <Shirt className="w-4 h-4" /> Top
                     </h4>
                     <p className="text-white/80 text-sm">{suggestion.outfit_top}</p>
                   </GlassCard>
 
                   <GlassCard className="p-5" glow="purple">
                     <h4 className="text-purple-300 font-semibold mb-2 flex items-center gap-2">
-                      <span>👖</span> Bottom
+                      <Scissors className="w-4 h-4" /> Bottom
                     </h4>
                     <p className="text-white/80 text-sm">{suggestion.outfit_bottom}</p>
                   </GlassCard>
 
                   <GlassCard className="p-5" glow="cyan">
                     <h4 className="text-cosmic-cyan font-semibold mb-2 flex items-center gap-2">
-                      <span>👟</span> Footwear
+                      <Footprints className="w-4 h-4" /> Footwear
                     </h4>
                     <p className="text-white/80 text-sm">{suggestion.outfit_footwear}</p>
                   </GlassCard>
@@ -246,14 +247,14 @@ const DressingStylerPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <GlassCard className="p-5" glow="gold">
                     <h4 className="text-yellow-300 font-semibold mb-2 flex items-center gap-2">
-                      <span>👜</span> Accessories
+                      <ShoppingBag className="w-4 h-4" /> Accessories
                     </h4>
                     <p className="text-white/80 text-sm whitespace-pre-line">{suggestion.accessories}</p>
                   </GlassCard>
 
                   <GlassCard className="p-5" glow="pink">
                     <h4 className="text-pink-300 font-semibold mb-2 flex items-center gap-2">
-                      <span>💎</span> Jewelry
+                      <Gem className="w-4 h-4" /> Jewelry
                     </h4>
                     <p className="text-white/80 text-sm">{suggestion.jewelry}</p>
                   </GlassCard>
@@ -263,14 +264,14 @@ const DressingStylerPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <GlassCard className="p-5" glow="purple">
                     <h4 className="text-purple-300 font-semibold mb-2 flex items-center gap-2">
-                      <span>💄</span> Makeup & Grooming
+                      <Wand2 className="w-4 h-4" /> Makeup & Grooming
                     </h4>
                     <p className="text-white/80 text-sm">{suggestion.makeup_grooming}</p>
                   </GlassCard>
 
                   <GlassCard className="p-5" glow="gold">
                     <h4 className="text-yellow-300 font-semibold mb-2 flex items-center gap-2">
-                      <span>🍀</span> Lucky Item
+                      <Clover className="w-4 h-4" /> Lucky Item
                     </h4>
                     <p className="text-white/80 text-sm">{suggestion.lucky_item}</p>
                   </GlassCard>
@@ -279,7 +280,7 @@ const DressingStylerPage: React.FC = () => {
                 {/* Astrological Reason */}
                 <GlassCard className="p-6" glow="cyan">
                   <h3 className="text-lg font-semibold text-cosmic-cyan mb-3 flex items-center gap-2">
-                    <span>🌟</span> Why This Works
+                    <Star className="w-4 h-4" /> Why This Works
                   </h3>
                   <p className="text-white/80 leading-relaxed">{suggestion.astrological_reason}</p>
                 </GlassCard>
@@ -287,7 +288,7 @@ const DressingStylerPage: React.FC = () => {
                 {/* Mood Energy */}
                 <div className="text-center">
                   <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-400/30 rounded-full">
-                    <span className="text-2xl">✨</span>
+                    <Sparkles className="w-5 h-5 text-pink-300" />
                     <span className="text-white font-medium">{suggestion.mood_energy}</span>
                   </div>
                 </div>
@@ -315,21 +316,21 @@ const DressingStylerPage: React.FC = () => {
               <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center p-4">
                   <div className="w-12 h-12 bg-cosmic-cyan/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-2xl">🌙</span>
+                    <Moon className="w-6 h-6 text-cosmic-cyan" />
                   </div>
                   <h4 className="text-white font-medium mb-2">Astrology-Based</h4>
                   <p className="text-white/60 text-sm">Suggestions based on your sun, moon, and rising signs</p>
                 </div>
                 <div className="text-center p-4">
                   <div className="w-12 h-12 bg-pink-400/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-2xl">🔢</span>
+                    <Hash className="w-6 h-6 text-pink-400" />
                   </div>
                   <h4 className="text-white font-medium mb-2">Numerology Enhanced</h4>
                   <p className="text-white/60 text-sm">Your life path number influences color and style choices</p>
                 </div>
                 <div className="text-center p-4">
                   <div className="w-12 h-12 bg-purple-400/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-2xl">⚡</span>
+                    <Zap className="w-6 h-6 text-purple-400" />
                   </div>
                   <h4 className="text-white font-medium mb-2">Daily Fresh</h4>
                   <p className="text-white/60 text-sm">New suggestions every day aligned with cosmic energies</p>

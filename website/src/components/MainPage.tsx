@@ -6,6 +6,7 @@ import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
 import { useAuth } from '../auth/AuthContext';
 import { apiFetch } from '../api/client';
+import { Shirt, ChevronRight, Star } from 'lucide-react';
 
 interface HoroscopeData {
   zodiac: string;
@@ -456,16 +457,14 @@ const MainPage: React.FC = () => {
               <GlassCard className="p-6 hover:border-pink-400/50 transition-all" glow="pink">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-gradient-to-br from-pink-400/20 to-purple-400/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-3xl">👗</span>
+                    <Shirt className="w-7 h-7 text-pink-300" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-white mb-1">Personal Dressing Styler</h3>
                     <p className="text-white/70 text-sm">Get AI-powered outfit suggestions based on your astrology and numerology</p>
                   </div>
                   <div className="text-pink-400">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    <ChevronRight className="w-6 h-6" />
                   </div>
                 </div>
               </GlassCard>

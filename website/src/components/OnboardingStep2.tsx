@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/client';
 import { CosmicBackground } from './CosmicBackground';
 import { CosmicButton, GlassCard, LoadingSpinner } from './CosmicUI';
+import { Sparkles } from 'lucide-react';
 
 interface LifeContextData {
   career_stage: string;
@@ -91,7 +92,7 @@ const OnboardingStep2: React.FC = () => {
         <GlassCard className="p-8" glow="cyan">
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cosmic-cyan/20 mb-4">
-              <span className="text-3xl">🌟</span>
+              <Sparkles className="w-8 h-8 text-cosmic-cyan" />
             </div>
             <h1 className="font-display text-2xl font-bold text-white mb-2">Life Context</h1>
             <p className="text-white/60 text-sm">Help us understand your current life situation</p>

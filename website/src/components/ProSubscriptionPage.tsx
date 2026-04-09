@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AppNavbar from './AppNavbar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
+import { Star, BarChart2, Hash, FileText, Target, Zap, Smartphone, Gift, Telescope, BookOpen, Users, Wrench, Lock, MessageSquare } from 'lucide-react';
 
 const ProSubscriptionPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,27 +26,27 @@ const ProSubscriptionPage: React.FC = () => {
   const monthlySavings = Math.round(((12 * monthlyPrice - yearlyPrice) / (12 * monthlyPrice)) * 100);
 
   const freeFeatures = [
-    { icon: '💬', title: 'Limited Chat', description: '50 messages per month', available: true },
-    { icon: '📊', title: 'Basic Birth Chart', description: 'Simple astrological analysis', available: true },
-    { icon: '🔢', title: 'Basic Numerology', description: 'Life path number only', available: true },
-    { icon: '', title: 'Limited Reports', description: '3 reports per month', available: true },
-    { icon: '🎯', title: 'Standard Support', description: 'Community support only', available: true },
-    { icon: '⚡', title: 'AI Chat Speed', description: 'Standard response time', available: true },
-    { icon: '📱', title: 'Mobile Access', description: 'Basic mobile features', available: true },
+    { icon: <MessageSquare className="w-5 h-5" />, title: 'Limited Chat', description: '50 messages per month', available: true },
+    { icon: <BarChart2 className="w-5 h-5" />, title: 'Basic Birth Chart', description: 'Simple astrological analysis', available: true },
+    { icon: <Hash className="w-5 h-5" />, title: 'Basic Numerology', description: 'Life path number only', available: true },
+    { icon: <FileText className="w-5 h-5" />, title: 'Limited Reports', description: '3 reports per month', available: true },
+    { icon: <Target className="w-5 h-5" />, title: 'Standard Support', description: 'Community support only', available: true },
+    { icon: <Zap className="w-5 h-5" />, title: 'AI Chat Speed', description: 'Standard response time', available: true },
+    { icon: <Smartphone className="w-5 h-5" />, title: 'Mobile Access', description: 'Basic mobile features', available: true },
   ];
 
   const proFeatures = [
-    { icon: '💬', title: 'Unlimited Chat', description: 'Endless conversations with AI astrologer', available: true },
-    { icon: '📊', title: 'Advanced Birth Chart', description: 'Detailed Vedic analysis with dasha periods', available: true },
-    { icon: '🔢', title: 'Complete Numerology', description: 'All numbers and predictions', available: true },
-    { icon: '', title: 'Unlimited Reports', description: 'Generate unlimited detailed reports', available: true },
-    { icon: '🎯', title: 'Priority Support', description: '24/7 dedicated astrologer support', available: true },
-    { icon: '⚡', title: 'Lightning Fast AI', description: 'Priority processing with faster responses', available: true },
-    { icon: '📱', title: 'Premium Mobile App', description: 'Full-featured mobile experience', available: true },
-    { icon: '🎁', title: 'Exclusive Content', description: 'Advanced tutorials and astrological courses', available: true },
-    { icon: '🔮', title: 'Personalized Remedies', description: 'Custom gemstone and mantra recommendations', available: true },
-    { icon: '🌟', title: 'Compatibility Analysis', description: 'Detailed relationship compatibility reports', available: true },
-    { icon: '📚', title: 'Astrological Library', description: 'Access to ancient astrological texts', available: true },
+    { icon: <MessageSquare className="w-5 h-5" />, title: 'Unlimited Chat', description: 'Endless conversations with AI astrologer', available: true },
+    { icon: <BarChart2 className="w-5 h-5" />, title: 'Advanced Birth Chart', description: 'Detailed Vedic analysis with dasha periods', available: true },
+    { icon: <Hash className="w-5 h-5" />, title: 'Complete Numerology', description: 'All numbers and predictions', available: true },
+    { icon: <FileText className="w-5 h-5" />, title: 'Unlimited Reports', description: 'Generate unlimited detailed reports', available: true },
+    { icon: <Target className="w-5 h-5" />, title: 'Priority Support', description: '24/7 dedicated astrologer support', available: true },
+    { icon: <Zap className="w-5 h-5" />, title: 'Lightning Fast AI', description: 'Priority processing with faster responses', available: true },
+    { icon: <Smartphone className="w-5 h-5" />, title: 'Premium Mobile App', description: 'Full-featured mobile experience', available: true },
+    { icon: <Gift className="w-5 h-5" />, title: 'Exclusive Content', description: 'Advanced tutorials and astrological courses', available: true },
+    { icon: <Telescope className="w-5 h-5" />, title: 'Personalized Remedies', description: 'Custom gemstone and mantra recommendations', available: true },
+    { icon: <Star className="w-5 h-5" />, title: 'Compatibility Analysis', description: 'Detailed relationship compatibility reports', available: true },
+    { icon: <BookOpen className="w-5 h-5" />, title: 'Astrological Library', description: 'Access to ancient astrological texts', available: true },
   ];
 
   return (
@@ -58,7 +59,7 @@ const ProSubscriptionPage: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-6 shadow-lg">
-              <span className="text-4xl">⭐</span>
+              <Star className="w-10 h-10 text-gray-900" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Unlock <GradientText>Cosmic Wisdom</GradientText> with Pro
@@ -200,42 +201,42 @@ const ProSubscriptionPage: React.FC = () => {
               
               <div className="mt-8 space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">👥</span>
+                  <Users className="w-5 h-5 text-purple-400 shrink-0" />
                   <div className="flex-1">
                     <p className="text-white font-medium text-sm">Team Management</p>
                     <p className="text-white/60 text-xs">Manage multiple astrologers</p>
                   </div>
-                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">🔧</span>
+                  <Wrench className="w-5 h-5 text-purple-400 shrink-0" />
                   <div className="flex-1">
                     <p className="text-white font-medium text-sm">White Label</p>
                     <p className="text-white/60 text-xs">Custom branding options</p>
                   </div>
-                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">📊</span>
+                  <BarChart2 className="w-5 h-5 text-purple-400 shrink-0" />
                   <div className="flex-1">
                     <p className="text-white font-medium text-sm">Advanced Analytics</p>
                     <p className="text-white/60 text-xs">Detailed usage insights</p>
                   </div>
-                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">🔒</span>
+                  <Lock className="w-5 h-5 text-purple-400 shrink-0" />
                   <div className="flex-1">
                     <p className="text-white font-medium text-sm">API Access</p>
                     <p className="text-white/60 text-xs">Full API integration</p>
                   </div>
-                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>

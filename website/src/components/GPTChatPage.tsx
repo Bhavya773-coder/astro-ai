@@ -62,7 +62,7 @@ const TypingIndicator: React.FC = () => (
 
 // User Avatar
 const UserAvatar: React.FC<{ name?: string | null }> = ({ name }) => (
-  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cosmic-gold to-orange-500 flex items-center justify-center text-white text-sm font-medium shrink-0 shadow-lg shadow-cosmic-gold/20">
+  <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white text-sm font-medium shrink-0">
     {name ? name.charAt(0).toUpperCase() : 'U'}
   </div>
 );
@@ -97,6 +97,9 @@ const GPTChatPage: React.FC = () => {
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [inputMessage, setInputMessage] = useState('');
+  const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
+  const [editMsgContent, setEditMsgContent] = useState('');
 
   // Handle initial message from navigation (when coming from MainPage dashboard)
   useEffect(() => {
@@ -642,30 +645,117 @@ const GPTChatPage: React.FC = () => {
               ref={chatContainerRef}
               className="flex-1 overflow-y-auto p-4 space-y-4"
             >
-              {/* Messages will be rendered here */}
               {messages.map((message) => {
                 // Skip rendering placeholder messages with empty content (streaming placeholder)
                 if (message._id?.toString().startsWith('streaming-') && !message.content) {
                   return null;
                 }
+
+                const isUser = message.role === 'user';
+                const msgId = message._id || '';
+                const isEditingThis = editingMsgId === msgId;
+
+                const handleCopy = () => {
+                  navigator.clipboard.writeText(message.content).then(() => {
+                    setCopiedMsgId(msgId);
+                    setTimeout(() => setCopiedMsgId(null), 2000);
+                  });
+                };
+
+                const handleStartEditMsg = () => {
+                  setEditingMsgId(msgId);
+                  setEditMsgContent(message.content);
+                };
+
+                const handleSaveEditMsg = () => {
+                  if (!editMsgContent.trim()) return;
+                  // Update message locally then resend
+                  setMessages(prev => prev.filter(m => {
+                    const idx = prev.findIndex(x => x._id === msgId);
+                    return prev.indexOf(m) <= idx;
+                  }).map(m => m._id === msgId ? { ...m, content: editMsgContent } : m));
+                  setEditingMsgId(null);
+                  // The edited msg replaces content, then we send from that point
+                  sendMessage(editMsgContent);
+                };
+
                 return (
                   <div
                     key={message._id}
-                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`group flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
                   >
-                    {message.role === 'assistant' && <AIAvatar />}
-                    <div
-                      className={`max-w-[70%] rounded-2xl px-4 py-3 ${
-                        message.role === 'user'
-                          ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white'
-                          : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
-                      }`}
-                    >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                        {message.content}
-                      </p>
+                    {!isUser && <AIAvatar />}
+                    <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[70%]`}>
+                      {isEditingThis ? (
+                        <div className="w-full">
+                          <textarea
+                            value={editMsgContent}
+                            onChange={e => setEditMsgContent(e.target.value)}
+                            className="w-full bg-white/10 border border-white/30 rounded-2xl px-4 py-3 text-white text-sm resize-none focus:outline-none focus:border-white/60"
+                            rows={3}
+                            autoFocus
+                          />
+                          <div className="flex gap-2 mt-2 justify-end">
+                            <button
+                              onClick={() => setEditingMsgId(null)}
+                              className="px-3 py-1 text-xs text-white/60 hover:text-white border border-white/20 rounded-lg transition-colors"
+                            >Cancel</button>
+                            <button
+                              onClick={handleSaveEditMsg}
+                              className="px-3 py-1 text-xs bg-white text-black rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                            >Send</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className={`rounded-2xl px-4 py-3 ${
+                            isUser
+                              ? 'bg-white text-gray-900 font-medium'
+                              : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
+                          }`}
+                        >
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                            {message.content}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Action buttons — ChatGPT style, show on group hover */}
+                      {!isEditingThis && (
+                        <div className={`flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                          {/* Copy button */}
+                          <button
+                            onClick={handleCopy}
+                            title="Copy message"
+                            className="p-1.5 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/10 transition-all"
+                          >
+                            {copiedMsgId === msgId ? (
+                              <svg className="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            )}
+                          </button>
+
+                          {/* Edit button — only for user messages */}
+                          {isUser && (
+                            <button
+                              onClick={handleStartEditMsg}
+                              title="Edit message"
+                              className="p-1.5 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/10 transition-all"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {message.role === 'user' && <UserAvatar name={profileSummary?.full_name} />}
+                    {isUser && <UserAvatar name={profileSummary?.full_name} />}
                   </div>
                 );
               })}

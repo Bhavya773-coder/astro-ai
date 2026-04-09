@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CosmicBackground from './CosmicBackground';
+import { Telescope, Hash, BarChart2, Bot, Mail, Camera, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -143,9 +144,7 @@ const HomePage: React.FC = () => {
         <header className="relative z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg">
-                <span className="text-slate-900 font-bold text-lg sm:text-xl font-display">A</span>
-              </div>
+              <img src="/favicon.png" alt="AstroAI" className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-lg" />
               <div className="px-3 sm:px-4 py-2 sm:py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20">
                 <div className="text-lg sm:text-xl font-bold font-display bg-gradient-to-r from-amber-400 to-violet-400 bg-clip-text text-transparent">
                   AstroAI
@@ -184,10 +183,10 @@ const HomePage: React.FC = () => {
       <section className="relative py-16 px-4 sm:px-6 lg:px-8">
         <div className="relative z-10 max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold font-display bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold font-display bg-gradient-to-r from-white via-amber-200 to-violet-300 bg-clip-text text-transparent">
               Coming Soon
             </h2>
-            <p className="mt-4 text-lg text-white/90">Exciting new features on the horizon</p>
+            <p className="mt-4 text-lg text-sky-300 font-medium">Exciting new features on the horizon</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -205,7 +204,7 @@ const HomePage: React.FC = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Coffee Reading</h3>
-                <p className="text-white/70 text-sm">Discover insights through the ancient art of coffee</p>
+                <p className="text-white/85 text-sm">Discover insights through the ancient art of coffee</p>
                 <div className="mt-4">
                   <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold">
                     Coming Soon
@@ -228,7 +227,7 @@ const HomePage: React.FC = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Palm Reading</h3>
-                <p className="text-white/70 text-sm">Unveil your destiny through the lines of your hand</p>
+                <p className="text-white/85 text-sm">Unveil your destiny through the lines of your hand</p>
                 <div className="mt-4">
                   <span className="inline-flex items-center px-3 py-1 rounded-full bg-violet-500/20 text-violet-300 text-xs font-semibold">
                     Coming Soon
@@ -251,7 +250,7 @@ const HomePage: React.FC = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Face Reading</h3>
-                <p className="text-white/70 text-sm">Explore personality traits through facial analysis</p>
+                <p className="text-white/85 text-sm">Explore personality traits through facial analysis</p>
                 <div className="mt-4">
                   <span className="inline-flex items-center px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-semibold">
                     Coming Soon
@@ -271,10 +270,10 @@ const HomePage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
+            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white via-amber-200 to-violet-300 bg-clip-text text-transparent">
               What Can You Explore?
             </h2>
-            <p className="mt-4 text-xl text-white/70">Find clarity through every cosmic tool</p>
+            <p className="mt-4 text-xl text-sky-300 font-medium">Find clarity through every cosmic tool</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -283,10 +282,10 @@ const HomePage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-violet-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
               <div className="relative bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8 hover:border-amber-400/30 transition-all duration-300">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mb-6">
-                  <span className="text-2xl">🔮</span>
+                  <Telescope className="w-8 h-8 text-slate-900" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">Birth Chart</h3>
-                <p className="text-white/70 leading-relaxed">
+                <p className="text-white/85 leading-relaxed">
                   Discover your cosmic blueprint with detailed zodiac insights, planetary positions, and astrological wisdom.
                 </p>
               </div>
@@ -297,10 +296,10 @@ const HomePage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-blue-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
               <div className="relative bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8 hover:border-violet-400/30 transition-all duration-300">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-400 to-violet-600 flex items-center justify-center mb-6">
-                  <span className="text-2xl">🔢</span>
+                  <Hash className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">Numerology</h3>
-                <p className="text-white/70 leading-relaxed">
+                <p className="text-white/85 leading-relaxed">
                   Calculate your life path number, destiny number, and unlock hidden meanings behind your birth date.
                 </p>
               </div>
@@ -311,10 +310,10 @@ const HomePage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-green-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
               <div className="relative bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8 hover:border-blue-400/30 transition-all duration-300">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-6">
-                  <span className="text-2xl">📊</span>
+                  <BarChart2 className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">Reports</h3>
-                <p className="text-white/70 leading-relaxed">
+                <p className="text-white/85 leading-relaxed">
                   Generate comprehensive compatibility reports and track your spiritual growth with detailed analytics.
                 </p>
               </div>
@@ -325,10 +324,10 @@ const HomePage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-amber-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
               <div className="relative bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8 hover:border-green-400/30 transition-all duration-300">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mb-6">
-                  <span className="text-2xl">🤖</span>
+                  <Bot className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">AI Guidance</h3>
-                <p className="text-white/70 leading-relaxed">
+                <p className="text-white/85 leading-relaxed">
                   Chat with our AI astrologer for personalized insights and answers to your cosmic questions.
                 </p>
               </div>
@@ -345,10 +344,10 @@ const HomePage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
+            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white via-amber-200 to-violet-300 bg-clip-text text-transparent">
               Discover the Wisdom of the Stars
             </h2>
-            <p className="mt-4 text-xl text-white/70">Ancient knowledge meets modern insight</p>
+            <p className="mt-4 text-xl text-sky-300 font-medium">Ancient knowledge meets modern insight</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -375,9 +374,9 @@ const HomePage: React.FC = () => {
                   <div key={index} className="text-center group cursor-pointer hover:scale-105 transition-transform duration-300">
                     <div className="text-4xl mb-2">{zodiac.symbol}</div>
                     <h4 className="font-bold text-white mb-1">{zodiac.sign}</h4>
-                    <p className="text-xs text-white/60 mb-2">{zodiac.dates}</p>
-                    <p className="text-sm text-white/80">{zodiac.traits}</p>
-                    <div className="mt-2 text-xs text-amber-200">
+                    <p className="text-xs text-white/75 mb-2">{zodiac.dates}</p>
+                    <p className="text-sm text-white/90">{zodiac.traits}</p>
+                    <div className="mt-2 text-xs text-amber-300 font-semibold">
                       Element: {zodiac.element}
                     </div>
                   </div>
@@ -404,7 +403,7 @@ const HomePage: React.FC = () => {
                     <div className="text-3xl" style={{ color: planet.color }}>{planet.symbol}</div>
                     <div className="flex-1">
                       <h4 className="font-bold text-white mb-1">{planet.planet}</h4>
-                      <p className="text-sm text-white/80">{planet.influence}</p>
+                      <p className="text-sm text-white/90">{planet.influence}</p>
                     </div>
                   </div>
                 ))}
@@ -419,10 +418,10 @@ const HomePage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <h4 className="font-bold text-white mb-2">The Houses</h4>
-                  <p className="text-sm text-white/80 leading-relaxed">
+                  <p className="text-sm text-white/90 leading-relaxed">
                     The 12 houses represent different areas of life, from self-identity to career, relationships, and spirituality. Each house is ruled by a zodiac sign and reveals insights about that life domain.
                   </p>
-                  <div className="mt-3 space-y-2 text-xs text-white/60">
+                  <div className="mt-3 space-y-2 text-xs text-white/75">
                     <p>• 1st House: Self, appearance, identity</p>
                     <p>• 7th House: Partnerships, marriage, contracts</p>
                     <p>• 10th House: Career, public life, reputation</p>
@@ -430,10 +429,10 @@ const HomePage: React.FC = () => {
                 </div>
                 <div className="space-y-4">
                   <h4 className="font-bold text-white mb-2">Major Aspects</h4>
-                  <p className="text-sm text-white/80 leading-relaxed">
+                  <p className="text-sm text-white/90 leading-relaxed">
                     Planetary aspects reveal how planets interact with each other, creating harmonious or challenging energies that influence personality and life events.
                   </p>
-                  <div className="mt-3 grid grid-cols-2 gap-4 text-xs text-white/60">
+                  <div className="mt-3 grid grid-cols-2 gap-4 text-xs text-white/75">
                     <p>• Conjunction: Planets together, blended energy</p>
                     <p>• Opposition: Planets opposite, tension, growth</p>
                     <p>• Trine: Planets 120° apart, harmony, ease</p>
@@ -454,10 +453,10 @@ const HomePage: React.FC = () => {
       >
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
+            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white via-amber-200 to-violet-300 bg-clip-text text-transparent">
               Frequently Asked Questions
             </h2>
-            <p className="mt-4 text-xl text-white/70">Everything you need to know about AstroAI</p>
+            <p className="mt-4 text-xl text-sky-300 font-medium">Everything you need to know about AstroAI</p>
           </div>
 
           <div className="space-y-4">
@@ -468,12 +467,12 @@ const HomePage: React.FC = () => {
                   className="w-full px-8 py-6 text-left flex items-center justify-between hover:bg-white/5 transition-all duration-300"
                 >
                   <span className="text-lg font-semibold pr-4">{faq.question}</span>
-                  <span className={`text-2xl transition-transform duration-300 ${activeFaq === index ? 'rotate-45' : ''}`}>
-                    +
-                  </span>
+                    <span className="text-2xl transition-transform duration-300 text-white/60">
+                      {activeFaq === index ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    </span>
                 </button>
                 <div className={`overflow-hidden transition-all duration-300 ${activeFaq === index ? 'max-h-96' : 'max-h-0'}`}>
-                  <div className="px-8 pb-6 text-white/70 leading-relaxed">
+                  <div className="px-8 pb-6 text-white/85 leading-relaxed">
                     {faq.answer}
                   </div>
                 </div>
@@ -489,21 +488,27 @@ const HomePage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             {/* Company */}
             <div>
-              <h3 className="text-xl font-bold font-display mb-4 bg-gradient-to-r from-amber-400 to-violet-400 bg-clip-text text-transparent">
-                AstroAI
-              </h3>
-              <p className="text-white/70 leading-relaxed">
+              <div className="flex items-center gap-3 mb-4">
+                <img src="/favicon.png" alt="AstroAI" className="w-9 h-9 rounded-full object-cover" />
+                <h3 className="text-xl font-bold font-display bg-gradient-to-r from-amber-400 to-violet-400 bg-clip-text text-transparent">
+                  AstroAI
+                </h3>
+              </div>
+              <p className="text-white/85 leading-relaxed">
                 Your cosmic companion for self-discovery and spiritual growth through astrology and numerology.
               </p>
               <div className="flex gap-4 mt-6">
                 <div className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-300 cursor-pointer">
-                  <span>📧</span>
+                  <Mail className="w-4 h-4 text-white/80" />
                 </div>
                 <div className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-300 cursor-pointer">
-                  <span>🐦</span>
+                  {/* X / Twitter icon */}
+                  <svg className="w-4 h-4 text-white/80" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L2.25 2.25h6.832l4.258 5.636zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-300 cursor-pointer">
-                  <span>📷</span>
+                  <Camera className="w-4 h-4 text-white/80" />
                 </div>
               </div>
             </div>
@@ -512,10 +517,10 @@ const HomePage: React.FC = () => {
             <div>
               <h4 className="text-lg font-semibold mb-4 text-white">Products</h4>
               <ul className="space-y-2">
-                <li><button onClick={() => navigate('/birth-chart')} className="text-white/70 hover:text-white transition-colors">Birth Chart Analysis</button></li>
-                <li><button onClick={() => navigate('/numerology')} className="text-white/70 hover:text-white transition-colors">Numerology Reports</button></li>
-                <li><button onClick={() => navigate('/reports')} className="text-white/70 hover:text-white transition-colors">Compatibility Reports</button></li>
-                <li><button onClick={() => navigate('/ai-chat')} className="text-white/70 hover:text-white transition-colors">AI Guidance</button></li>
+                <li><button onClick={() => navigate('/birth-chart')} className="text-white/80 hover:text-amber-300 transition-colors">Birth Chart Analysis</button></li>
+                <li><button onClick={() => navigate('/numerology')} className="text-white/80 hover:text-amber-300 transition-colors">Numerology Reports</button></li>
+                <li><button onClick={() => navigate('/reports')} className="text-white/80 hover:text-amber-300 transition-colors">Compatibility Reports</button></li>
+                <li><button onClick={() => navigate('/ai-chat')} className="text-white/80 hover:text-amber-300 transition-colors">AI Guidance</button></li>
               </ul>
             </div>
 
@@ -523,10 +528,10 @@ const HomePage: React.FC = () => {
             <div>
               <h4 className="text-lg font-semibold mb-4 text-white">Resources</h4>
               <ul className="space-y-2">
-                <li><button className="text-white/70 hover:text-white transition-colors">Astrology Guide</button></li>
-                <li><button className="text-white/70 hover:text-white transition-colors">Numerology Basics</button></li>
-                <li><button className="text-white/70 hover:text-white transition-colors">Blog & Articles</button></li>
-                <li><button className="text-white/70 hover:text-white transition-colors">Video Tutorials</button></li>
+                <li><button className="text-white/90 hover:text-amber-300 transition-colors">Astrology Guide</button></li>
+                <li><button className="text-white/90 hover:text-amber-300 transition-colors">Numerology Basics</button></li>
+                <li><button className="text-white/90 hover:text-amber-300 transition-colors">Blog & Articles</button></li>
+                <li><button className="text-white/90 hover:text-amber-300 transition-colors">Video Tutorials</button></li>
               </ul>
             </div>
 
@@ -534,23 +539,23 @@ const HomePage: React.FC = () => {
             <div>
               <h4 className="text-lg font-semibold mb-4 text-white">Support</h4>
               <ul className="space-y-2">
-                <li><button className="text-white/70 hover:text-white transition-colors">Help Center</button></li>
-                <li><button className="text-white/70 hover:text-white transition-colors">Contact Us</button></li>
-                <li><button className="text-white/70 hover:text-white transition-colors">Privacy Policy</button></li>
-                <li><button className="text-white/70 hover:text-white transition-colors">Terms of Service</button></li>
+                <li><button className="text-white/80 hover:text-amber-300 transition-colors">Help Center</button></li>
+                <li><button className="text-white/80 hover:text-amber-300 transition-colors">Contact Us</button></li>
+                <li><button className="text-white/80 hover:text-amber-300 transition-colors">Privacy Policy</button></li>
+                <li><button className="text-white/80 hover:text-amber-300 transition-colors">Terms of Service</button></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-white/10 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-white/60 text-sm">
-                © 2024 AstroAI. All rights reserved. Made with ✨ and cosmic energy.
+              <p className="text-white/75 text-sm">
+                © 2024 AstroAI. All rights reserved. Made with <Sparkles className="w-4 h-4 inline text-violet-400" /> and cosmic energy.
               </p>
               <div className="flex gap-6 mt-4 md:mt-0">
-                <button className="text-white/60 hover:text-white text-sm transition-colors">Privacy</button>
-                <button className="text-white/60 hover:text-white text-sm transition-colors">Terms</button>
-                <button className="text-white/60 hover:text-white text-sm transition-colors">Cookies</button>
+                <button className="text-white/70 hover:text-amber-300 text-sm transition-colors">Privacy</button>
+                <button className="text-white/70 hover:text-amber-300 text-sm transition-colors">Terms</button>
+                <button className="text-white/70 hover:text-amber-300 text-sm transition-colors">Cookies</button>
               </div>
             </div>
           </div>

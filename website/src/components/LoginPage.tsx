@@ -46,25 +46,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen text-white relative overflow-hidden" style={{ height: '100vh' }}>
-      {/* Video Background Only */}
-      <div className="absolute inset-0">
-        <video
-          autoPlay
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{
-            filter: 'brightness(0.7) contrast(1.1)',
-            transform: 'scale(1.05)',
-            objectFit: 'cover'
-          }}
-          onError={(e) => console.error('Video loading error:', e)}
-        >
-          <source src="/Astroai-Background.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
+    <div className="min-h-screen text-white relative overflow-hidden bg-black" style={{ height: '100vh' }}>
 
       {/* Login Content with Scroll */}
       <div className="relative z-10 flex items-start justify-center px-4 overflow-y-auto pt-8 sm:pt-12" style={{ height: '100vh', minHeight: '100vh' }}>

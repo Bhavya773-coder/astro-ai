@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText } from './CosmicUI';
 import { reportsApi, BirthChartResponse } from '../api/reports';
+import { AlertTriangle, Sparkles, Globe2, Star, Telescope, Clock, Target } from 'lucide-react';
 
 // Helper functions for zodiac characteristics
 const getSunSignTraits = (sign: string): string => {
@@ -743,7 +744,7 @@ const BirthChartPage: React.FC = () => {
       <div className="flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
         <Sidebar />
         <div className="flex-1 lg:ml-20 overflow-y-auto h-screen flex items-center justify-center">
-          <div className="text-center">
+          <div className="text-center pt-16 lg:pt-0">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
             <p className="text-white text-lg">Loading Birth Chart...</p>
           </div>
@@ -757,8 +758,10 @@ const BirthChartPage: React.FC = () => {
       <div className="flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
         <Sidebar />
         <div className="flex-1 lg:ml-20 overflow-y-auto h-screen flex items-center justify-center">
-          <div className="text-center max-w-md mx-auto p-8">
-            <div className="text-red-400 text-6xl mb-6">⚠️</div>
+          <div className="text-center max-w-md mx-auto p-8 pt-16 lg:pt-8">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-400/10 mx-auto mb-6">
+              <AlertTriangle className="w-8 h-8 text-red-400" />
+            </div>
             <h2 className="text-2xl font-bold text-white mb-4">Birth Chart Error</h2>
             <p className="text-white/70 mb-6">{error}</p>
             <button
@@ -779,7 +782,7 @@ const BirthChartPage: React.FC = () => {
       <div className="flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
         <Sidebar />
         <div className="flex-1 lg:ml-20 overflow-y-auto h-screen">
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-20 lg:pt-12">
           {/* Header */}
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold font-display mb-6">
@@ -797,8 +800,8 @@ const BirthChartPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
               <div className="space-y-6">
                 <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold text-orange-400 mb-4 flex items-center">
-                    <span className="text-2xl mr-3">🌟</span>
+                  <h3 className="text-xl font-semibold text-orange-400 mb-4 flex items-center gap-2">
+                    <Star className="w-6 h-6" />
                     Your Cosmic Blueprint
                   </h3>
                   <p className="text-white/70 leading-relaxed">
@@ -807,8 +810,8 @@ const BirthChartPage: React.FC = () => {
                 </div>
 
                 <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold text-blue-400 mb-4 flex items-center">
-                    <span className="text-2xl mr-3">🔮</span>
+                  <h3 className="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
+                    <Telescope className="w-6 h-6" />
                     Personal Insights
                   </h3>
                   <p className="text-white/70 leading-relaxed">
@@ -819,8 +822,8 @@ const BirthChartPage: React.FC = () => {
 
               <div className="space-y-6">
                 <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold text-purple-400 mb-4 flex items-center">
-                    <span className="text-2xl mr-3">⏰</span>
+                  <h3 className="text-xl font-semibold text-purple-400 mb-4 flex items-center gap-2">
+                    <Clock className="w-6 h-6" />
                     Timeless Wisdom
                   </h3>
                   <p className="text-white/70 leading-relaxed">
@@ -829,8 +832,8 @@ const BirthChartPage: React.FC = () => {
                 </div>
 
                 <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold text-pink-400 mb-4 flex items-center">
-                    <span className="text-2xl mr-3">🎯</span>
+                  <h3 className="text-xl font-semibold text-pink-400 mb-4 flex items-center gap-2">
+                    <Target className="w-6 h-6" />
                     Life Navigation
                   </h3>
                   <p className="text-white/70 leading-relaxed">
@@ -906,7 +909,7 @@ const BirthChartPage: React.FC = () => {
       <div className="flex min-h-screen overflow-hidden">
         <Sidebar />
         <div className="flex-1 lg:ml-20 overflow-y-auto h-screen" id="main-content">
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-20 lg:pt-12">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
@@ -921,10 +924,10 @@ const BirthChartPage: React.FC = () => {
         {zodiacData.sunSign && zodiacData.moonSign && zodiacData.ascendant ? (
           <div className="mb-12">
             <div className="bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-blue-500/10 border border-purple-400/30 rounded-3xl p-8 backdrop-blur-sm">
-              <h2 className="text-3xl font-bold text-white mb-8 text-center flex items-center justify-center">
-                <span className="text-4xl mr-3">✨</span>
+              <h2 className="text-3xl font-bold text-white mb-8 text-center flex items-center justify-center gap-3">
+                <Sparkles className="w-8 h-8 text-violet-300" />
                 Your Zodiac Profile
-                <span className="text-4xl ml-3">✨</span>
+                <Sparkles className="w-8 h-8 text-violet-300" />
               </h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -954,7 +957,7 @@ const BirthChartPage: React.FC = () => {
 
                 {/* Dominant Planet */}
                 <div className="zodiac-card bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 rounded-2xl p-6 text-center hover:from-emerald-500/30 hover:to-teal-500/30 transition-all duration-300">
-                  <div className="text-5xl mb-3">🪐</div>
+                  <div className="text-5xl mb-3 flex items-center justify-center"><Globe2 className="w-10 h-10 text-emerald-300" /></div>
                   <h3 className="text-2xl font-bold text-emerald-300 mb-2">{zodiacData.dominantPlanet}</h3>
                   <p className="text-emerald-200 text-sm">Dominant Planet</p>
                   <p className="text-white/70 text-xs mt-2">Your ruling influence</p>
@@ -974,7 +977,9 @@ const BirthChartPage: React.FC = () => {
           /* User needs to generate insights first */
           <div className="mb-12 text-center">
             <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 border border-white/10">
-              <div className="text-6xl mb-6">🔮</div>
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-400/10 mx-auto mb-6">
+              <Telescope className="w-8 h-8 text-blue-400" />
+            </div>
               <h3 className="text-2xl font-bold text-white mb-4">Generate Your Birth Chart</h3>
               <p className="text-white/80 text-lg mb-8">
                 Complete your birth chart generation to unlock your personalized zodiac insights and cosmic profile.
@@ -991,7 +996,9 @@ const BirthChartPage: React.FC = () => {
           /* Loading state or other error */
           <div className="mb-12 text-center">
             <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 border border-white/10">
-              <div className="text-6xl mb-6">⚠️</div>
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-400/10 mx-auto mb-6">
+              <AlertTriangle className="w-8 h-8 text-red-400" />
+            </div>
               <h3 className="text-2xl font-bold text-white mb-4">Birth Chart Data Not Available</h3>
               <p className="text-white/80 text-lg mb-8">
                 Your zodiac profile data is not available yet. Please complete your birth chart generation to unlock your personalized cosmic insights.
@@ -1012,9 +1019,9 @@ const BirthChartPage: React.FC = () => {
           {zodiacData.sunSign && zodiacData.moonSign && zodiacData.ascendant && (
             <div className="bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-blue-500/10 border border-purple-400/30 rounded-3xl p-8 backdrop-blur-sm">
               <h2 className="text-2xl font-bold text-white mb-6 text-center flex items-center justify-center">
-                <span className="text-3xl mr-3">✨</span>
+                <Sparkles className="w-6 h-6 text-yellow-400 mr-3" />
                 Your Cosmic Characteristics
-                <span className="text-3xl ml-3">✨</span>
+                <Sparkles className="w-6 h-6 text-yellow-400 ml-3" />
               </h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

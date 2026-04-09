@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 import toast from 'react-hot-toast';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
+import { Sparkles, AlertTriangle, Target, Calendar, Star, Telescope, Crosshair, Heart, Leaf, Clock, Landmark, BarChart2, Triangle, Columns } from 'lucide-react';
 
 interface NumerologyData {
   life_path: string;
@@ -25,7 +26,7 @@ const NumerologyPage: React.FC = () => {
         console.log('Fetching numerology data...');
         const response = await apiFetch('/api/numerology');
         console.log('Numerology API response:', response);
-        
+
         if (response.success && response.numerology) {
           console.log('Setting numerology data:', response.numerology);
           setNumerology(response.numerology);
@@ -225,426 +226,425 @@ const NumerologyPage: React.FC = () => {
     <CosmicBackground>
       <div className="flex min-h-screen overflow-hidden">
         <Sidebar />
-        
+
         <div className="flex-1 lg:ml-20 transition-all duration-300 overflow-y-auto h-screen" id="main-content">
+
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl md:text-4xl font-bold font-display">Numerology</h1>
-        <p className="mt-2 text-white/75 max-w-2xl">
-          Discover the ancient wisdom of numbers and how they reveal your life's purpose, personality, and destiny.
-        </p>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="text-center py-16 mt-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-violet-400/20 rounded-full mb-6 animate-pulse">
-              <span className="text-violet-400 text-2xl">{getProfessionalSymbol('✨')}</span>
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-3">Loading Your Numerology Insights</h3>
-            <p className="text-white/60 max-w-md mx-auto">
-              We're retrieving your personalized numerology data...
+            <h1 className="text-3xl md:text-4xl font-bold font-display">Numerology</h1>
+            <p className="mt-2 text-white/75 max-w-2xl">
+              Discover the ancient wisdom of numbers and how they reveal your life's purpose, personality, and destiny.
             </p>
-          </div>
-        )}
 
-        {/* Error State */}
-        {error && !isLoading && (
-          <div className="text-center py-16 mt-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500/20 rounded-full mb-6">
-              <span className="text-red-400 text-2xl">{getProfessionalSymbol('⚠️')}</span>
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-3">Unable to Load Insights</h3>
-            <p className="text-white/60 mb-8 max-w-md mx-auto">
-              {error}
-            </p>
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={handleRetry}
-                className="bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 border border-white/20"
-              >
-                Try Again
-              </button>
-              <button
-                onClick={handleGettingStarted}
-                className="bg-violet-400 hover:bg-violet-300 text-gray-900 font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
-              >
-                Generate Insights
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Numerology Data - Display at top when available */}
-        {numerology && !isLoading && !error && (
-          <div className="mt-8">
-            {/* Success Header */}
-            <div className="text-center mb-12">
-              <div className="flex justify-center mb-6">
-                <img src="/favicon.png" alt="Astro AI" className="w-24 h-24" />
-              </div>
-              <h3 className="text-3xl font-bold text-white mb-4">Your Personal Numerology Blueprint</h3>
-              <p className="text-white/60 max-w-3xl mx-auto text-lg">
-                Your unique numbers reveal the cosmic blueprint of your life. Each number carries specific energies and lessons that guide your journey through life.
-              </p>
-            </div>
-
-            {/* Numerology Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              <div className="rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-400/30 p-8 hover:border-violet-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-violet-400/20">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-violet-300 text-sm font-medium uppercase tracking-wider">Life Path</div>
-                  <div className="w-8 h-8 bg-violet-400/20 rounded-full flex items-center justify-center">
-                    <span className="text-violet-400 text-sm">{getProfessionalSymbol('🛤️')}</span>
-                  </div>
+            {/* Loading State */}
+            {isLoading && (
+              <div className="text-center py-16 mt-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-violet-400/20 rounded-full mb-6 animate-pulse">
+                  <Sparkles className="w-7 h-7 text-violet-400" />
                 </div>
-                <div className="text-5xl font-bold text-violet-300 mb-3">{numerology.life_path}</div>
-                <div className="text-white/70 text-sm leading-relaxed mb-4">
-                  <strong>Your Core Journey:</strong> This number represents the path you're destined to walk in this lifetime. It reveals your natural talents, the lessons you're here to learn, and the challenges you'll face.
-                </div>
-                <div className="text-white/60 text-xs">
-                  <p>• Your innate abilities and strengths</p>
-                  <p>• Life lessons and challenges</p>
-                  <p>• Natural career inclinations</p>
-                  <p>• Relationship patterns</p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/30 p-8 hover:border-purple-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-400/20">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-purple-300 text-sm font-medium uppercase tracking-wider">Destiny Number</div>
-                  <div className="w-8 h-8 bg-purple-400/20 rounded-full flex items-center justify-center">
-                    <span className="text-purple-400 text-sm">{getProfessionalSymbol('🎯')}</span>
-                  </div>
-                </div>
-                <div className="text-5xl font-bold text-purple-300 mb-3">{numerology.destiny}</div>
-                <div className="text-white/70 text-sm leading-relaxed mb-4">
-                  <strong>Your Ultimate Purpose:</strong> Also known as the Expression Number, this reveals your life's purpose, your mission, and the opportunities that will come your way to fulfill your potential.
-                </div>
-                <div className="text-white/60 text-xs">
-                  <p>• Your life's mission and purpose</p>
-                  <p>• Career and success potential</p>
-                  <p>• How others perceive you</p>
-                  <p>• Your unique contribution to the world</p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-400/30 p-8 hover:border-pink-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-pink-400/20">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-pink-300 text-sm font-medium uppercase tracking-wider">Personal Year</div>
-                  <div className="w-8 h-8 bg-pink-400/20 rounded-full flex items-center justify-center">
-                    <span className="text-pink-400 text-sm">📅</span>
-                  </div>
-                </div>
-                <div className="text-5xl font-bold text-pink-300 mb-3">{numerology.personal_year}</div>
-                <div className="text-white/70 text-sm leading-relaxed mb-4">
-                  <strong>Current Year Energy:</strong> This number changes yearly and shows the themes, opportunities, and challenges you'll experience during this specific year cycle.
-                </div>
-                <div className="text-white/60 text-xs">
-                  <p>• Best timing for important decisions</p>
-                  <p>• Current year's main themes</p>
-                  <p>• Opportunities to watch for</p>
-                  <p>• Areas requiring focus</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Detailed Number Analysis */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-8">
-              <h4 className="text-2xl font-semibold text-white mb-6">Understanding Your Numbers in Depth</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-violet-500/5 to-purple-500/5 border border-violet-400/20 rounded-xl p-6">
-                  <h5 className="text-violet-300 font-bold text-lg mb-3">Life Path {numerology.life_path}</h5>
-                  <p className="text-white/70 text-sm leading-relaxed mb-3">
-                    Your Life Path Number {numerology.life_path} is the most important number in your numerology chart. It represents the journey your soul chose for this lifetime.
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-white/60 text-xs">
-                      <strong>Strength:</strong> {getLifePathStrength(numerology.life_path)}
-                    </p>
-                    <p className="text-white/60 text-xs">
-                      <strong>Challenge:</strong> {getLifePathChallenge(numerology.life_path)}
-                    </p>
-                    <p className="text-white/60 text-xs">
-                      <strong>Best Career:</strong> {getLifePathCareer(numerology.life_path)}
-                    </p>
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-purple-400/20 rounded-xl p-6">
-                  <h5 className="text-purple-300 font-bold text-lg mb-3">Destiny {numerology.destiny}</h5>
-                  <p className="text-white/70 text-sm leading-relaxed mb-3">
-                    Your Destiny Number {numerology.destiny} reveals your ultimate purpose and the unique gifts you bring to the world.
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-white/60 text-xs">
-                      <strong>Purpose:</strong> {getDestinyPurpose(numerology.destiny)}
-                    </p>
-                    <p className="text-white/60 text-xs">
-                      <strong>Talent:</strong> {getDestinyTalent(numerology.destiny)}
-                    </p>
-                    <p className="text-white/60 text-xs">
-                      <strong>Legacy:</strong> {getDestinyLegacy(numerology.destiny)}
-                    </p>
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-pink-500/5 to-rose-500/5 border border-pink-400/20 rounded-xl p-6">
-                  <h5 className="text-pink-300 font-bold text-lg mb-3">Personal Year {numerology.personal_year}</h5>
-                  <p className="text-white/70 text-sm leading-relaxed mb-3">
-                    Your Personal Year {numerology.personal_year} energy influences your experiences and opportunities this year.
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-white/60 text-xs">
-                      <strong>Theme:</strong> {getPersonalYearTheme(numerology.personal_year)}
-                    </p>
-                    <p className="text-white/60 text-xs">
-                      <strong>Focus:</strong> {getPersonalYearFocus(numerology.personal_year)}
-                    </p>
-                    <p className="text-white/60 text-xs">
-                      <strong>Advice:</strong> {getPersonalYearAdvice(numerology.personal_year)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Practical Applications */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-8">
-              <h4 className="text-2xl font-semibold text-white mb-6">How to Apply Your Numbers</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h5 className="text-xl font-medium text-white mb-4">{getProfessionalSymbol('🎯')} Career & Success</h5>
-                  <p className="text-white/70 text-sm leading-relaxed mb-3">
-                    Use your Life Path {numerology.life_path} to choose a career that aligns with your natural abilities. Your Destiny {numerology.destiny} shows your ultimate potential for success.
-                  </p>
-                  <ul className="text-white/60 text-sm space-y-1">
-                    <li>• Choose careers that match your Life Path vibration</li>
-                    <li>• Time important decisions using your Personal Year</li>
-                    <li>• Develop skills that support your Destiny</li>
-                  </ul>
-                </div>
-                <div>
-                  <h5 className="text-xl font-medium text-white mb-4">💝 Relationships & Love</h5>
-                  <p className="text-white/70 text-sm leading-relaxed mb-3">
-                    Understanding your numbers helps you choose compatible partners and navigate relationship challenges using your innate strengths.
-                  </p>
-                  <ul className="text-white/60 text-sm space-y-1">
-                    <li>• Find partners with compatible Life Paths</li>
-                    <li>• Use your Personal Year for relationship timing</li>
-                    <li>• Honor your Destiny in relationship choices</li>
-                  </ul>
-                </div>
-                <div>
-                  <h5 className="text-xl font-medium text-white mb-4">🧘 Personal Growth</h5>
-                  <p className="text-white/70 text-sm leading-relaxed mb-3">
-                    Your numbers reveal your spiritual journey and the lessons you're here to master for personal evolution and fulfillment.
-                  </p>
-                  <ul className="text-white/60 text-sm space-y-1">
-                    <li>• Focus on Life Path challenges for growth</li>
-                    <li>• Develop your Destiny talents</li>
-                    <li>• Flow with Personal Year energies</li>
-                  </ul>
-                </div>
-                <div>
-                  <h5 className="text-xl font-medium text-white mb-4">⏰ Timing & Planning</h5>
-                  <p className="text-white/70 text-sm leading-relaxed mb-3">
-                    Your Personal Year {numerology.personal_year} helps you understand the best timing for major life decisions and initiatives.
-                  </p>
-                  <ul className="text-white/60 text-sm space-y-1">
-                    <li>• Start projects in favorable Personal Years</li>
-                    <li>• Use challenging years for introspection</li>
-                    <li>• Align major moves with your numbers</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Master Numbers Special Section */}
-            {(numerology.life_path === '11' || numerology.life_path === '22' || numerology.life_path === '33' ||
-              numerology.destiny === '11' || numerology.destiny === '22' || numerology.destiny === '33') && (
-              <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-400/30 rounded-2xl p-8 mb-8">
-                <h4 className="text-2xl font-semibold text-amber-300 mb-4">{getProfessionalSymbol('🌟')} Master Number Alert!</h4>
-                <p className="text-white/70 leading-relaxed mb-4">
-                  You have one or more Master Numbers in your chart! Master Numbers (11, 22, 33) carry higher spiritual potential and greater challenges. They indicate you're here to make a significant impact on the world.
+                <h3 className="text-xl font-semibold text-white mb-3">Loading Your Numerology Insights</h3>
+                <p className="text-white/60 max-w-md mx-auto">
+                  We're retrieving your personalized numerology data...
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-white/5 border border-amber-400/20 rounded-xl p-4">
-                    <h5 className="text-amber-300 font-bold mb-2">Master Number 11</h5>
-                    <p className="text-white/60 text-sm">The Illuminator - Spiritual messenger with intuitive gifts and healing abilities.</p>
-                  </div>
-                  <div className="bg-white/5 border border-amber-400/20 rounded-xl p-4">
-                    <h5 className="text-amber-300 font-bold mb-2">Master Number 22</h5>
-                    <p className="text-white/60 text-sm">The Master Builder - Visionary who can manifest dreams into reality on a large scale.</p>
-                  </div>
-                  <div className="bg-white/5 border border-amber-400/20 rounded-xl p-4">
-                    <h5 className="text-amber-300 font-bold mb-2">Master Number 33</h5>
-                    <p className="text-white/60 text-sm">The Master Teacher - Nurturer with profound healing and teaching abilities.</p>
-                  </div>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && !isLoading && (
+              <div className="text-center py-16 mt-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500/20 rounded-full mb-6">
+                  <AlertTriangle className="w-7 h-7 text-red-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-3">Unable to Load Insights</h3>
+                <p className="text-white/60 mb-8 max-w-md mx-auto">
+                  {error}
+                </p>
+                <div className="flex justify-center space-x-4">
+                  <button
+                    onClick={handleRetry}
+                    className="bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 border border-white/20"
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    onClick={handleGettingStarted}
+                    className="bg-violet-400 hover:bg-violet-300 text-gray-900 font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                  >
+                    Generate Insights
+                  </button>
                 </div>
               </div>
             )}
-            {/* What is Numerology Section */}
-        <div className="mt-12 bg-white/5 border border-white/10 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">What is Numerology?</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
-              <p className="text-white/70 leading-relaxed mb-4">
-                <strong>Numerology</strong> is an ancient mystical science that studies the hidden meaning of numbers and their influence on human life. It's based on the belief that numbers are not just mathematical quantities, but carry specific vibrations and energies that shape our destiny.
-              </p>
-              <p className="text-white/70 leading-relaxed mb-4">
-                This sacred science has been practiced for thousands of years across various civilizations, including ancient Egypt, Greece, China, and India. Each number from 1 to 9 (along with master numbers 11, 22, and 33) carries unique characteristics and energies.
-              </p>
-              <p className="text-white/70 leading-relaxed">
-                Through numerology, we can uncover our life's purpose, understand our personality traits, predict future trends, and make better life decisions by aligning with our numerical vibrations.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <div className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-400/30 rounded-xl p-4">
-                <h3 className="text-violet-300 font-semibold mb-2">{getProfessionalSymbol('🌟')} Core Principle</h3>
-                <p className="text-white/60 text-sm">Everything in the universe vibrates at specific frequencies, and numbers are the language of these vibrations.</p>
-              </div>
-              <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/30 rounded-xl p-4">
-                <h3 className="text-purple-300 font-semibold mb-2">{getProfessionalSymbol('📊')} Mathematical Foundation</h3>
-                <p className="text-white/60 text-sm">Your birth date and name are reduced to single digits (except master numbers) to reveal your core numbers.</p>
-              </div>
-              <div className="bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-400/30 rounded-xl p-4">
-                <h3 className="text-pink-300 font-semibold mb-2">{getProfessionalSymbol('🎯')} Life Application</h3>
-                <p className="text-white/60 text-sm">Use your numbers to understand relationships, career paths, timing, and personal growth opportunities.</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* History and Origins Section */}
-        <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">The History of Numerology</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-amber-400 text-2xl">🔺</span>
-              </div>
-              <h3 className="text-amber-300 font-semibold mb-2">Ancient Egypt</h3>
-              <p className="text-white/60 text-sm">Egyptian priests used numerology to understand divine messages and predict future events.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-400 text-2xl">{getProfessionalSymbol('🏛️')}</span>
-              </div>
-              <h3 className="text-blue-300 font-semibold mb-2">Greek Philosophy</h3>
-              <p className="text-white/60 text-sm">Pythagoras, the "Father of Mathematics," developed the modern system of numerology we use today.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-emerald-400 text-2xl">{getProfessionalSymbol('🕉️')}</span>
-              </div>
-              <h3 className="text-emerald-300 font-semibold mb-2">Eastern Wisdom</h3>
-              <p className="text-white/60 text-sm">Chinese numerology and Indian Vedic traditions have long recognized the power of numbers in daily life.</p>
-            </div>
-          </div>
-        </div>
+            {/* Numerology Data - Display at top when available */}
+            {numerology && !isLoading && !error && (
+              <div className="mt-8">
+                {/* Success Header */}
+                <div className="text-center mb-12">
 
-        {/* How It Works Section */}
-        <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6">How Numerology Works</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-4">The Calculation Process</h3>
-              <div className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-violet-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-violet-400 text-xs">1</span>
+                  <h3 className="text-3xl font-bold text-white mb-4">Your Personal Numerology Blueprint</h3>
+                  <p className="text-white/60 max-w-3xl mx-auto text-lg">
+                    Your unique numbers reveal the cosmic blueprint of your life. Each number carries specific energies and lessons that guide your journey through life.
+                  </p>
+                </div>
+
+                {/* Numerology Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                  <div className="rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-400/30 p-8 hover:border-violet-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-violet-400/20">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-violet-300 text-sm font-medium uppercase tracking-wider">Life Path</div>
+                      <div className="w-8 h-8 bg-violet-400/20 rounded-full flex items-center justify-center">
+                        <Crosshair className="w-4 h-4 text-violet-400" />
+                      </div>
+                    </div>
+                    <div className="text-5xl font-bold text-violet-300 mb-3">{numerology.life_path}</div>
+                    <div className="text-white/70 text-sm leading-relaxed mb-4">
+                      <strong>Your Core Journey:</strong> This number represents the path you're destined to walk in this lifetime. It reveals your natural talents, the lessons you're here to learn, and the challenges you'll face.
+                    </div>
+                    <div className="text-white/60 text-xs">
+                      <p>• Your innate abilities and strengths</p>
+                      <p>• Life lessons and challenges</p>
+                      <p>• Natural career inclinations</p>
+                      <p>• Relationship patterns</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-white/80 font-medium">Birth Date Analysis</h4>
-                    <p className="text-white/60 text-sm">Your date of birth is reduced to single digits to reveal your Life Path Number and Personal Year.</p>
+
+                  <div className="rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/30 p-8 hover:border-purple-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-400/20">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-purple-300 text-sm font-medium uppercase tracking-wider">Destiny Number</div>
+                      <div className="w-8 h-8 bg-purple-400/20 rounded-full flex items-center justify-center">
+                        <Target className="w-4 h-4 text-purple-400" />
+                      </div>
+                    </div>
+                    <div className="text-5xl font-bold text-purple-300 mb-3">{numerology.destiny}</div>
+                    <div className="text-white/70 text-sm leading-relaxed mb-4">
+                      <strong>Your Ultimate Purpose:</strong> Also known as the Expression Number, this reveals your life's purpose, your mission, and the opportunities that will come your way to fulfill your potential.
+                    </div>
+                    <div className="text-white/60 text-xs">
+                      <p>• Your life's mission and purpose</p>
+                      <p>• Career and success potential</p>
+                      <p>• How others perceive you</p>
+                      <p>• Your unique contribution to the world</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-400/30 p-8 hover:border-pink-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-pink-400/20">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-pink-300 text-sm font-medium uppercase tracking-wider">Personal Year</div>
+                      <div className="w-8 h-8 bg-pink-400/20 rounded-full flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-pink-400" />
+                      </div>
+                    </div>
+                    <div className="text-5xl font-bold text-pink-300 mb-3">{numerology.personal_year}</div>
+                    <div className="text-white/70 text-sm leading-relaxed mb-4">
+                      <strong>Current Year Energy:</strong> This number changes yearly and shows the themes, opportunities, and challenges you'll experience during this specific year cycle.
+                    </div>
+                    <div className="text-white/60 text-xs">
+                      <p>• Best timing for important decisions</p>
+                      <p>• Current year's main themes</p>
+                      <p>• Opportunities to watch for</p>
+                      <p>• Areas requiring focus</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-purple-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-purple-400 text-xs">2</span>
-                  </div>
-                  <div>
-                    <h4 className="text-white/80 font-medium">Name Numerology</h4>
-                    <p className="text-white/60 text-sm">Each letter in your name corresponds to a number, revealing your Destiny Number and personality traits.</p>
+
+                {/* Detailed Number Analysis */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-8">
+                  <h4 className="text-2xl font-semibold text-white mb-6">Understanding Your Numbers in Depth</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-br from-violet-500/5 to-purple-500/5 border border-violet-400/20 rounded-xl p-6">
+                      <h5 className="text-violet-300 font-bold text-lg mb-3">Life Path {numerology.life_path}</h5>
+                      <p className="text-white/70 text-sm leading-relaxed mb-3">
+                        Your Life Path Number {numerology.life_path} is the most important number in your numerology chart. It represents the journey your soul chose for this lifetime.
+                      </p>
+                      <div className="space-y-2">
+                        <p className="text-white/60 text-xs">
+                          <strong>Strength:</strong> {getLifePathStrength(numerology.life_path)}
+                        </p>
+                        <p className="text-white/60 text-xs">
+                          <strong>Challenge:</strong> {getLifePathChallenge(numerology.life_path)}
+                        </p>
+                        <p className="text-white/60 text-xs">
+                          <strong>Best Career:</strong> {getLifePathCareer(numerology.life_path)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-purple-400/20 rounded-xl p-6">
+                      <h5 className="text-purple-300 font-bold text-lg mb-3">Destiny {numerology.destiny}</h5>
+                      <p className="text-white/70 text-sm leading-relaxed mb-3">
+                        Your Destiny Number {numerology.destiny} reveals your ultimate purpose and the unique gifts you bring to the world.
+                      </p>
+                      <div className="space-y-2">
+                        <p className="text-white/60 text-xs">
+                          <strong>Purpose:</strong> {getDestinyPurpose(numerology.destiny)}
+                        </p>
+                        <p className="text-white/60 text-xs">
+                          <strong>Talent:</strong> {getDestinyTalent(numerology.destiny)}
+                        </p>
+                        <p className="text-white/60 text-xs">
+                          <strong>Legacy:</strong> {getDestinyLegacy(numerology.destiny)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-pink-500/5 to-rose-500/5 border border-pink-400/20 rounded-xl p-6">
+                      <h5 className="text-pink-300 font-bold text-lg mb-3">Personal Year {numerology.personal_year}</h5>
+                      <p className="text-white/70 text-sm leading-relaxed mb-3">
+                        Your Personal Year {numerology.personal_year} energy influences your experiences and opportunities this year.
+                      </p>
+                      <div className="space-y-2">
+                        <p className="text-white/60 text-xs">
+                          <strong>Theme:</strong> {getPersonalYearTheme(numerology.personal_year)}
+                        </p>
+                        <p className="text-white/60 text-xs">
+                          <strong>Focus:</strong> {getPersonalYearFocus(numerology.personal_year)}
+                        </p>
+                        <p className="text-white/60 text-xs">
+                          <strong>Advice:</strong> {getPersonalYearAdvice(numerology.personal_year)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-pink-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-pink-400 text-xs">3</span>
-                  </div>
-                  <div>
-                    <h4 className="text-white/80 font-medium">Master Numbers</h4>
-                    <p className="text-white/60 text-sm">Numbers 11, 22, and 33 are not reduced and carry special spiritual significance and potential.</p>
+
+                {/* Practical Applications */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-8">
+                  <h4 className="text-2xl font-semibold text-white mb-6">How to Apply Your Numbers</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                      <h5 className="text-xl font-medium text-white mb-4 flex items-center gap-2"><Target className="w-5 h-5" /> Career & Success</h5>
+                      <p className="text-white/70 text-sm leading-relaxed mb-3">
+                        Use your Life Path {numerology.life_path} to choose a career that aligns with your natural abilities. Your Destiny {numerology.destiny} shows your ultimate potential for success.
+                      </p>
+                      <ul className="text-white/60 text-sm space-y-1">
+                        <li>• Choose careers that match your Life Path vibration</li>
+                        <li>• Time important decisions using your Personal Year</li>
+                        <li>• Develop skills that support your Destiny</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-xl font-medium text-white mb-4 flex items-center gap-2"><Heart className="w-5 h-5" /> Relationships & Love</h5>
+                      <p className="text-white/70 text-sm leading-relaxed mb-3">
+                        Understanding your numbers helps you choose compatible partners and navigate relationship challenges using your innate strengths.
+                      </p>
+                      <ul className="text-white/60 text-sm space-y-1">
+                        <li>• Find partners with compatible Life Paths</li>
+                        <li>• Use your Personal Year for relationship timing</li>
+                        <li>• Honor your Destiny in relationship choices</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-xl font-medium text-white mb-4 flex items-center gap-2"><Leaf className="w-5 h-5" /> Personal Growth</h5>
+                      <p className="text-white/70 text-sm leading-relaxed mb-3">
+                        Your numbers reveal your spiritual journey and the lessons you're here to master for personal evolution and fulfillment.
+                      </p>
+                      <ul className="text-white/60 text-sm space-y-1">
+                        <li>• Focus on Life Path challenges for growth</li>
+                        <li>• Develop your Destiny talents</li>
+                        <li>• Flow with Personal Year energies</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-xl font-medium text-white mb-4 flex items-center gap-2"><Clock className="w-5 h-5" /> Timing & Planning</h5>
+                      <p className="text-white/70 text-sm leading-relaxed mb-3">
+                        Your Personal Year {numerology.personal_year} helps you understand the best timing for major life decisions and initiatives.
+                      </p>
+                      <ul className="text-white/60 text-sm space-y-1">
+                        <li>• Start projects in favorable Personal Years</li>
+                        <li>• Use challenging years for introspection</li>
+                        <li>• Align major moves with your numbers</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-4">Number Meanings</h3>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { num: '1', meaning: 'Leadership', color: 'text-red-400' },
-                  { num: '2', meaning: 'Cooperation', color: 'text-orange-400' },
-                  { num: '3', meaning: 'Creativity', color: 'text-yellow-400' },
-                  { num: '4', meaning: 'Stability', color: 'text-green-400' },
-                  { num: '5', meaning: 'Freedom', color: 'text-blue-400' },
-                  { num: '6', meaning: 'Harmony', color: 'text-indigo-400' },
-                  { num: '7', meaning: 'Spirituality', color: 'text-purple-400' },
-                  { num: '8', meaning: 'Success', color: 'text-pink-400' },
-                  { num: '9', meaning: 'Humanity', color: 'text-rose-400' }
-                ].map((item) => (
-                  <div key={item.num} className="bg-white/5 border border-white/10 rounded-lg p-3 text-center">
-                    <div className={`text-2xl font-bold ${item.color} mb-1`}>{item.num}</div>
-                    <div className="text-white/60 text-xs">{item.meaning}</div>
+
+                {/* Master Numbers Special Section */}
+                {(numerology.life_path === '11' || numerology.life_path === '22' || numerology.life_path === '33' ||
+                  numerology.destiny === '11' || numerology.destiny === '22' || numerology.destiny === '33') && (
+                    <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-400/30 rounded-2xl p-8 mb-8">
+                      <h4 className="text-2xl font-semibold text-amber-300 mb-4 flex items-center gap-2"><Star className="w-6 h-6" /> Master Number Alert!</h4>
+                      <p className="text-white/70 leading-relaxed mb-4">
+                        You have one or more Master Numbers in your chart! Master Numbers (11, 22, 33) carry higher spiritual potential and greater challenges. They indicate you're here to make a significant impact on the world.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white/5 border border-amber-400/20 rounded-xl p-4">
+                          <h5 className="text-amber-300 font-bold mb-2">Master Number 11</h5>
+                          <p className="text-white/60 text-sm">The Illuminator - Spiritual messenger with intuitive gifts and healing abilities.</p>
+                        </div>
+                        <div className="bg-white/5 border border-amber-400/20 rounded-xl p-4">
+                          <h5 className="text-amber-300 font-bold mb-2">Master Number 22</h5>
+                          <p className="text-white/60 text-sm">The Master Builder - Visionary who can manifest dreams into reality on a large scale.</p>
+                        </div>
+                        <div className="bg-white/5 border border-amber-400/20 rounded-xl p-4">
+                          <h5 className="text-amber-300 font-bold mb-2">Master Number 33</h5>
+                          <p className="text-white/60 text-sm">The Master Teacher - Nurturer with profound healing and teaching abilities.</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                {/* What is Numerology Section */}
+                <div className="mt-12 bg-white/5 border border-white/10 rounded-2xl p-8">
+                  <h2 className="text-2xl font-bold text-white mb-6">What is Numerology?</h2>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                      <p className="text-white/70 leading-relaxed mb-4">
+                        <strong>Numerology</strong> is an ancient mystical science that studies the hidden meaning of numbers and their influence on human life. It's based on the belief that numbers are not just mathematical quantities, but carry specific vibrations and energies that shape our destiny.
+                      </p>
+                      <p className="text-white/70 leading-relaxed mb-4">
+                        This sacred science has been practiced for thousands of years across various civilizations, including ancient Egypt, Greece, China, and India. Each number from 1 to 9 (along with master numbers 11, 22, and 33) carries unique characteristics and energies.
+                      </p>
+                      <p className="text-white/70 leading-relaxed">
+                        Through numerology, we can uncover our life's purpose, understand our personality traits, predict future trends, and make better life decisions by aligning with our numerical vibrations.
+                      </p>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-400/30 rounded-xl p-4">
+                        <h3 className="text-violet-300 font-semibold mb-2 flex items-center gap-1"><Star className="w-4 h-4" /> Core Principle</h3>
+                        <p className="text-white/60 text-sm">Everything in the universe vibrates at specific frequencies, and numbers are the language of these vibrations.</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/30 rounded-xl p-4">
+                        <h3 className="text-purple-300 font-semibold mb-2 flex items-center gap-1"><BarChart2 className="w-4 h-4" /> Mathematical Foundation</h3>
+                        <p className="text-white/60 text-sm">Your birth date and name are reduced to single digits (except master numbers) to reveal your core numbers.</p>
+                      </div>
+                      <div className="bg-gradient-to-br from-pink-500/10 to-rose-500/10 border border-pink-400/30 rounded-xl p-4">
+                        <h3 className="text-pink-300 font-semibold mb-2 flex items-center gap-1"><Target className="w-4 h-4" /> Life Application</h3>
+                        <p className="text-white/60 text-sm">Use your numbers to understand relationships, career paths, timing, and personal growth opportunities.</p>
+                      </div>
+                    </div>
                   </div>
-                ))}
+                </div>
+
+                {/* History and Origins Section */}
+                <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-8">
+                  <h2 className="text-2xl font-bold text-white mb-6">The History of Numerology</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-amber-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Triangle className="w-7 h-7 text-amber-400" />
+                      </div>
+                      <h3 className="text-amber-300 font-semibold mb-2">Ancient Egypt</h3>
+                      <p className="text-white/60 text-sm">Egyptian priests used numerology to understand divine messages and predict future events.</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-blue-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Landmark className="w-7 h-7 text-blue-400" />
+                      </div>
+                      <h3 className="text-blue-300 font-semibold mb-2">Greek Philosophy</h3>
+                      <p className="text-white/60 text-sm">Pythagoras, the "Father of Mathematics," developed the modern system of numerology we use today.</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-emerald-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Columns className="w-7 h-7 text-emerald-400" />
+                      </div>
+                      <h3 className="text-emerald-300 font-semibold mb-2">Eastern Wisdom</h3>
+                      <p className="text-white/60 text-sm">Chinese numerology and Indian Vedic traditions have long recognized the power of numbers in daily life.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* How It Works Section */}
+                <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-8">
+                  <h2 className="text-2xl font-bold text-white mb-6">How Numerology Works</h2>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                      <h3 className="text-xl font-semibold text-white mb-4">The Calculation Process</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-6 h-6 bg-violet-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <span className="text-violet-400 text-xs">1</span>
+                          </div>
+                          <div>
+                            <h4 className="text-white/80 font-medium">Birth Date Analysis</h4>
+                            <p className="text-white/60 text-sm">Your date of birth is reduced to single digits to reveal your Life Path Number and Personal Year.</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div className="w-6 h-6 bg-purple-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <span className="text-purple-400 text-xs">2</span>
+                          </div>
+                          <div>
+                            <h4 className="text-white/80 font-medium">Name Numerology</h4>
+                            <p className="text-white/60 text-sm">Each letter in your name corresponds to a number, revealing your Destiny Number and personality traits.</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div className="w-6 h-6 bg-pink-400/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <span className="text-pink-400 text-xs">3</span>
+                          </div>
+                          <div>
+                            <h4 className="text-white/80 font-medium">Master Numbers</h4>
+                            <p className="text-white/60 text-sm">Numbers 11, 22, and 33 are not reduced and carry special spiritual significance and potential.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-white mb-4">Number Meanings</h3>
+                      <div className="grid grid-cols-3 gap-3">
+                        {[
+                          { num: '1', meaning: 'Leadership', color: 'text-red-400' },
+                          { num: '2', meaning: 'Cooperation', color: 'text-orange-400' },
+                          { num: '3', meaning: 'Creativity', color: 'text-yellow-400' },
+                          { num: '4', meaning: 'Stability', color: 'text-green-400' },
+                          { num: '5', meaning: 'Freedom', color: 'text-blue-400' },
+                          { num: '6', meaning: 'Harmony', color: 'text-indigo-400' },
+                          { num: '7', meaning: 'Spirituality', color: 'text-purple-400' },
+                          { num: '8', meaning: 'Success', color: 'text-pink-400' },
+                          { num: '9', meaning: 'Humanity', color: 'text-rose-400' }
+                        ].map((item) => (
+                          <div key={item.num} className="bg-white/5 border border-white/10 rounded-lg p-3 text-center">
+                            <div className={`text-2xl font-bold ${item.color} mb-1`}>{item.num}</div>
+                            <div className="text-white/60 text-xs">{item.meaning}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <br />
+
+                {/* Next Steps */}
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-violet-400/20 to-purple-400/20 rounded-full mb-6">
+                    <Telescope className="w-7 h-7 text-violet-400" />
+                  </div>
+                  <h4 className="text-2xl font-bold text-white mb-4">Continue Your Journey</h4>
+                  <p className="text-white/60 max-w-2xl mx-auto mb-6">
+                    Your numerology insights are just the beginning. Explore your birth chart to discover how the stars and numbers work together to create your unique cosmic blueprint.
+                  </p>
+                  <button
+                    onClick={() => navigate('/birth-chart')}
+                    className="bg-gradient-to-r from-violet-400 to-purple-400 hover:from-violet-300 hover:to-purple-300 text-gray-900 font-semibold py-3 px-8 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    Explore Birth Chart
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-        <br />
+            )}
 
-            {/* Next Steps */}
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-violet-400/20 to-purple-400/20 rounded-full mb-6">
-                <span className="text-violet-400 text-2xl">🔮</span>
+            {/* Generate Insights CTA - when no data */}
+            {!numerology && !isLoading && !error && (
+              <div className="text-center py-16 mt-8">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-violet-400/20 rounded-full mb-8">
+                  <Sparkles className="w-9 h-9 text-violet-400" />
+                </div>
+                <h3 className="text-2xl font-semibold text-white mb-4">Generate Your Insights to Unlock Numerology</h3>
+                <p className="text-white/60 mb-8 max-w-lg mx-auto text-lg">
+                  Complete your profile to discover your life path, destiny number, and personal year insights. Your personalized numerology reading awaits.
+                </p>
+                <button
+                  onClick={handleGettingStarted}
+                  className="bg-violet-400 hover:bg-violet-300 text-gray-900 font-semibold py-4 px-8 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+                >
+                  Generate Insights
+                </button>
               </div>
-              <h4 className="text-2xl font-bold text-white mb-4">Continue Your Journey</h4>
-              <p className="text-white/60 max-w-2xl mx-auto mb-6">
-                Your numerology insights are just the beginning. Explore your birth chart to discover how the stars and numbers work together to create your unique cosmic blueprint.
-              </p>
-              <button
-                onClick={() => navigate('/birth-chart')}
-                className="bg-gradient-to-r from-violet-400 to-purple-400 hover:from-violet-300 hover:to-purple-300 text-gray-900 font-semibold py-3 px-8 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-              >
-                Explore Birth Chart
-              </button>
+            )}
+
+
+
+            <div className="mt-8">
             </div>
           </div>
-        )}
-
-        {/* Generate Insights CTA - when no data */}
-        {!numerology && !isLoading && !error && (
-          <div className="text-center py-16 mt-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-violet-400/20 rounded-full mb-8">
-              <span className="text-violet-400 text-3xl">🔮</span>
-            </div>
-            <h3 className="text-2xl font-semibold text-white mb-4">Generate Your Insights to Unlock Numerology</h3>
-            <p className="text-white/60 mb-8 max-w-lg mx-auto text-lg">
-              Complete your profile to discover your life path, destiny number, and personal year insights. Your personalized numerology reading awaits.
-            </p>
-            <button
-              onClick={handleGettingStarted}
-              className="bg-violet-400 hover:bg-violet-300 text-gray-900 font-semibold py-4 px-8 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-            >
-              Generate Insights
-            </button>
-          </div>
-        )}
-
-        
-
-        <div className="mt-8">
         </div>
-        </div>
-      </div>
       </div>
     </CosmicBackground>
   );

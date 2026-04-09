@@ -14,10 +14,10 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   glow = 'pink'
 }) => {
   const glowStyles = {
-    pink: 'hover:shadow-[0_0_30px_rgba(247,37,133,0.3)]',
-    cyan: 'hover:shadow-[0_0_30px_rgba(76,201,240,0.3)]',
-    gold: 'hover:shadow-[0_0_30px_rgba(255,215,0,0.3)]',
-    purple: 'hover:shadow-[0_0_30px_rgba(114,9,183,0.3)]',
+    pink: 'hover:shadow-[0_0_35px_rgba(247,37,133,0.45)]',
+    cyan: 'hover:shadow-[0_0_35px_rgba(76,201,240,0.45)]',
+    gold: 'hover:shadow-[0_0_35px_rgba(255,215,0,0.45)]',
+    purple: 'hover:shadow-[0_0_35px_rgba(168,85,247,0.45)]',
     none: '',
   };
 
@@ -25,10 +25,10 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     <div 
       className={`
         rounded-cosmic 
-        border border-white/10 
+        border border-white/15
         backdrop-blur-glass
         transition-all duration-300
-        ${hover ? `hover:border-cosmic-${glow === 'none' ? 'pink' : glow}/30 ${glowStyles[glow]} hover:-translate-y-1` : ''}
+        ${hover ? `hover:border-cosmic-${glow === 'none' ? 'pink' : glow}/40 ${glowStyles[glow]} hover:-translate-y-1` : ''}
         ${className}
       `}
       style={{
@@ -122,7 +122,7 @@ export const CosmicInput: React.FC<InputFieldProps> = ({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-white/80 mb-2">
+        <label className="block text-sm font-medium text-white/95 mb-2">
           {label}
         </label>
       )}
@@ -201,7 +201,7 @@ export const GradientText: React.FC<{ children: React.ReactNode; className?: str
 }) => {
   return (
     <span 
-      className={`bg-clip-text text-transparent bg-gradient-to-r from-cosmic-cyan via-cosmic-pink to-cosmic-gold ${className}`}
+      className={`bg-clip-text text-transparent bg-gradient-to-r from-cosmic-cyan via-purple-400 via-cosmic-pink to-cosmic-gold ${className}`}
     >
       {children}
     </span>

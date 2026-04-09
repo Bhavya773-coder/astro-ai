@@ -12,7 +12,7 @@
   body {
     @apply font-body antialiased;
     background-color: #03071E;
-    color: #F8F9FA;
+    color: #FFFFFF;
     min-height: 100vh;
   }
   
@@ -77,15 +77,19 @@
   }
   
   .text-glow {
-    text-shadow: 0 0 10px rgba(247, 37, 133, 0.8);
+    text-shadow: 0 0 12px rgba(247, 37, 133, 1), 0 0 30px rgba(247, 37, 133, 0.4);
   }
   
   .text-glow-cyan {
-    text-shadow: 0 0 10px rgba(76, 201, 240, 0.8);
+    text-shadow: 0 0 12px rgba(76, 201, 240, 1), 0 0 30px rgba(76, 201, 240, 0.4);
   }
   
   .text-glow-gold {
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    text-shadow: 0 0 12px rgba(255, 215, 0, 1), 0 0 30px rgba(255, 215, 0, 0.4);
+  }
+
+  .text-glow-violet {
+    text-shadow: 0 0 12px rgba(168, 85, 247, 1), 0 0 30px rgba(168, 85, 247, 0.4);
   }
   
   .cosmic-bg {
@@ -95,9 +99,43 @@
   
   .gradient-text {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(to right, #4CC9F0, #F72585, #FFD700);
+    background-image: linear-gradient(135deg, #4CC9F0 0%, #A855F7 40%, #F72585 70%, #FFD700 100%);
   }
-  
+
+  /* Crisp white for primary labels and headings */
+  .text-vivid {
+    color: #FFFFFF;
+    text-shadow: 0 0 20px rgba(255,255,255,0.15);
+  }
+
+  /* Bright body copy — readable against dark bg */
+  .text-body {
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  /* Accent subtitle in cyan with subtle glow */
+  .subtitle-glow {
+    color: #7DD3FC;
+    text-shadow: 0 0 12px rgba(76, 201, 240, 0.5);
+  }
+
+  /* Muted secondary text — still legible, not invisible */
+  .text-muted {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  /* Vibrant amber accent for callouts */
+  .text-accent-amber {
+    color: #FCD34D;
+    text-shadow: 0 0 8px rgba(252, 211, 77, 0.4);
+  }
+
+  /* Bright violet for section labels */
+  .text-accent-violet {
+    color: #C084FC;
+    text-shadow: 0 0 8px rgba(192, 132, 252, 0.4);
+  }
+
   .page-transition {
     animation: fadeIn 0.5s ease-out;
   }

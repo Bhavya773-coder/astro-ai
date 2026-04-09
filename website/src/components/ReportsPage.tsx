@@ -5,6 +5,11 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { generateKundliPDF } from '../utils/kundliPDFGenerator';
 import { CosmicBackground } from './CosmicBackground';
+import {
+  Sparkles, User, Calendar, Clock, MapPin, Star, Moon, Sun, Hash,
+  Brain, Zap, Target, Briefcase, Heart, Activity, Compass, Download,
+  ChevronRight, BarChart2, Home
+} from 'lucide-react';
 
 const ReportsPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -75,10 +80,10 @@ const ReportsPage: React.FC = () => {
     }
   };
 
-  const KundliCard: React.FC<{ title: string; content: string; icon: string }> = ({ title, content, icon }) => (
+  const KundliCard: React.FC<{ title: string; content: string; icon: React.ReactNode }> = ({ title, content, icon }) => (
     <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="text-2xl">{icon}</div>
+        <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-white/80 shrink-0">{icon}</div>
         <h3 className="text-lg font-semibold text-white">{title}</h3>
       </div>
       <p className="text-white/80 leading-relaxed">{content}</p>
@@ -90,7 +95,7 @@ const ReportsPage: React.FC = () => {
       <div className="flex min-h-screen overflow-hidden text-white">
         <Sidebar />
         <div className="flex-1 lg:ml-20 overflow-y-auto h-screen" id="main-content">
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-20 lg:pt-12">
         <h1 className="text-3xl md:text-4xl font-bold font-display">Reports</h1>
         <p className="mt-2 text-white/75 max-w-2xl">
           Generate compatibility reports and review your saved analyses.
@@ -99,14 +104,14 @@ const ReportsPage: React.FC = () => {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Kundli Generation Card */}
           <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
-            <div className="text-custom-yellow text-sm mb-2">Kundli Report</div>
+            <div className="text-white/70 text-sm mb-2 font-medium uppercase tracking-wide">Kundli Report</div>
             <div className="text-white/90 mb-4">
               Get your personalized Vedic astrology birth chart analysis
             </div>
             <button
               onClick={handleGenerateKundli}
               disabled={isGenerating}
-              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
             >
               {isGenerating ? (
                 <>
@@ -115,7 +120,7 @@ const ReportsPage: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <span className="text-xl">🔮</span>
+                  <Sparkles className="w-5 h-5" />
                   Generate Kundli
                 </>
               )}
@@ -172,9 +177,7 @@ const ReportsPage: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    <Download className="w-4 h-4" />
                     Download PDF
                   </>
                 )}
@@ -183,66 +186,34 @@ const ReportsPage: React.FC = () => {
             
             {/* Birth Details Section */}
             <div className="mb-8">
-              <h3 className="text-xl font-semibold mb-4 text-yellow-400">Birth Details</h3>
+              <h3 className="text-xl font-semibold mb-4 text-white/90">Birth Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KundliCard
-                  title="Name"
-                  content={kundliReport.birth_details.full_name}
-                  icon="👤"
-                />
-                <KundliCard
-                  title="Date of Birth"
-                  content={kundliReport.birth_details.date_of_birth}
-                  icon="📅"
-                />
-                <KundliCard
-                  title="Time of Birth"
-                  content={kundliReport.birth_details.time_of_birth}
-                  icon="🕐"
-                />
-                <KundliCard
-                  title="Place of Birth"
-                  content={kundliReport.birth_details.place_of_birth}
-                  icon="📍"
-                />
+                <KundliCard title="Name" content={kundliReport.birth_details.full_name} icon={<User className="w-4 h-4" />} />
+                <KundliCard title="Date of Birth" content={kundliReport.birth_details.date_of_birth} icon={<Calendar className="w-4 h-4" />} />
+                <KundliCard title="Time of Birth" content={kundliReport.birth_details.time_of_birth} icon={<Clock className="w-4 h-4" />} />
+                <KundliCard title="Place of Birth" content={kundliReport.birth_details.place_of_birth} icon={<MapPin className="w-4 h-4" />} />
               </div>
             </div>
 
             {/* Core Chart Section */}
             <div className="mb-8">
-              <h3 className="text-xl font-semibold mb-4 text-yellow-400">Core Chart</h3>
+              <h3 className="text-xl font-semibold mb-4 text-white/90">Core Chart</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KundliCard
-                  title="Ascendant"
-                  content={kundliReport.chart_data.ascendant}
-                  icon="⭐"
-                />
-                <KundliCard
-                  title="Moon Sign"
-                  content={kundliReport.chart_data.moon_sign}
-                  icon="🌙"
-                />
-                <KundliCard
-                  title="Sun Sign"
-                  content={kundliReport.chart_data.sun_sign}
-                  icon="☀️"
-                />
-                <KundliCard
-                  title="Nakshatra"
-                  content={kundliReport.chart_data.nakshatra}
-                  icon="🌟"
-                />
+                <KundliCard title="Ascendant" content={kundliReport.chart_data.ascendant} icon={<ChevronRight className="w-4 h-4" />} />
+                <KundliCard title="Moon Sign" content={kundliReport.chart_data.moon_sign} icon={<Moon className="w-4 h-4" />} />
+                <KundliCard title="Sun Sign" content={kundliReport.chart_data.sun_sign} icon={<Sun className="w-4 h-4" />} />
+                <KundliCard title="Nakshatra" content={kundliReport.chart_data.nakshatra} icon={<Star className="w-4 h-4" />} />
               </div>
             </div>
 
             {/* Planets Table */}
             <div className="mb-8">
-              <h3 className="text-xl font-semibold mb-4 text-yellow-400">Planetary Positions</h3>
+              <h3 className="text-xl font-semibold mb-4 text-white/90">Planetary Positions</h3>
               <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                   {Object.entries(kundliReport.chart_data.planets).map(([planet, data]) => (
                     <div key={planet} className="text-center">
-                      <div className="text-lg font-semibold text-yellow-400 capitalize">{planet}</div>
+                      <div className="text-sm font-semibold text-white capitalize">{planet}</div>
                       <div className="text-white/80">{data.sign}</div>
                       <div className="text-white/60 text-sm">{data.degree}°</div>
                     </div>
@@ -253,12 +224,12 @@ const ReportsPage: React.FC = () => {
 
             {/* Houses Grid */}
             <div className="mb-8">
-              <h3 className="text-xl font-semibold mb-4 text-yellow-400">12 Houses</h3>
+              <h3 className="text-xl font-semibold mb-4 text-white/90">12 Houses</h3>
               <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {Object.entries(kundliReport.chart_data.houses).map(([house, sign]) => (
                     <div key={house} className="text-center">
-                      <div className="text-lg font-semibold text-yellow-400">House {house}</div>
+                      <div className="text-base font-semibold text-white/90">House {house}</div>
                       <div className="text-white/80">{sign}</div>
                     </div>
                   ))}
@@ -268,57 +239,29 @@ const ReportsPage: React.FC = () => {
 
             {/* Interpretation Cards */}
             <div>
-              <h3 className="text-xl font-semibold mb-4 text-yellow-400">AI Interpretation</h3>
+              <h3 className="text-xl font-semibold mb-4 text-white/90">AI Interpretation</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <KundliCard
-                  title="Personality"
-                  content={kundliReport.interpretation.personality}
-                  icon="🧠"
-                />
-                <KundliCard
-                  title="Strengths"
-                  content={kundliReport.interpretation.strengths}
-                  icon="💪"
-                />
-                <KundliCard
-                  title="Challenges"
-                  content={kundliReport.interpretation.challenges}
-                  icon="🎯"
-                />
-                <KundliCard
-                  title="Career"
-                  content={kundliReport.interpretation.career}
-                  icon="💼"
-                />
-                <KundliCard
-                  title="Relationships"
-                  content={kundliReport.interpretation.relationships}
-                  icon="❤️"
-                />
-                <KundliCard
-                  title="Health"
-                  content={kundliReport.interpretation.health}
-                  icon="🏥"
-                />
-                <KundliCard
-                  title="Spiritual Path"
-                  content={kundliReport.interpretation.spiritual_path}
-                  icon="🧭"
-                />
+                <KundliCard title="Personality" content={kundliReport.interpretation.personality} icon={<Brain className="w-4 h-4" />} />
+                <KundliCard title="Strengths" content={kundliReport.interpretation.strengths} icon={<Zap className="w-4 h-4" />} />
+                <KundliCard title="Challenges" content={kundliReport.interpretation.challenges} icon={<Target className="w-4 h-4" />} />
+                <KundliCard title="Career" content={kundliReport.interpretation.career} icon={<Briefcase className="w-4 h-4" />} />
+                <KundliCard title="Relationships" content={kundliReport.interpretation.relationships} icon={<Heart className="w-4 h-4" />} />
+                <KundliCard title="Health" content={kundliReport.interpretation.health} icon={<Activity className="w-4 h-4" />} />
+                <KundliCard title="Spiritual Path" content={kundliReport.interpretation.spiritual_path} icon={<Compass className="w-4 h-4" />} />
               </div>
             </div>
 
             {/* Important Yogas Section */}
             {kundliReport.interpretation.important_yogas && kundliReport.interpretation.important_yogas.length > 0 && (
               <div className="mt-8">
-                <h3 className="text-xl font-semibold mb-4 text-yellow-400">Important Yogas</h3>
+                <h3 className="text-xl font-semibold mb-4 text-white/90">Important Yogas</h3>
                 <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {kundliReport.interpretation.important_yogas.map((yoga, index) => (
                       <div key={index} className="flex items-center gap-3">
-                        <div className="text-2xl">✨</div>
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><Star className="w-4 h-4 text-white/70" /></div>
                         <div>
-                          <div className="text-lg font-semibold text-yellow-400">{yoga}</div>
+                          <div className="text-base font-semibold text-white/90">{yoga}</div>
                         </div>
                       </div>
                     ))}
@@ -341,26 +284,10 @@ const ReportsPage: React.FC = () => {
             <div className="mb-8">
               <h3 className="text-xl font-semibold mb-4 text-blue-400">Birth Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KundliCard
-                  title="Name"
-                  content={birthChartData.birth_details.full_name}
-                  icon="👤"
-                />
-                <KundliCard
-                  title="Date of Birth"
-                  content={birthChartData.birth_details.date_of_birth}
-                  icon="📅"
-                />
-                <KundliCard
-                  title="Time of Birth"
-                  content={birthChartData.birth_details.time_of_birth}
-                  icon="🕐"
-                />
-                <KundliCard
-                  title="Place of Birth"
-                  content={birthChartData.birth_details.place_of_birth}
-                  icon="📍"
-                />
+                <KundliCard title="Name" content={birthChartData.birth_details.full_name} icon={<User className="w-4 h-4" />} />
+                <KundliCard title="Date of Birth" content={birthChartData.birth_details.date_of_birth} icon={<Calendar className="w-4 h-4" />} />
+                <KundliCard title="Time of Birth" content={birthChartData.birth_details.time_of_birth} icon={<Clock className="w-4 h-4" />} />
+                <KundliCard title="Place of Birth" content={birthChartData.birth_details.place_of_birth} icon={<MapPin className="w-4 h-4" />} />
               </div>
             </div>
 
@@ -368,26 +295,10 @@ const ReportsPage: React.FC = () => {
             <div className="mb-8">
               <h3 className="text-xl font-semibold mb-4 text-blue-400">Core Chart</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KundliCard
-                  title="Ascendant"
-                  content={birthChartData.chart_data.ascendant}
-                  icon="⭐"
-                />
-                <KundliCard
-                  title="Moon Sign"
-                  content={birthChartData.chart_data.moon_sign}
-                  icon="🌙"
-                />
-                <KundliCard
-                  title="Sun Sign"
-                  content={birthChartData.chart_data.sun_sign}
-                  icon="☀️"
-                />
-                <KundliCard
-                  title="Nakshatra"
-                  content={birthChartData.chart_data.nakshatra}
-                  icon="🌟"
-                />
+                <KundliCard title="Ascendant" content={birthChartData.chart_data.ascendant} icon={<ChevronRight className="w-4 h-4" />} />
+                <KundliCard title="Moon Sign" content={birthChartData.chart_data.moon_sign} icon={<Moon className="w-4 h-4" />} />
+                <KundliCard title="Sun Sign" content={birthChartData.chart_data.sun_sign} icon={<Sun className="w-4 h-4" />} />
+                <KundliCard title="Nakshatra" content={birthChartData.chart_data.nakshatra} icon={<Star className="w-4 h-4" />} />
               </div>
             </div>
 
