@@ -35,14 +35,14 @@ const ForgotPasswordPage: React.FC = () => {
         <div className="w-full max-w-md animate-slide-up py-8" style={{ minHeight: 'fit-content' }}>
           {/* Logo/Brand Section */}
           <div className="text-center mb-6 sm:mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-pink mb-4 shadow-cosmic animate-pulse-glow">
+            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 mb-4 shadow-[0_0_20px_rgba(168,85,247,0.5)] animate-pulse-glow">
               <span className="text-white text-3xl font-bold font-display">A</span>
             </div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-2 text-glow">Forgot Password</h1>
             <p className="text-sm sm:text-base text-white/60 font-body">Enter your email and we'll send a 6-digit code</p>
           </div>
 
-          <GlassCard className="p-6 sm:p-8" glow="pink">
+          <GlassCard className="p-6 sm:p-8 bg-black/60 border border-violet-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.2)]">
             {error ? (
               <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-300 animate-shake">
                 <div className="flex items-center gap-2">
@@ -61,9 +61,9 @@ const ForgotPasswordPage: React.FC = () => {
                 </div>
 
                 {devOtp ? (
-                  <div className="rounded-lg bg-cosmic-gold/10 border border-cosmic-gold/30 p-4 text-sm text-white">
-                    <div className="font-medium mb-2 text-cosmic-gold">Dev OTP</div>
-                    <div className="text-2xl font-mono tracking-widest text-cosmic-gold">{devOtp}</div>
+                  <div className="rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/30 p-4 text-sm text-white">
+                    <div className="font-medium mb-2 text-fuchsia-400">Dev OTP</div>
+                    <div className="text-2xl font-mono tracking-widest text-fuchsia-400">{devOtp}</div>
                   </div>
                 ) : null}
 
@@ -102,7 +102,7 @@ const ForgotPasswordPage: React.FC = () => {
                       id="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-pink focus:ring-2 focus:ring-cosmic-pink/30 text-sm sm:text-base"
+                      className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-black/40 border border-violet-500/30 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 text-sm sm:text-base"
                       placeholder="Enter your email"
                       required
                     />

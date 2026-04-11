@@ -60,7 +60,7 @@ const OnboardingStep1: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-center gap-3">
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cosmic-pink to-cosmic-purple flex items-center justify-center shadow-neon-pink">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_15px_rgba(217,70,239,0.5)]">
                 <span className="text-white text-sm font-bold">1</span>
               </div>
             </div>
@@ -80,10 +80,10 @@ const OnboardingStep1: React.FC = () => {
           <p className="text-center text-sm text-white/60 mt-3">Step 1 of 3: Basic Profile</p>
         </div>
 
-        <GlassCard className="p-8" glow="pink">
+        <GlassCard className="p-8 bg-black/60 border border-violet-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.2)]">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cosmic-pink/20 mb-4">
-              <Sparkles className="w-8 h-8 text-cosmic-pink" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-fuchsia-500/20 mb-4">
+              <Sparkles className="w-8 h-8 text-fuchsia-400" />
             </div>
             <h1 className="font-display text-2xl font-bold text-white mb-2">Tell Us About Yourself</h1>
             <p className="text-white/60 text-sm">Let's start with your basic information</p>
@@ -103,7 +103,7 @@ const OnboardingStep1: React.FC = () => {
                 name="full_name"
                 value={formData.full_name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-cosmic-pink focus:ring-2 focus:ring-cosmic-pink/30 transition-all"
+                className="w-full px-4 py-3 rounded-cosmic bg-black/60 border border-violet-500/30 text-white placeholder-white/40 focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all"
                 placeholder="Enter your full name"
                 required
               />
@@ -116,7 +116,7 @@ const OnboardingStep1: React.FC = () => {
                 name="date_of_birth"
                 value={formData.date_of_birth}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white focus:outline-none focus:border-cosmic-pink focus:ring-2 focus:ring-cosmic-pink/30 transition-all"
+                className="w-full px-4 py-3 rounded-cosmic bg-black/60 border border-violet-500/30 text-white focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all"
                 required
               />
             </div>
@@ -128,7 +128,7 @@ const OnboardingStep1: React.FC = () => {
                 name="time_of_birth"
                 value={formData.time_of_birth}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white focus:outline-none focus:border-cosmic-pink focus:ring-2 focus:ring-cosmic-pink/30 transition-all"
+                className="w-full px-4 py-3 rounded-cosmic bg-black/60 border border-violet-500/30 text-white focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all"
               />
             </div>
 
@@ -139,7 +139,7 @@ const OnboardingStep1: React.FC = () => {
                 name="place_of_birth"
                 value={formData.place_of_birth}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-cosmic-pink focus:ring-2 focus:ring-cosmic-pink/30 transition-all"
+                className="w-full px-4 py-3 rounded-cosmic bg-black/60 border border-violet-500/30 text-white placeholder-white/40 focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all"
                 placeholder="City, Country"
                 required
               />
@@ -153,11 +153,11 @@ const OnboardingStep1: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white focus:outline-none focus:border-cosmic-pink focus:ring-2 focus:ring-cosmic-pink/30 transition-all"
               >
-                <option value="" className="bg-cosmic-deep-space">Select gender</option>
-                <option value="male" className="bg-cosmic-deep-space">Male</option>
-                <option value="female" className="bg-cosmic-deep-space">Female</option>
-                <option value="other" className="bg-cosmic-deep-space">Other</option>
-                <option value="prefer_not_to_say" className="bg-cosmic-deep-space">Prefer not to say</option>
+                <option value="" className="bg-black">Select gender</option>
+                <option value="male" className="bg-black">Male</option>
+                <option value="female" className="bg-black">Female</option>
+                <option value="other" className="bg-black">Other</option>
+                <option value="prefer_not_to_say" className="bg-black">Prefer not to say</option>
               </select>
             </div>
 
@@ -168,7 +168,7 @@ const OnboardingStep1: React.FC = () => {
                 name="current_location"
                 value={formData.current_location}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-cosmic-pink focus:ring-2 focus:ring-cosmic-pink/30 transition-all"
+                className="w-full px-4 py-3 rounded-cosmic bg-black/60 border border-violet-500/30 text-white placeholder-white/40 focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all"
                 placeholder="City, Country"
               />
             </div>

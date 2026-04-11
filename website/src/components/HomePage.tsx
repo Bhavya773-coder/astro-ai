@@ -1,7 +1,113 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CosmicBackground from './CosmicBackground';
-import { Telescope, Hash, BarChart2, Bot, Mail, Camera, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { Telescope, Hash, BarChart2, Bot, Mail, Camera, ChevronDown, ChevronUp, Sparkles, MessageSquare, Star } from 'lucide-react';
+
+const OnboardingOverlay: React.FC<{ onComplete: (believer: boolean) => void }> = ({ onComplete }) => {
+  const [step, setStep] = useState(0);
+  const [displayedText, setDisplayedText] = useState('');
+  const [showOptions, setShowOptions] = useState(false);
+  const [userChoice, setUserChoice] = useState<boolean | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  const question = "Do You believe in astrology?";
+
+  useEffect(() => {
+    // Lazy load delay
+    const startTimeout = setTimeout(() => setIsVisible(true), 1200);
+    return () => clearTimeout(startTimeout);
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    let timeout: any;
+    const targetText = step === 0
+      ? question
+      : userChoice
+        ? "Ok then, let's start with Believer"
+        : "Ok then, let's start with Non-Believer";
+
+    if (displayedText.length < targetText.length) {
+      timeout = setTimeout(() => {
+        setDisplayedText(targetText.slice(0, displayedText.length + 1));
+      }, 40);
+    } else if (step === 0) {
+      const optionTimeout = setTimeout(() => setShowOptions(true), 500);
+      return () => clearTimeout(optionTimeout);
+    } else if (step === 1) {
+      onComplete(userChoice!);
+    }
+    return () => clearTimeout(timeout);
+  }, [displayedText, step, isVisible, userChoice, onComplete]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none px-4">
+      {/* Central glow for background readability */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-600/20 rounded-full blur-[100px] animate-pulse pointer-events-none" />
+
+      <div className="w-full max-w-2xl flex flex-col gap-6 relative z-10">
+        {/* Question Bubble */}
+        <div className="relative group pointer-events-auto animate-fade-in-up self-start">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-fuchsia-500 to-violet-500 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+          <div className="relative bg-black/60 backdrop-blur-2xl border border-white/10 p-6 sm:p-8 rounded-3xl rounded-bl-sm shadow-2xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 rounded-full bg-violet-600/30 flex items-center justify-center border border-violet-500/30">
+                <Star className="w-4 h-4 text-violet-400 animate-pulse" />
+              </div>
+              <span className="text-xs font-bold text-violet-300 uppercase tracking-widest">Cosmic Insight</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-semibold text-white leading-relaxed min-h-[3rem]">
+              {displayedText}
+              <span className="inline-block w-1.5 h-6 ml-1 bg-fuchsia-500 animate-pulse align-middle"></span>
+            </h2>
+          </div>
+        </div>
+
+        {/* Options Row - Now aligned to the RIGHT (end) */}
+        {showOptions && step === 0 && (
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto animate-fade-in pointer-events-auto self-end">
+            <button
+              onClick={() => {
+                setUserChoice(true);
+                setStep(1);
+                setDisplayedText('');
+                setShowOptions(false);
+              }}
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl text-sm font-bold text-white transition-all transform hover:scale-105 active:scale-95 group flex items-center gap-2"
+            >
+              <div className="w-2 h-2 rounded-full bg-green-400 group-hover:animate-ping" />
+              Yes, I do believe in it
+            </button>
+            <button
+              onClick={() => {
+                setUserChoice(false);
+                setStep(1);
+                setDisplayedText('');
+                setShowOptions(false);
+              }}
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl text-sm font-bold text-white transition-all transform hover:scale-105 active:scale-95 group flex items-center gap-2"
+            >
+              <div className="w-2 h-2 rounded-full bg-red-400 group-hover:animate-ping" />
+              No, I don't
+            </button>
+          </div>
+        )}
+
+        {/* User Choice Label Bubble */}
+        {step === 1 && (
+          <div className="self-end animate-fade-in pointer-events-auto">
+            <div className="bg-violet-600/20 backdrop-blur-xl border border-violet-500/30 p-4 rounded-2xl rounded-br-sm text-sm font-medium text-violet-200 shadow-lg">
+              {userChoice ? "Yes, I believe" : "No, I don't believe"}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -97,10 +203,10 @@ const HomePage: React.FC = () => {
       <div className="relative overflow-hidden" style={{ height: '100vh' }}>
         {/* Background Effects with Video */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 via-transparent to-amber-600/20" />
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,139,250,0.1)_0%,transparent_70%)]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-violet-900/30 via-transparent to-fuchsia-900/30" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-fuchsia-600/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.1)_0%,transparent_70%)]" />
 
           {/* Video Background */}
           <div className="absolute inset-0">
@@ -110,7 +216,7 @@ const HomePage: React.FC = () => {
               playsInline
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
               style={{
-                filter: 'brightness(0.7) contrast(1.1)',
+                filter: 'brightness(0.35) contrast(1.1) saturate(0.8)',
                 transform: 'scale(1.05)'
               }}
               onLoadedData={() => setVideoLoaded(true)}
@@ -134,7 +240,7 @@ const HomePage: React.FC = () => {
             <div
               className="absolute inset-0"
               style={{
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.1) 100%)'
+                background: 'linear-gradient(180deg, rgba(3, 7, 30, 0.4) 0%, rgba(3, 7, 30, 0.2) 50%, rgba(3, 7, 30, 0.5) 100%)'
               }}
             />
           </div>
@@ -145,25 +251,25 @@ const HomePage: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
               <img src="/favicon.png" alt="AstroAI" className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-lg" />
-              <div className="px-3 sm:px-4 py-2 sm:py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20">
-                <div className="text-lg sm:text-xl font-bold font-display bg-gradient-to-r from-amber-400 to-violet-400 bg-clip-text text-transparent">
+              <div className="px-3 sm:px-4 py-2 sm:py-2 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+                <div className="text-lg sm:text-xl font-bold font-display bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">
                   AstroAI
                 </div>
-                <div className="text-xs sm:text-sm text-white/90 block sm:hidden">Connect with Universe</div>
+                <div className="text-xs sm:text-sm text-white/70 block sm:hidden">AI-Powered Intelligence</div>
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-sm sm:text-sm font-medium transition-all duration-300 backdrop-blur-sm"
+                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-black/40 hover:bg-black/60 border border-violet-500/30 text-white text-sm sm:text-sm font-medium transition-all duration-300 backdrop-blur-md hover:shadow-[0_0_10px_rgba(168,85,247,0.4)]"
               >
                 Sign In
               </button>
               <button
                 type="button"
                 onClick={() => navigate('/signup')}
-                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-slate-900 text-sm sm:text-sm font-semibold transition-all duration-300 shadow-lg"
+                className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-sm sm:text-sm font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:shadow-[0_0_25px_rgba(168,85,247,0.8)]"
               >
                 Get Started Free
               </button>
@@ -171,10 +277,17 @@ const HomePage: React.FC = () => {
           </div>
         </header>
 
-        {/* Main Content - Minimal to showcase video */}
-        <main className="relative z-10 flex items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
-          <div className="text-center">
+        {/* Interactive Onboarding Overlay */}
+        <OnboardingOverlay
+          onComplete={(believer) => {
+            setTimeout(() => navigate(`/signup?type=${believer ? 'believer' : 'non-believer'}`), 2500);
+          }}
+        />
 
+        {/* Main Content - Minimal to showcase video */}
+        <main className="relative z-10 flex items-center justify-center pointer-events-none" style={{ height: 'calc(100vh - 160px)' }}>
+          <div className="text-center">
+            {/* Main Title Area moved lower/handled by onboarding */}
           </div>
         </main>
       </div>
@@ -183,17 +296,17 @@ const HomePage: React.FC = () => {
       <section className="relative py-16 px-4 sm:px-6 lg:px-8">
         <div className="relative z-10 max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold font-display bg-gradient-to-r from-white via-amber-200 to-violet-300 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold font-display bg-gradient-to-r from-white via-fuchsia-300 to-violet-400 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
               Coming Soon
             </h2>
-            <p className="mt-4 text-lg text-sky-300 font-medium">Exciting new features on the horizon</p>
+            <p className="mt-4 text-lg text-violet-300 font-medium">Exciting new AI-powered features on the horizon</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Coffee Reading */}
             <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-6 hover:border-amber-400/30 transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-600/20 to-violet-600/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 hover:border-fuchsia-500/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
                 <div className="relative overflow-hidden rounded-2xl mb-4">
                   <img
                     src="./coffee.jpg"
@@ -201,12 +314,12 @@ const HomePage: React.FC = () => {
                     className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Coffee Reading</h3>
-                <p className="text-white/85 text-sm">Discover insights through the ancient art of coffee</p>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-fuchsia-400 transition-colors">Coffee Reading</h3>
+                <p className="text-white/60 text-sm">Discover insights through the ancient art of coffee, powered by AI</p>
                 <div className="mt-4">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-fuchsia-500/20 text-fuchsia-300 text-xs font-semibold border border-fuchsia-500/30">
                     Coming Soon
                   </span>
                 </div>
@@ -215,8 +328,8 @@ const HomePage: React.FC = () => {
 
             {/* Palm Reading */}
             <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-6 hover:border-violet-400/30 transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 to-blue-600/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 hover:border-violet-500/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
                 <div className="relative overflow-hidden rounded-2xl mb-4">
                   <img
                     src="./PalmReading.webp"
@@ -224,12 +337,12 @@ const HomePage: React.FC = () => {
                     className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Palm Reading</h3>
-                <p className="text-white/85 text-sm">Unveil your destiny through the lines of your hand</p>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-violet-400 transition-colors">Palm Reading</h3>
+                <p className="text-white/60 text-sm">Unveil your destiny through deep AI analysis of your hand</p>
                 <div className="mt-4">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-violet-500/20 text-violet-300 text-xs font-semibold">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-violet-500/20 text-violet-300 text-xs font-semibold border border-violet-500/30">
                     Coming Soon
                   </span>
                 </div>
@@ -238,8 +351,8 @@ const HomePage: React.FC = () => {
 
             {/* Face Reading */}
             <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-6 hover:border-cyan-400/30 transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl p-6 hover:border-purple-500/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
                 <div className="relative overflow-hidden rounded-2xl mb-4">
                   <img
                     src="./face-reading.jpg"
@@ -247,12 +360,12 @@ const HomePage: React.FC = () => {
                     className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Face Reading</h3>
-                <p className="text-white/85 text-sm">Explore personality traits through facial analysis</p>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Face Reading</h3>
+                <p className="text-white/60 text-sm">Explore personality traits through facial analysis</p>
                 <div className="mt-4">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-semibold">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-semibold border border-purple-500/30">
                     Coming Soon
                   </span>
                 </div>
@@ -270,36 +383,36 @@ const HomePage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white via-amber-200 to-violet-300 bg-clip-text text-transparent">
+            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white via-fuchsia-300 to-violet-400 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
               What Can You Explore?
             </h2>
-            <p className="mt-4 text-xl text-sky-300 font-medium">Find clarity through every cosmic tool</p>
+            <p className="mt-4 text-xl text-violet-300 font-medium">Find clarity through an immersive AI experience</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Birth Chart */}
             <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-violet-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8 hover:border-amber-400/30 transition-all duration-300">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mb-6">
-                  <Telescope className="w-8 h-8 text-slate-900" />
+              <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-600/20 to-violet-600/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl p-8 hover:border-fuchsia-500/30 transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] group-hover:-translate-y-2">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-violet-600 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                  <Telescope className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">Birth Chart</h3>
-                <p className="text-white/85 leading-relaxed">
-                  Discover your cosmic blueprint with detailed zodiac insights, planetary positions, and astrological wisdom.
+                <h3 className="text-xl font-bold mb-3 group-hover:text-fuchsia-400 transition-colors">Birth Chart</h3>
+                <p className="text-white/60 leading-relaxed text-sm">
+                  Discover your cosmic blueprint with detailed zodiac insights, planetary positions, and AI-driven astrological wisdom.
                 </p>
               </div>
             </div>
 
             {/* Numerology */}
             <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-blue-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8 hover:border-violet-400/30 transition-all duration-300">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-400 to-violet-600 flex items-center justify-center mb-6">
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 to-blue-600/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl p-8 hover:border-violet-500/30 transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] group-hover:-translate-y-2">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(168,85,247,0.5)]">
                   <Hash className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">Numerology</h3>
-                <p className="text-white/85 leading-relaxed">
+                <h3 className="text-xl font-bold mb-3 group-hover:text-violet-400 transition-colors">Numerology</h3>
+                <p className="text-white/60 leading-relaxed text-sm">
                   Calculate your life path number, destiny number, and unlock hidden meanings behind your birth date.
                 </p>
               </div>
@@ -307,13 +420,13 @@ const HomePage: React.FC = () => {
 
             {/* Reports */}
             <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-green-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8 hover:border-blue-400/30 transition-all duration-300">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mb-6">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl p-8 hover:border-blue-500/30 transition-all duration-300 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] group-hover:-translate-y-2">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-cyan-600 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
                   <BarChart2 className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">Reports</h3>
-                <p className="text-white/85 leading-relaxed">
+                <h3 className="text-xl font-bold mb-3 group-hover:text-blue-400 transition-colors">Reports</h3>
+                <p className="text-white/60 leading-relaxed text-sm">
                   Generate comprehensive compatibility reports and track your spiritual growth with detailed analytics.
                 </p>
               </div>
@@ -321,14 +434,14 @@ const HomePage: React.FC = () => {
 
             {/* AI Chat */}
             <div className="group relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-amber-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
-              <div className="relative bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8 hover:border-green-400/30 transition-all duration-300">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mb-6">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-fuchsia-600/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-300" />
+              <div className="relative bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl p-8 hover:border-fuchsia-500/30 transition-all duration-300 hover:shadow-[0_0_20px_rgba(217,70,239,0.15)] group-hover:-translate-y-2">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(217,70,239,0.5)]">
                   <Bot className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">AI Guidance</h3>
-                <p className="text-white/85 leading-relaxed">
-                  Chat with our AI astrologer for personalized insights and answers to your cosmic questions.
+                <h3 className="text-xl font-bold mb-3 group-hover:text-fuchsia-400 transition-colors">AI Guidance</h3>
+                <p className="text-white/60 leading-relaxed text-sm">
+                  Chat with our ultra-smart AI astrologer for dynamic insights and answers to your cosmic questions.
                 </p>
               </div>
             </div>
@@ -344,16 +457,16 @@ const HomePage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white via-amber-200 to-violet-300 bg-clip-text text-transparent">
+            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white via-fuchsia-300 to-violet-400 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
               Discover the Wisdom of the Stars
             </h2>
-            <p className="mt-4 text-xl text-sky-300 font-medium">Ancient knowledge meets modern insight</p>
+            <p className="mt-4 text-xl text-violet-300 font-medium">Ancient knowledge meets state-of-the-art AI</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* The 12 Zodiac Signs */}
-            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-8">
-              <h3 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-amber-400 to-violet-400 bg-clip-text text-transparent">
+            <div className="bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl p-8 hover:shadow-[0_0_30px_rgba(168,85,247,0.1)] transition-all">
+              <h3 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
                 The 12 Zodiac Signs
               </h3>
               <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
@@ -453,23 +566,23 @@ const HomePage: React.FC = () => {
       >
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white via-amber-200 to-violet-300 bg-clip-text text-transparent">
+            <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white via-fuchsia-300 to-violet-400 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
               Frequently Asked Questions
             </h2>
-            <p className="mt-4 text-xl text-sky-300 font-medium">Everything you need to know about AstroAI</p>
+            <p className="mt-4 text-xl text-violet-300 font-medium">Everything you need to know about AstroAI</p>
           </div>
 
           <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <div key={index} className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl overflow-hidden">
+              <div key={index} className="bg-black/40 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden hover:border-violet-500/30 transition-colors">
                 <button
                   onClick={() => toggleFaq(index)}
                   className="w-full px-8 py-6 text-left flex items-center justify-between hover:bg-white/5 transition-all duration-300"
                 >
                   <span className="text-lg font-semibold pr-4">{faq.question}</span>
-                    <span className="text-2xl transition-transform duration-300 text-white/60">
-                      {activeFaq === index ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                    </span>
+                  <span className="text-2xl transition-transform duration-300 text-white/60">
+                    {activeFaq === index ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                  </span>
                 </button>
                 <div className={`overflow-hidden transition-all duration-300 ${activeFaq === index ? 'max-h-96' : 'max-h-0'}`}>
                   <div className="px-8 pb-6 text-white/85 leading-relaxed">
@@ -483,19 +596,19 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-t from-black/50 to-transparent border-t border-white/10">
+      <footer className="relative py-16 px-4 sm:px-6 lg:px-8 bg-[#000000] border-t border-white/5 z-10">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             {/* Company */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <img src="/favicon.png" alt="AstroAI" className="w-9 h-9 rounded-full object-cover" />
-                <h3 className="text-xl font-bold font-display bg-gradient-to-r from-amber-400 to-violet-400 bg-clip-text text-transparent">
+                <img src="/favicon.png" alt="AstroAI" className="w-9 h-9 rounded-full object-cover shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+                <h3 className="text-xl font-bold font-display bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
                   AstroAI
                 </h3>
               </div>
-              <p className="text-white/85 leading-relaxed">
-                Your cosmic companion for self-discovery and spiritual growth through astrology and numerology.
+              <p className="text-white/60 leading-relaxed text-sm">
+                Your premium AI companion for self-discovery and spiritual growth.
               </p>
               <div className="flex gap-4 mt-6">
                 <div className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-300 cursor-pointer">
@@ -539,10 +652,10 @@ const HomePage: React.FC = () => {
             <div>
               <h4 className="text-lg font-semibold mb-4 text-white">Support</h4>
               <ul className="space-y-2">
-                <li><button className="text-white/80 hover:text-amber-300 transition-colors">Help Center</button></li>
-                <li><button className="text-white/80 hover:text-amber-300 transition-colors">Contact Us</button></li>
-                <li><button className="text-white/80 hover:text-amber-300 transition-colors">Privacy Policy</button></li>
-                <li><button className="text-white/80 hover:text-amber-300 transition-colors">Terms of Service</button></li>
+                <li><button onClick={() => navigate('/help-center')} className="text-white/80 hover:text-amber-300 transition-colors">Help Center</button></li>
+                <li><button onClick={() => navigate('/contact')} className="text-white/80 hover:text-amber-300 transition-colors">Contact Us</button></li>
+                <li><button onClick={() => navigate('/privacy')} className="text-white/80 hover:text-amber-300 transition-colors">Privacy Policy</button></li>
+                <li><button onClick={() => navigate('/terms')} className="text-white/80 hover:text-amber-300 transition-colors">Terms of Service</button></li>
               </ul>
             </div>
           </div>
@@ -550,11 +663,11 @@ const HomePage: React.FC = () => {
           <div className="border-t border-white/10 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-white/75 text-sm">
-                © 2024 AstroAI. All rights reserved. Made with <Sparkles className="w-4 h-4 inline text-violet-400" /> and cosmic energy.
+                © 2026 AstroAI. All rights reserved.
               </p>
               <div className="flex gap-6 mt-4 md:mt-0">
-                <button className="text-white/70 hover:text-amber-300 text-sm transition-colors">Privacy</button>
-                <button className="text-white/70 hover:text-amber-300 text-sm transition-colors">Terms</button>
+                <button onClick={() => navigate('/privacy')} className="text-white/70 hover:text-amber-300 text-sm transition-colors">Privacy</button>
+                <button onClick={() => navigate('/terms')} className="text-white/70 hover:text-amber-300 text-sm transition-colors">Terms</button>
                 <button className="text-white/70 hover:text-amber-300 text-sm transition-colors">Cookies</button>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface GlassCardProps {
+interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   hover?: boolean;
@@ -11,7 +11,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   children, 
   className = '', 
   hover = true,
-  glow = 'pink'
+  glow = 'pink',
+  ...props
 }) => {
   const glowStyles = {
     pink: 'hover:shadow-[0_0_35px_rgba(247,37,133,0.45)]',
@@ -25,15 +26,14 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     <div 
       className={`
         rounded-cosmic 
-        border border-white/15
-        backdrop-blur-glass
+        border border-white/5
+        bg-black/40
+        backdrop-blur-xl
         transition-all duration-300
-        ${hover ? `hover:border-cosmic-${glow === 'none' ? 'pink' : glow}/40 ${glowStyles[glow]} hover:-translate-y-1` : ''}
+        ${hover ? `hover:border-${glow === 'none' ? 'fuchsia-500' : glow}-500/50 ${glowStyles[glow]} hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]` : ''}
         ${className}
       `}
-      style={{
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-      }}
+      {...props}
     >
       {children}
     </div>
@@ -62,30 +62,31 @@ export const CosmicButton: React.FC<CosmicButtonProps> = ({
 
   const variantClasses = {
     primary: `
-      bg-gradient-to-r from-cosmic-purple to-cosmic-pink 
+      bg-gradient-to-r from-violet-600 to-fuchsia-600 
       text-white font-semibold
       hover:scale-105
-      shadow-[0_0_10px_rgba(247,37,133,0.4)]
-      hover:shadow-[0_0_30px_rgba(114,9,183,0.5),0_0_60px_rgba(247,37,133,0.3)]
+      shadow-[0_0_15px_rgba(168,85,247,0.4)]
+      hover:shadow-[0_0_30px_rgba(168,85,247,0.7)]
     `,
     secondary: `
-      bg-transparent border-2 border-cosmic-cyan 
-      text-cosmic-cyan font-semibold
-      hover:bg-cosmic-cyan/10
-      hover:shadow-[0_0_10px_rgba(76,201,240,0.5)]
+      bg-transparent border-2 border-violet-500 
+      text-violet-400 font-semibold
+      hover:bg-violet-500/10
+      hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]
     `,
     glass: `
-      bg-white/10 border border-white/20 
+      bg-black/40 border border-white/10 
       text-white font-semibold
-      backdrop-blur-glass
-      hover:bg-white/15
-      hover:border-cosmic-pink/50
+      backdrop-blur-xl
+      hover:bg-black/60
+      hover:border-violet-500/50
+      hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]
     `,
     outline: `
-      bg-transparent border border-white/30 
+      bg-transparent border border-white/20 
       text-white font-semibold
-      hover:border-cosmic-pink
-      hover:text-cosmic-pink
+      hover:border-violet-500
+      hover:text-violet-400
     `,
   };
 
@@ -138,15 +139,15 @@ export const CosmicInput: React.FC<InputFieldProps> = ({
             ${icon ? 'pl-12' : 'px-4'} 
             py-3 
             rounded-cosmic 
-            bg-white/5 
-            border border-white/20 
+            bg-black/50 
+            border border-white/10 
             text-white 
             placeholder-white/40 
             transition-all duration-300
             focus:outline-none 
-            focus:border-cosmic-pink 
+            focus:border-fuchsia-500 
             focus:ring-2 
-            focus:ring-cosmic-pink/30
+            focus:ring-fuchsia-500/30
             ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/30' : ''}
             ${className}
           `}
@@ -201,7 +202,7 @@ export const GradientText: React.FC<{ children: React.ReactNode; className?: str
 }) => {
   return (
     <span 
-      className={`bg-clip-text text-transparent bg-gradient-to-r from-cosmic-cyan via-purple-400 via-cosmic-pink to-cosmic-gold ${className}`}
+      className={`bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-violet-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] ${className}`}
     >
       {children}
     </span>
@@ -231,10 +232,10 @@ export const Badge: React.FC<{ children: React.ReactNode; variant?: 'pink' | 'cy
   variant = 'pink' 
 }) => {
   const variantColors = {
-    pink: 'bg-cosmic-pink/20 text-cosmic-pink border-cosmic-pink/30',
-    cyan: 'bg-cosmic-cyan/20 text-cosmic-cyan border-cosmic-cyan/30',
-    gold: 'bg-cosmic-gold/20 text-cosmic-gold border-cosmic-gold/30',
-    purple: 'bg-cosmic-purple/20 text-cosmic-purple border-cosmic-purple/30',
+    pink: 'bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30',
+    cyan: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+    gold: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+    purple: 'bg-violet-500/20 text-violet-400 border-violet-500/30',
   };
 
   return (

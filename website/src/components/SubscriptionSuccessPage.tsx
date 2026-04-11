@@ -14,7 +14,7 @@ const SubscriptionSuccessPage: React.FC = () => {
       <div className="pt-16 min-h-screen flex items-center justify-center">
         <div className="relative max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           
-          <GlassCard className="p-8 text-center">
+          <GlassCard className="p-8 text-center bg-black/60 border border-violet-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.2)]">
             {/* Success Icon */}
             <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
               <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,41 +31,41 @@ const SubscriptionSuccessPage: React.FC = () => {
             </p>
 
             {/* Pro Features List */}
-            <div className="bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-lg p-6 mb-8 border border-yellow-400/30">
-              <h3 className="text-lg font-semibold text-yellow-400 mb-4">Your Pro Features Are Now Active:</h3>
+            <div className="bg-gradient-to-r from-violet-600/10 to-fuchsia-600/10 rounded-lg p-6 mb-8 border border-fuchsia-500/30">
+              <h3 className="text-lg font-semibold text-fuchsia-400 mb-4">Your Pro Features Are Now Active:</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-white/80 text-sm">Unlimited AI Chat</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-white/80 text-sm">Advanced Birth Charts</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-white/80 text-sm">Complete Numerology</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-white/80 text-sm">Advanced Reports</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-white/80 text-sm">Priority Support</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <span className="text-white/80 text-sm">Lightning Fast AI</span>
@@ -77,7 +77,7 @@ const SubscriptionSuccessPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => navigate('/ai-chat')}
-                className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-semibold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all transform hover:scale-105"
+                className="px-6 py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold rounded-lg shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:shadow-[0_0_25px_rgba(168,85,247,0.8)] hover:from-violet-500 hover:to-fuchsia-500 transition-all transform hover:scale-105"
               >
                 Start Chatting with AI
               </button>

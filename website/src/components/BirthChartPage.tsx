@@ -70,12 +70,12 @@ const getOverallCharacteristics = (sun: string, moon: string, asc: string): stri
     'Gemini-Gemini-Gemini': 'Triple Gemini makes you exceptionally versatile, communicative, and intellectually curious.',
     // Add more combinations as needed
   };
-  
+
   const key = `${sun}-${moon}-${asc}`;
   if (combinations[key]) {
     return combinations[key];
   }
-  
+
   // Default combination analysis
   return `Your ${sun} core drives you to ${getSunSignTraits(sun).split('.')[0].toLowerCase()}, 
   while your ${moon} moon means you ${getMoonSignTraits(moon).split('.')[0].toLowerCase()}. 
@@ -90,7 +90,7 @@ const getElementCount = (sun: string, moon: string, asc: string, element: string
     'Gemini': 'Air', 'Libra': 'Air', 'Aquarius': 'Air',
     'Cancer': 'Water', 'Scorpio': 'Water', 'Pisces': 'Water'
   };
-  
+
   let count = 0;
   if (elements[sun] === element) count++;
   if (elements[moon] === element) count++;
@@ -410,6 +410,7 @@ const BirthChartPage: React.FC = () => {
   const [birthChartData, setBirthChartData] = useState<BirthChartResponse['data'] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [questionInput, setQuestionInput] = useState('');
   // Individual zodiac signs for display
   const [zodiacData, setZodiacData] = useState({
     sunSign: '',
@@ -417,8 +418,46 @@ const BirthChartPage: React.FC = () => {
     ascendant: '',
     dominantPlanet: ''
   });
-  
+
   const svgRef = useRef<SVGSVGElement>(null);
+
+  // Create a dashboard chat and navigate
+  const createDashboardChatAndNavigate = async (message: string) => {
+    try {
+      const res = await apiFetch('/api/ai-chat/list');
+      let dashboardChatNumber = 1;
+
+      if (res?.success && Array.isArray(res?.data)) {
+        const dashboardChats = res.data.filter((chat: any) =>
+          chat.title?.startsWith('Dashboard Chat')
+        );
+        dashboardChatNumber = dashboardChats.length + 1;
+      }
+
+      const createRes = await apiFetch('/api/ai-chat/create', {
+        method: 'POST',
+        body: JSON.stringify({ title: `Dashboard Chat ${dashboardChatNumber}` })
+      });
+
+      if (createRes?.success && createRes?.data) {
+        const newChat = createRes.data;
+        navigate(`/ai-chat?chatId=${newChat._id}`, {
+          state: { initialMessage: message }
+        });
+      } else {
+        navigate('/ai-chat', { state: { initialMessage: message } });
+      }
+    } catch (err) {
+      console.error('Failed to create dashboard chat:', err);
+      navigate('/ai-chat', { state: { initialMessage: message } });
+    }
+  };
+
+  const handleAskQuestion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!questionInput.trim()) return;
+    await createDashboardChatAndNavigate(questionInput.trim());
+  };
 
   // Fetch birth chart data from kundli_reports
   useEffect(() => {
@@ -426,11 +465,11 @@ const BirthChartPage: React.FC = () => {
       try {
         setIsLoading(true);
         const response = await reportsApi.getBirthChart();
-        
+
         if (response.success && response.data) {
           setBirthChartData(response.data);
           setError(null);
-          
+
           // Extract zodiac data from kundli_reports
           setZodiacData({
             sunSign: response.data.chart_data.sun_sign || '',
@@ -478,19 +517,19 @@ const BirthChartPage: React.FC = () => {
 
     // Create professional gradients
     const defs = svg.append("defs");
-    
+
     // Background gradient
     const bgGradient = defs.append("radialGradient")
       .attr("id", "bgGradient")
       .attr("cx", "50%")
       .attr("cy", "50%")
       .attr("r", "50%");
-    
+
     bgGradient.append("stop")
       .attr("offset", "0%")
       .attr("stop-color", "#1a1a2e")
       .attr("stop-opacity", 1);
-    
+
     bgGradient.append("stop")
       .attr("offset", "100%")
       .attr("stop-color", "#0f0f1e")
@@ -546,14 +585,14 @@ const BirthChartPage: React.FC = () => {
     zodiacSigns.forEach((sign, index) => {
       const startAngle = (sign.angle - 15) * Math.PI / 180;
       const endAngle = (sign.angle + 15) * Math.PI / 180;
-      
+
       const x1 = centerX + radius * Math.cos(startAngle);
       const y1 = centerY + radius * Math.sin(startAngle);
       const x2 = centerX + radius * Math.cos(endAngle);
       const y2 = centerY + radius * Math.sin(endAngle);
-      
+
       const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
-      
+
       // Draw segment
       svg.append("path")
         .attr("d", `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`)
@@ -561,12 +600,12 @@ const BirthChartPage: React.FC = () => {
         .attr("stroke", "#c9a961")
         .attr("stroke-width", 1)
         .attr("opacity", 0.8);
-      
+
       // Draw sign symbol on outer edge
       const symbolAngle = sign.angle * Math.PI / 180;
       const symbolX = centerX + (radius - 15) * Math.cos(symbolAngle);
       const symbolY = centerY + (radius - 15) * Math.sin(symbolAngle);
-      
+
       svg.append("text")
         .attr("x", symbolX)
         .attr("y", symbolY + 4)
@@ -577,12 +616,12 @@ const BirthChartPage: React.FC = () => {
         .attr("font-weight", "bold")
         .attr("font-family", "serif")
         .text(sign.symbol);
-      
+
       // Draw sign name
       const nameAngle = sign.angle * Math.PI / 180;
       const nameX = centerX + (radius - 35) * Math.cos(nameAngle);
       const nameY = centerY + (radius - 35) * Math.sin(nameAngle);
-      
+
       svg.append("text")
         .attr("x", nameX)
         .attr("y", nameY + 3)
@@ -599,7 +638,7 @@ const BirthChartPage: React.FC = () => {
       const angle = i * 30 * Math.PI / 180;
       const x = centerX + radius * Math.cos(angle);
       const y = centerY + radius * Math.sin(angle);
-      
+
       svg.append("line")
         .attr("x1", centerX)
         .attr("y1", centerY)
@@ -613,7 +652,7 @@ const BirthChartPage: React.FC = () => {
     // Draw user's planets with traditional astrological symbols
     if (data && data.chart_data && data.chart_data.planets) {
       const planets = data.chart_data.planets;
-      
+
       // Define planet symbols and colors
       const planetData = [
         { name: 'sun', symbol: '☉', color: '#ffd700', strokeColor: '#ff8c00' },
@@ -632,19 +671,19 @@ const BirthChartPage: React.FC = () => {
         if (planets[planet.name] && planets[planet.name].sign) {
           const signName = planets[planet.name].sign;
           const signData = zodiacSigns.find(s => s.sign === signName);
-          
+
           if (signData) {
             // Calculate position based on sign angle with some variation to avoid overlap
             const baseAngle = signData.angle * Math.PI / 180;
             const angleVariation = (Math.random() - 0.5) * 0.5; // Random variation ±0.25 radians
             const finalAngle = baseAngle + angleVariation;
-            
+
             // Different planets at different distances from center
             const distanceFromCenter = 0.45 + (index % 3) * 0.15; // 0.45, 0.6, 0.75
-            
+
             const x = centerX + (radius * distanceFromCenter) * Math.cos(finalAngle);
             const y = centerY + (radius * distanceFromCenter) * Math.sin(finalAngle);
-            
+
             // Draw planet circle with glow
             svg.append("circle")
               .attr("cx", x)
@@ -654,7 +693,7 @@ const BirthChartPage: React.FC = () => {
               .attr("stroke", planet.strokeColor)
               .attr("stroke-width", 2)
               .attr("filter", `drop-shadow(0 0 6px ${planet.color}40)`);
-            
+
             svg.append("text")
               .attr("x", x)
               .attr("y", y + 3)
@@ -665,7 +704,7 @@ const BirthChartPage: React.FC = () => {
               .attr("font-weight", "bold")
               .attr("font-family", "serif")
               .text(planet.symbol);
-            
+
             // Add degree label if available
             if (planets[planet.name].degree) {
               svg.append("text")
@@ -690,7 +729,7 @@ const BirthChartPage: React.FC = () => {
         .attr("fill", "#8b4513")
         .attr("stroke", "#654321")
         .attr("stroke-width", 2);
-      
+
       svg.append("text")
         .attr("x", centerX)
         .attr("y", centerY + 2)
@@ -708,15 +747,15 @@ const BirthChartPage: React.FC = () => {
       const angle = i * Math.PI / 180;
       const innerRadius = radius + 8;
       const outerRadius = radius + 12;
-      
+
       const x1 = centerX + innerRadius * Math.cos(angle);
       const y1 = centerY + innerRadius * Math.sin(angle);
       const x2 = centerX + outerRadius * Math.cos(angle);
       const y2 = centerY + outerRadius * Math.sin(angle);
-      
+
       const strokeWidth = (i % 30 === 0) ? 1 : 0.5;
       const strokeLength = (i % 30 === 0) ? 4 : 2;
-      
+
       svg.append("line")
         .attr("x1", centerX + (radius + 8) * Math.cos(angle))
         .attr("y1", centerY + (radius + 8) * Math.sin(angle))
@@ -741,7 +780,7 @@ const BirthChartPage: React.FC = () => {
 
   if (isLoading && !birthChartData) {
     return (
-      <div className="flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
+      <div className="flex min-h-screen overflow-hidden bg-black text-white">
         <Sidebar />
         <div className="flex-1 lg:ml-20 overflow-y-auto h-screen flex items-center justify-center">
           <div className="text-center pt-16 lg:pt-0">
@@ -755,7 +794,7 @@ const BirthChartPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
+      <div className="flex min-h-screen overflow-hidden bg-black text-white">
         <Sidebar />
         <div className="flex-1 lg:ml-20 overflow-y-auto h-screen flex items-center justify-center">
           <div className="text-center max-w-md mx-auto p-8 pt-16 lg:pt-8">
@@ -779,125 +818,125 @@ const BirthChartPage: React.FC = () => {
   // User doesn't have birth chart data - show educational content
   if (!birthChartData) {
     return (
-      <div className="flex min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950 text-white">
+      <div className="flex min-h-screen overflow-hidden bg-black text-white">
         <Sidebar />
         <div className="flex-1 lg:ml-20 overflow-y-auto h-screen">
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-20 lg:pt-12">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold font-display mb-6">
-              Birth Chart
-            </h1>
-            <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-              Discover your cosmic blueprint - a personalized map of the heavens at the moment of your birth.
-            </p>
-          </div>
-
-          {/* What is Birth Chart Section */}
-          <div className="mb-16 bg-white/5 border border-white/10 rounded-3xl p-10 backdrop-blur-sm">
-            <h2 className="text-3xl font-bold text-white mb-8 text-center">What is a Birth Chart?</h2>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-              <div className="space-y-6">
-                <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold text-orange-400 mb-4 flex items-center gap-2">
-                    <Star className="w-6 h-6" />
-                    Your Cosmic Blueprint
-                  </h3>
-                  <p className="text-white/70 leading-relaxed">
-                    A birth chart is a snapshot of the sky at the exact moment you were born. It shows the precise positions of the Sun, Moon, planets, and stars in relation to Earth, creating a unique cosmic map that's yours alone.
-                  </p>
-                </div>
-
-                <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
-                    <Telescope className="w-6 h-6" />
-                    Personal Insights
-                  </h3>
-                  <p className="text-white/70 leading-relaxed">
-                    Through your birth chart, you can understand your personality traits, life patterns, relationship dynamics, career potentials, and spiritual journey with remarkable accuracy.
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold text-purple-400 mb-4 flex items-center gap-2">
-                    <Clock className="w-6 h-6" />
-                    Timeless Wisdom
-                  </h3>
-                  <p className="text-white/70 leading-relaxed">
-                    This ancient astrological tool, used for thousands of years, combines celestial wisdom with modern understanding to provide practical guidance for your life's journey.
-                  </p>
-                </div>
-
-                <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                  <h3 className="text-xl font-semibold text-pink-400 mb-4 flex items-center gap-2">
-                    <Target className="w-6 h-6" />
-                    Life Navigation
-                  </h3>
-                  <p className="text-white/70 leading-relaxed">
-                    Your birth chart serves as a compass, helping you navigate life's challenges, make aligned decisions, and fulfill your highest potential.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* All Zodiac Signs */}
-            <h3 className="text-2xl font-bold text-white mb-8 text-center">The Complete Zodiac Guide</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {zodiacSignsData.map((sign) => (
-                <div key={sign.sign} className="bg-white/5 rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-colors duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ backgroundColor: sign.color + '20' }}>
-                        <span className="text-lg" style={{ color: sign.color }}>{sign.symbol}</span>
-                      </div>
-                      <h4 className="text-lg font-bold text-white">{sign.sign}</h4>
-                    </div>
-                    <div className="text-sm">
-                      <span className="px-2 py-1 rounded-full text-xs" style={{ backgroundColor: sign.color + '20', color: sign.color }}>
-                        {sign.element}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-white/60 text-sm leading-relaxed mb-3">
-                    {sign.description}
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      {sign.traits.map((trait, index) => (
-                        <span key={index} className="px-2 py-1 bg-white/10 rounded text-xs text-white/80">
-                          {trait}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="text-xs text-white/50 mt-3">
-                      <span className="font-medium">Ruler:</span> {sign.ruler} | 
-                      <span className="font-medium">Quality:</span> {sign.quality}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Call to Action */}
-          <div className="text-center">
-            <div className="bg-gradient-to-r from-orange-400/10 via-yellow-400/10 to-orange-300/10 border-2 border-orange-400/30 rounded-3xl p-12 backdrop-blur-sm">
-              <h2 className="text-3xl font-bold text-white mb-6">Ready to Discover Your Cosmic Blueprint?</h2>
-              <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
-                Complete your onboarding process to generate your personalized Birth Chart with detailed planetary positions and astrological insights.
+            {/* Header */}
+            <div className="text-center mb-16">
+              <h1 className="text-4xl md:text-5xl font-bold font-display mb-6">
+                Birth Chart
+              </h1>
+              <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+                Discover your cosmic blueprint - a personalized map of the heavens at the moment of your birth.
               </p>
-              <button
-                onClick={handleCompleteGettingStarted}
-                className="bg-gradient-to-r from-orange-400 to-yellow-400 hover:from-orange-300 hover:to-yellow-300 text-gray-900 font-bold text-lg py-4 px-12 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                Complete Getting Started
-              </button>
+            </div>
+
+            {/* What is Birth Chart Section */}
+            <div className="mb-16 bg-white/5 border border-white/10 rounded-3xl p-10 backdrop-blur-sm">
+              <h2 className="text-3xl font-bold text-white mb-8 text-center">What is a Birth Chart?</h2>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+                <div className="space-y-6">
+                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                    <h3 className="text-xl font-semibold text-orange-400 mb-4 flex items-center gap-2">
+                      <Star className="w-6 h-6" />
+                      Your Cosmic Blueprint
+                    </h3>
+                    <p className="text-white/70 leading-relaxed">
+                      A birth chart is a snapshot of the sky at the exact moment you were born. It shows the precise positions of the Sun, Moon, planets, and stars in relation to Earth, creating a unique cosmic map that's yours alone.
+                    </p>
+                  </div>
+
+                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                    <h3 className="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
+                      <Telescope className="w-6 h-6" />
+                      Personal Insights
+                    </h3>
+                    <p className="text-white/70 leading-relaxed">
+                      Through your birth chart, you can understand your personality traits, life patterns, relationship dynamics, career potentials, and spiritual journey with remarkable accuracy.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                    <h3 className="text-xl font-semibold text-purple-400 mb-4 flex items-center gap-2">
+                      <Clock className="w-6 h-6" />
+                      Timeless Wisdom
+                    </h3>
+                    <p className="text-white/70 leading-relaxed">
+                      This ancient astrological tool, used for thousands of years, combines celestial wisdom with modern understanding to provide practical guidance for your life's journey.
+                    </p>
+                  </div>
+
+                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                    <h3 className="text-xl font-semibold text-fuchsia-400 mb-4 flex items-center gap-2">
+                      <Target className="w-6 h-6" />
+                      Life Navigation
+                    </h3>
+                    <p className="text-white/70 leading-relaxed">
+                      Your birth chart serves as a compass, helping you navigate life's challenges, make aligned decisions, and fulfill your highest potential.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* All Zodiac Signs */}
+              <h3 className="text-2xl font-bold text-white mb-8 text-center">The Complete Zodiac Guide</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {zodiacSignsData.map((sign) => (
+                  <div key={sign.sign} className="bg-white/5 rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-colors duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ backgroundColor: sign.color + '20' }}>
+                          <span className="text-lg" style={{ color: sign.color }}>{sign.symbol}</span>
+                        </div>
+                        <h4 className="text-lg font-bold text-white">{sign.sign}</h4>
+                      </div>
+                      <div className="text-sm">
+                        <span className="px-2 py-1 rounded-full text-xs" style={{ backgroundColor: sign.color + '20', color: sign.color }}>
+                          {sign.element}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-white/60 text-sm leading-relaxed mb-3">
+                      {sign.description}
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {sign.traits.map((trait, index) => (
+                          <span key={index} className="px-2 py-1 bg-white/10 rounded text-xs text-white/80">
+                            {trait}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="text-xs text-white/50 mt-3">
+                        <span className="font-medium">Ruler:</span> {sign.ruler} |
+                        <span className="font-medium">Quality:</span> {sign.quality}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Call to Action */}
+            <div className="text-center">
+              <div className="bg-black/60 border border-violet-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)] rounded-3xl p-12 backdrop-blur-xl">
+                <h2 className="text-3xl font-bold text-white mb-6">Ready to Discover Your Cosmic Blueprint?</h2>
+                <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
+                  Complete your onboarding process to generate your personalized Birth Chart with detailed planetary positions and astrological insights.
+                </p>
+                <button
+                  onClick={handleCompleteGettingStarted}
+                  className="bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:shadow-[0_0_25px_rgba(168,85,247,0.8)] text-white font-bold text-lg py-4 px-12 rounded-xl transition-all duration-300 transform hover:scale-105"
+                >
+                  Complete Getting Started
+                </button>
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
     );
@@ -908,355 +947,383 @@ const BirthChartPage: React.FC = () => {
     <CosmicBackground>
       <div className="flex min-h-screen overflow-hidden">
         <Sidebar />
-        <div className="flex-1 lg:ml-20 overflow-y-auto h-screen" id="main-content">
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-20 lg:pt-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
-            Your <GradientText>Cosmic</GradientText> Birth Chart
-          </h1>
-          <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-            Your personalized map of the heavens at the moment of your birth
-          </p>
-        </div>
-
-        {/* Zodiac Profile Display */}
-        {zodiacData.sunSign && zodiacData.moonSign && zodiacData.ascendant ? (
-          <div className="mb-12">
-            <div className="bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-blue-500/10 border border-purple-400/30 rounded-3xl p-8 backdrop-blur-sm">
-              <h2 className="text-3xl font-bold text-white mb-8 text-center flex items-center justify-center gap-3">
-                <Sparkles className="w-8 h-8 text-violet-300" />
-                Your Zodiac Profile
-                <Sparkles className="w-8 h-8 text-violet-300" />
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Sun Sign */}
-                <div className="zodiac-card bg-gradient-to-br from-orange-500/20 to-yellow-500/20 border border-orange-400/30 rounded-2xl p-6 text-center hover:from-orange-500/30 hover:to-yellow-500/30 transition-all duration-300">
-                  <div className="text-5xl mb-3">{zodiacIcons[zodiacData.sunSign] || '☉'}</div>
-                  <h3 className="text-2xl font-bold text-orange-300 mb-2">{zodiacData.sunSign}</h3>
-                  <p className="text-orange-200 text-sm">Sun Sign</p>
-                  <p className="text-white/70 text-xs mt-2">Your core identity</p>
-                </div>
-
-                {/* Moon Sign */}
-                <div className="zodiac-card bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-400/30 rounded-2xl p-6 text-center hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300">
-                  <div className="text-5xl mb-3">{zodiacIcons[zodiacData.moonSign] || '☾'}</div>
-                  <h3 className="text-2xl font-bold text-blue-300 mb-2">{zodiacData.moonSign}</h3>
-                  <p className="text-blue-200 text-sm">Moon Sign</p>
-                  <p className="text-white/70 text-xs mt-2">Your emotional nature</p>
-                </div>
-
-                {/* Ascendant */}
-                <div className="zodiac-card bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-2xl p-6 text-center hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300">
-                  <div className="text-5xl mb-3">{zodiacIcons[zodiacData.ascendant] || '⬆'}</div>
-                  <h3 className="text-2xl font-bold text-purple-300 mb-2">{zodiacData.ascendant}</h3>
-                  <p className="text-purple-200 text-sm">Ascendant</p>
-                  <p className="text-white/70 text-xs mt-2">Your social mask</p>
-                </div>
-
-                {/* Dominant Planet */}
-                <div className="zodiac-card bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 rounded-2xl p-6 text-center hover:from-emerald-500/30 hover:to-teal-500/30 transition-all duration-300">
-                  <div className="text-5xl mb-3 flex items-center justify-center"><Globe2 className="w-10 h-10 text-emerald-300" /></div>
-                  <h3 className="text-2xl font-bold text-emerald-300 mb-2">{zodiacData.dominantPlanet}</h3>
-                  <p className="text-emerald-200 text-sm">Dominant Planet</p>
-                  <p className="text-white/70 text-xs mt-2">Your ruling influence</p>
-                </div>
-              </div>
-
-              {/* Summary Description */}
-              <div className="mt-8 text-center">
-                <p className="text-white/80 leading-relaxed max-w-3xl mx-auto">
-                  As a <span className="text-orange-300 font-semibold">{zodiacData.sunSign}</span> with <span className="text-blue-300 font-semibold">{zodiacData.moonSign}</span> moon and <span className="text-purple-300 font-semibold">{zodiacData.ascendant}</span> rising, 
-                  you embody a unique cosmic blend of energies, guided by the influence of <span className="text-emerald-300 font-semibold">{zodiacData.dominantPlanet}</span>.
+        <div className="flex-1 lg:ml-20 h-screen flex flex-col" id="main-content">
+          <div className="flex-1 overflow-y-auto pb-24">
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 md:py-12">
+              {/* Header */}
+              <div className="text-center mb-12">
+                <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
+                  Your <GradientText>Cosmic</GradientText> Birth Chart
+                </h1>
+                <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+                  Your personalized map of the heavens at the moment of your birth
                 </p>
               </div>
+
+              {/* Zodiac Profile Display */}
+              {zodiacData.sunSign && zodiacData.moonSign && zodiacData.ascendant ? (
+                <div className="mb-12">
+                  <div className="bg-black/60 border border-violet-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)] rounded-3xl p-8 backdrop-blur-xl">
+                    <h2 className="text-3xl font-bold text-white mb-8 text-center flex items-center justify-center gap-3">
+                      <Sparkles className="w-8 h-8 text-violet-300" />
+                      Your Zodiac Profile
+                      <Sparkles className="w-8 h-8 text-violet-300" />
+                    </h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {/* Sun Sign */}
+                      <div className="zodiac-card bg-black/40 border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.15)] rounded-2xl p-6 text-center hover:bg-black/60 hover:border-orange-500/50 transition-all duration-300">
+                        <div className="text-5xl mb-3">{zodiacIcons[zodiacData.sunSign] || '☉'}</div>
+                        <h3 className="text-2xl font-bold text-orange-300 mb-2">{zodiacData.sunSign}</h3>
+                        <p className="text-orange-200 text-sm">Sun Sign</p>
+                        <p className="text-white/70 text-xs mt-2">Your core identity</p>
+                      </div>
+
+                      {/* Moon Sign */}
+                      <div className="zodiac-card bg-black/40 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)] rounded-2xl p-6 text-center hover:bg-black/60 hover:border-blue-500/50 transition-all duration-300">
+                        <div className="text-5xl mb-3">{zodiacIcons[zodiacData.moonSign] || '☾'}</div>
+                        <h3 className="text-2xl font-bold text-blue-300 mb-2">{zodiacData.moonSign}</h3>
+                        <p className="text-blue-200 text-sm">Moon Sign</p>
+                        <p className="text-white/70 text-xs mt-2">Your emotional nature</p>
+                      </div>
+
+                      {/* Ascendant */}
+                      <div className="zodiac-card bg-black/40 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.15)] rounded-2xl p-6 text-center hover:bg-black/60 hover:border-purple-500/50 transition-all duration-300">
+                        <div className="text-5xl mb-3">{zodiacIcons[zodiacData.ascendant] || '⬆'}</div>
+                        <h3 className="text-2xl font-bold text-purple-300 mb-2">{zodiacData.ascendant}</h3>
+                        <p className="text-purple-200 text-sm">Ascendant</p>
+                        <p className="text-white/70 text-xs mt-2">Your social mask</p>
+                      </div>
+
+                      {/* Dominant Planet */}
+                      <div className="zodiac-card bg-black/40 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)] rounded-2xl p-6 text-center hover:bg-black/60 hover:border-emerald-500/50 transition-all duration-300">
+                        <div className="text-5xl mb-3 flex items-center justify-center"><Globe2 className="w-10 h-10 text-emerald-300" /></div>
+                        <h3 className="text-2xl font-bold text-emerald-300 mb-2">{zodiacData.dominantPlanet}</h3>
+                        <p className="text-emerald-200 text-sm">Dominant Planet</p>
+                        <p className="text-white/70 text-xs mt-2">Your ruling influence</p>
+                      </div>
+                    </div>
+
+                    {/* Summary Description */}
+                    <div className="mt-8 text-center">
+                      <p className="text-white/80 leading-relaxed max-w-3xl mx-auto">
+                        As a <span className="text-orange-300 font-semibold">{zodiacData.sunSign}</span> with <span className="text-blue-300 font-semibold">{zodiacData.moonSign}</span> moon and <span className="text-purple-300 font-semibold">{zodiacData.ascendant}</span> rising,
+                        you embody a unique cosmic blend of energies, guided by the influence of <span className="text-emerald-300 font-semibold">{zodiacData.dominantPlanet}</span>.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : birthChartData === null ? (
+                /* User needs to generate insights first */
+                <div className="mb-12 text-center">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 border border-white/10">
+                    <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-400/10 mx-auto mb-6">
+                      <Telescope className="w-8 h-8 text-blue-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">Generate Your Birth Chart</h3>
+                    <p className="text-white/80 text-lg mb-8">
+                      Complete your birth chart generation to unlock your personalized zodiac insights and cosmic profile.
+                    </p>
+                    <button
+                      onClick={() => navigate('/onboarding')}
+                      className="bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:shadow-[0_0_25px_rgba(168,85,247,0.8)] text-white font-bold text-lg py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105"
+                    >
+                      Generate Birth Chart
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Loading state or other error */
+                <div className="mb-12 text-center">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 border border-white/10">
+                    <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-400/10 mx-auto mb-6">
+                      <AlertTriangle className="w-8 h-8 text-red-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">Birth Chart Data Not Available</h3>
+                    <p className="text-white/80 text-lg mb-8">
+                      Your zodiac profile data is not available yet. Please complete your birth chart generation to unlock your personalized cosmic insights.
+                    </p>
+                    <button
+                      onClick={() => navigate('/onboarding')}
+                      className="bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:shadow-[0_0_25px_rgba(168,85,247,0.8)] text-white font-bold text-lg py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105"
+                    >
+                      Complete Birth Chart
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Birth Chart Data Display */}
+              <div className="space-y-8">
+                {/* Zodiac Characteristics Overview */}
+                {zodiacData.sunSign && zodiacData.moonSign && zodiacData.ascendant && (
+                  <div className="bg-black/60 border border-violet-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)] rounded-3xl p-8 backdrop-blur-xl">
+                    <h2 className="text-2xl font-bold text-white mb-6 text-center flex items-center justify-center">
+                      <Sparkles className="w-6 h-6 text-violet-400 mr-3" />
+                      Your Cosmic Characteristics
+                      <Sparkles className="w-6 h-6 text-violet-400 ml-3" />
+                    </h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                      {/* Sun Sign Core Identity */}
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">{zodiacIcons[zodiacData.sunSign] || '☉'}</div>
+                        <h3 className="text-xl font-bold text-orange-300 mb-2">{zodiacData.sunSign} Sun</h3>
+                        <p className="text-orange-200 text-sm mb-3">Core Identity & Ego</p>
+                        <div className="text-white/80 text-sm leading-relaxed">
+                          {getSunSignTraits(zodiacData.sunSign)}
+                        </div>
+                      </div>
+
+                      {/* Moon Sign Emotional Nature */}
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">{zodiacIcons[zodiacData.moonSign] || '☽'}</div>
+                        <h3 className="text-xl font-bold text-blue-300 mb-2">{zodiacData.moonSign} Moon</h3>
+                        <p className="text-blue-200 text-sm mb-3">Emotional Nature</p>
+                        <div className="text-white/80 text-sm leading-relaxed">
+                          {getMoonSignTraits(zodiacData.moonSign)}
+                        </div>
+                      </div>
+
+                      {/* Ascendant Social Mask */}
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">{zodiacIcons[zodiacData.ascendant] || '⬆'}</div>
+                        <h3 className="text-xl font-bold text-purple-300 mb-2">{zodiacData.ascendant} Rising</h3>
+                        <p className="text-purple-200 text-sm mb-3">Social Personality</p>
+                        <div className="text-white/80 text-sm leading-relaxed">
+                          {getAscendantTraits(zodiacData.ascendant)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Overall Characteristics Summary */}
+                    <div className="bg-black/30 rounded-2xl p-6 border border-white/10">
+                      <h3 className="text-lg font-bold text-white mb-4 text-center">Your Cosmic Personality Blend</h3>
+                      <div className="text-white/90 leading-relaxed text-center">
+                        <p className="mb-4">
+                          As a <span className="text-orange-300 font-semibold">{zodiacData.sunSign}</span> with a <span className="text-blue-300 font-semibold">{zodiacData.moonSign}</span> moon and <span className="text-purple-300 font-semibold">{zodiacData.ascendant}</span> rising,
+                          you embody a unique cosmic blend of energies.
+                        </p>
+                        <p className="text-sm">
+                          {getOverallCharacteristics(zodiacData.sunSign, zodiacData.moonSign, zodiacData.ascendant)}
+                        </p>
+                      </div>
+
+                      {/* Element Balance */}
+                      <div className="mt-6 pt-6 border-t border-white/10">
+                        <h4 className="text-md font-semibold text-white mb-3 text-center">Elemental Balance</h4>
+                        <div className="flex justify-center space-x-4 text-xs">
+                          <div className="text-center">
+                            <div className="text-orange-400 font-bold">{getElementCount(zodiacData.sunSign, zodiacData.moonSign, zodiacData.ascendant, 'Fire')}</div>
+                            <div className="text-white/70">Fire</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-green-400 font-bold">{getElementCount(zodiacData.sunSign, zodiacData.moonSign, zodiacData.ascendant, 'Earth')}</div>
+                            <div className="text-white/70">Earth</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-blue-400 font-bold">{getElementCount(zodiacData.sunSign, zodiacData.moonSign, zodiacData.ascendant, 'Air')}</div>
+                            <div className="text-white/70">Air</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-purple-400 font-bold">{getElementCount(zodiacData.sunSign, zodiacData.moonSign, zodiacData.ascendant, 'Water')}</div>
+                            <div className="text-white/70">Water</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Professional Astrological Birth Chart */}
+                <div className="flex justify-center">
+                  <div className="bg-black/60 backdrop-blur-xl border border-violet-500/30 shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-3xl p-8">
+                    <h2 className="text-2xl font-bold text-white mb-2 text-center">Professional Birth Chart</h2>
+                    <p className="text-white/70 text-center mb-6">Traditional astrological wheel with planetary positions</p>
+
+                    {/* Chart Container */}
+                    <div className="relative mb-8">
+                      <svg
+                        ref={svgRef}
+                        width="450"
+                        height="450"
+                        viewBox="0 0 450 450"
+                        className="w-full max-w-md rounded-2xl overflow-hidden"
+                      />
+                    </div>
+
+                    {/* Professional Legend - Moved Below Chart */}
+                    <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                      <div className="flex justify-around text-xs mb-3">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                          <span className="text-yellow-300 font-semibold">Sun (☉)</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
+                          <span className="text-gray-300 font-semibold">Moon (☽)</span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+                          <span className="text-purple-300 font-semibold">Ascendant (ASC)</span>
+                        </div>
+                      </div>
+                      <div className="text-center text-white/60 text-xs">
+                        Traditional astrological chart with 12 houses and zodiac signs
+                      </div>
+                      <div className="text-center text-white/50 text-xs mt-2">
+                        Chart dynamically updates based on your birth data
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detailed Zodiac Information (from local data – no API loading) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {sunSignInfo && (
+                    <div className="bg-black/40 border border-orange-500/30 rounded-3xl p-6 backdrop-blur-md hover:bg-black/60 hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.15)] transition-all duration-300">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="text-orange-300 text-sm font-medium uppercase tracking-wider">Sun Sign</div>
+                        <div className="flex items-center">
+                          <div className="w-12 h-12 bg-orange-400/20 rounded-full flex items-center justify-center mr-3">
+                            <span className="text-orange-400 text-xl">{sunSignInfo.symbol}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-orange-300">{sunSignInfo.sign}</div>
+                            <div className="text-xs text-orange-200">
+                              <span className="font-medium">Element:</span> {sunSignInfo.element} |
+                              <span className="font-medium"> Quality:</span> {sunSignInfo.quality}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="text-white/80 leading-relaxed mb-4 text-sm">{sunSignInfo.description}</p>
+
+                      <div className="space-y-3">
+                        <div>
+                          <h4 className="text-orange-300 font-semibold mb-2 text-sm flex items-center">
+                            <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
+                            Key Traits
+                          </h4>
+                          <div className="flex flex-wrap gap-1">
+                            {sunSignInfo.traits?.slice(0, 4).map((trait, index) => (
+                              <span key={index} className="px-2 py-1 bg-orange-400/20 rounded text-xs text-orange-200">
+                                {trait}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {moonSignInfo && (
+                    <div className="bg-black/40 border border-blue-500/30 rounded-3xl p-6 backdrop-blur-md hover:bg-black/60 hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all duration-300">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="text-blue-300 text-sm font-medium uppercase tracking-wider">Moon Sign</div>
+                        <div className="flex items-center">
+                          <div className="w-12 h-12 bg-blue-400/20 rounded-full flex items-center justify-center mr-3">
+                            <span className="text-blue-400 text-xl">{moonSignInfo.symbol}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-blue-300">{moonSignInfo.sign}</div>
+                            <div className="text-xs text-blue-200">
+                              <span className="font-medium">Element:</span> {moonSignInfo.element} |
+                              <span className="font-medium"> Quality:</span> {moonSignInfo.quality}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="text-white/80 leading-relaxed mb-4 text-sm">{moonSignInfo.description}</p>
+
+                      <div className="space-y-3">
+                        <div>
+                          <h4 className="text-blue-300 font-semibold mb-2 text-sm flex items-center">
+                            <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+                            Emotional Traits
+                          </h4>
+                          <div className="flex flex-wrap gap-1">
+                            {moonSignInfo.traits?.slice(0, 4).map((trait, index) => (
+                              <span key={index} className="px-2 py-1 bg-blue-400/20 rounded text-xs text-blue-200">
+                                {trait}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {ascendantInfo && (
+                    <div className="bg-black/40 border border-purple-500/30 rounded-3xl p-6 backdrop-blur-md hover:bg-black/60 hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.15)] transition-all duration-300 lg:col-span-2 xl:col-span-1">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="text-purple-300 text-sm font-medium uppercase tracking-wider">Ascendant</div>
+                        <div className="flex items-center">
+                          <div className="w-12 h-12 bg-purple-400/20 rounded-full flex items-center justify-center mr-3">
+                            <span className="text-purple-400 text-xl">{ascendantInfo.symbol}</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-purple-300">{ascendantInfo.sign}</div>
+                            <div className="text-xs text-purple-200">
+                              <span className="font-medium">Element:</span> {ascendantInfo.element} |
+                              <span className="font-medium"> Quality:</span> {ascendantInfo.quality}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="text-white/80 leading-relaxed mb-4 text-sm">{ascendantInfo.description}</p>
+
+                      <div className="space-y-3">
+                        <div>
+                          <h4 className="text-purple-300 font-semibold mb-2 text-sm flex items-center">
+                            <span className="w-2 h-2 bg-purple-400 rounded-full mr-2"></span>
+                            Social Traits
+                          </h4>
+                          <div className="flex flex-wrap gap-1">
+                            {ascendantInfo.traits?.slice(0, 4).map((trait, index) => (
+                              <span key={index} className="px-2 py-1 bg-purple-400/20 rounded text-xs text-purple-200">
+                                {trait}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        ) : birthChartData === null ? (
-          /* User needs to generate insights first */
-          <div className="mb-12 text-center">
-            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 border border-white/10">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-blue-400/10 mx-auto mb-6">
-              <Telescope className="w-8 h-8 text-blue-400" />
-            </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Generate Your Birth Chart</h3>
-              <p className="text-white/80 text-lg mb-8">
-                Complete your birth chart generation to unlock your personalized zodiac insights and cosmic profile.
-              </p>
+
+          {/* STICKY BOTTOM CHAT BAR */}
+          <form
+            onSubmit={handleAskQuestion}
+            className="shrink-0 px-4 pb-4 pt-2 bg-gradient-to-t from-black via-black/90 to-transparent"
+          >
+            <div className="max-w-3xl mx-auto relative flex items-center group">
+              <input
+                type="text"
+                value={questionInput}
+                onChange={(e) => setQuestionInput(e.target.value)}
+                placeholder="Ask AstroAI about your birth chart..."
+                className="w-full bg-gradient-to-r from-violet-950/80 to-fuchsia-950/80 backdrop-blur-xl border border-violet-500/50 ring-1 ring-violet-500/30 rounded-full pl-5 pr-12 py-3.5 md:pl-6 md:pr-14 md:py-4 text-white placeholder-black focus:outline-none shadow-[0_0_25px_rgba(168,85,247,0.15)] transition-all"
+              />
               <button
-                onClick={() => navigate('/onboarding')}
-                className="bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-300 hover:to-blue-300 text-white font-bold text-lg py-3 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                type="submit"
+                disabled={!questionInput.trim()}
+                className="absolute right-2 p-1.5 md:right-2.5 md:p-2 bg-violet-600 text-white rounded-full hover:bg-violet-700 disabled:opacity-50 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center shrink-0 shadow-lg"
               >
-                Generate Birth Chart
+                <svg className="w-4 h-4 md:w-5 md:h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                </svg>
               </button>
             </div>
-          </div>
-        ) : (
-          /* Loading state or other error */
-          <div className="mb-12 text-center">
-            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 border border-white/10">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-400/10 mx-auto mb-6">
-              <AlertTriangle className="w-8 h-8 text-red-400" />
-            </div>
-              <h3 className="text-2xl font-bold text-white mb-4">Birth Chart Data Not Available</h3>
-              <p className="text-white/80 text-lg mb-8">
-                Your zodiac profile data is not available yet. Please complete your birth chart generation to unlock your personalized cosmic insights.
-              </p>
-              <button
-                onClick={() => navigate('/onboarding')}
-                className="bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-300 hover:to-blue-300 text-white font-bold text-lg py-3 px-8 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                Complete Birth Chart
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Birth Chart Data Display */}
-        <div className="space-y-8">
-          {/* Zodiac Characteristics Overview */}
-          {zodiacData.sunSign && zodiacData.moonSign && zodiacData.ascendant && (
-            <div className="bg-gradient-to-br from-purple-500/10 via-indigo-500/10 to-blue-500/10 border border-purple-400/30 rounded-3xl p-8 backdrop-blur-sm">
-              <h2 className="text-2xl font-bold text-white mb-6 text-center flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-yellow-400 mr-3" />
-                Your Cosmic Characteristics
-                <Sparkles className="w-6 h-6 text-yellow-400 ml-3" />
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {/* Sun Sign Core Identity */}
-                <div className="text-center">
-                  <div className="text-4xl mb-2">{zodiacIcons[zodiacData.sunSign] || '☉'}</div>
-                  <h3 className="text-xl font-bold text-orange-300 mb-2">{zodiacData.sunSign} Sun</h3>
-                  <p className="text-orange-200 text-sm mb-3">Core Identity & Ego</p>
-                  <div className="text-white/80 text-sm leading-relaxed">
-                    {getSunSignTraits(zodiacData.sunSign)}
-                  </div>
-                </div>
-
-                {/* Moon Sign Emotional Nature */}
-                <div className="text-center">
-                  <div className="text-4xl mb-2">{zodiacIcons[zodiacData.moonSign] || '☽'}</div>
-                  <h3 className="text-xl font-bold text-blue-300 mb-2">{zodiacData.moonSign} Moon</h3>
-                  <p className="text-blue-200 text-sm mb-3">Emotional Nature</p>
-                  <div className="text-white/80 text-sm leading-relaxed">
-                    {getMoonSignTraits(zodiacData.moonSign)}
-                  </div>
-                </div>
-
-                {/* Ascendant Social Mask */}
-                <div className="text-center">
-                  <div className="text-4xl mb-2">{zodiacIcons[zodiacData.ascendant] || '⬆'}</div>
-                  <h3 className="text-xl font-bold text-purple-300 mb-2">{zodiacData.ascendant} Rising</h3>
-                  <p className="text-purple-200 text-sm mb-3">Social Personality</p>
-                  <div className="text-white/80 text-sm leading-relaxed">
-                    {getAscendantTraits(zodiacData.ascendant)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Overall Characteristics Summary */}
-              <div className="bg-black/30 rounded-2xl p-6 border border-white/10">
-                <h3 className="text-lg font-bold text-white mb-4 text-center">Your Cosmic Personality Blend</h3>
-                <div className="text-white/90 leading-relaxed text-center">
-                  <p className="mb-4">
-                    As a <span className="text-orange-300 font-semibold">{zodiacData.sunSign}</span> with a <span className="text-blue-300 font-semibold">{zodiacData.moonSign}</span> moon and <span className="text-purple-300 font-semibold">{zodiacData.ascendant}</span> rising, 
-                    you embody a unique cosmic blend of energies.
-                  </p>
-                  <p className="text-sm">
-                    {getOverallCharacteristics(zodiacData.sunSign, zodiacData.moonSign, zodiacData.ascendant)}
-                  </p>
-                </div>
-                
-                {/* Element Balance */}
-                <div className="mt-6 pt-6 border-t border-white/10">
-                  <h4 className="text-md font-semibold text-white mb-3 text-center">Elemental Balance</h4>
-                  <div className="flex justify-center space-x-4 text-xs">
-                    <div className="text-center">
-                      <div className="text-orange-400 font-bold">{getElementCount(zodiacData.sunSign, zodiacData.moonSign, zodiacData.ascendant, 'Fire')}</div>
-                      <div className="text-white/70">Fire</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-green-400 font-bold">{getElementCount(zodiacData.sunSign, zodiacData.moonSign, zodiacData.ascendant, 'Earth')}</div>
-                      <div className="text-white/70">Earth</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-blue-400 font-bold">{getElementCount(zodiacData.sunSign, zodiacData.moonSign, zodiacData.ascendant, 'Air')}</div>
-                      <div className="text-white/70">Air</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-cyan-400 font-bold">{getElementCount(zodiacData.sunSign, zodiacData.moonSign, zodiacData.ascendant, 'Water')}</div>
-                      <div className="text-white/70">Water</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Professional Astrological Birth Chart */}
-          <div className="flex justify-center">
-            <div className="bg-gradient-to-br from-slate-900/50 to-indigo-900/50 backdrop-blur-sm rounded-3xl p-8 border border-white/10 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-2 text-center">Professional Birth Chart</h2>
-              <p className="text-white/70 text-center mb-6">Traditional astrological wheel with planetary positions</p>
-              
-              {/* Chart Container */}
-              <div className="relative mb-8">
-                <svg
-                  ref={svgRef}
-                  width="450"
-                  height="450"
-                  viewBox="0 0 450 450"
-                  className="w-full max-w-md rounded-2xl overflow-hidden"
-                />
-              </div>
-              
-              {/* Professional Legend - Moved Below Chart */}
-              <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                <div className="flex justify-around text-xs mb-3">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                    <span className="text-yellow-300 font-semibold">Sun (☉)</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
-                    <span className="text-gray-300 font-semibold">Moon (☽)</span>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-                    <span className="text-purple-300 font-semibold">Ascendant (ASC)</span>
-                  </div>
-                </div>
-                <div className="text-center text-white/60 text-xs">
-                  Traditional astrological chart with 12 houses and zodiac signs
-                </div>
-                <div className="text-center text-white/50 text-xs mt-2">
-                  Chart dynamically updates based on your birth data
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Detailed Zodiac Information (from local data – no API loading) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {sunSignInfo && (
-                  <div className="bg-gradient-to-br from-orange-500/10 to-yellow-500/10 border border-orange-400/30 rounded-3xl p-6 backdrop-blur-sm hover:from-orange-500/20 hover:to-yellow-500/20 transition-all duration-300">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-orange-300 text-sm font-medium uppercase tracking-wider">Sun Sign</div>
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-orange-400/20 rounded-full flex items-center justify-center mr-3">
-                          <span className="text-orange-400 text-xl">{sunSignInfo.symbol}</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-orange-300">{sunSignInfo.sign}</div>
-                          <div className="text-xs text-orange-200">
-                            <span className="font-medium">Element:</span> {sunSignInfo.element} | 
-                            <span className="font-medium"> Quality:</span> {sunSignInfo.quality}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <p className="text-white/80 leading-relaxed mb-4 text-sm">{sunSignInfo.description}</p>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <h4 className="text-orange-300 font-semibold mb-2 text-sm flex items-center">
-                          <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
-                          Key Traits
-                        </h4>
-                        <div className="flex flex-wrap gap-1">
-                          {sunSignInfo.traits?.slice(0, 4).map((trait, index) => (
-                            <span key={index} className="px-2 py-1 bg-orange-400/20 rounded text-xs text-orange-200">
-                              {trait}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {moonSignInfo && (
-                  <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-400/30 rounded-3xl p-6 backdrop-blur-sm hover:from-blue-500/20 hover:to-cyan-500/20 transition-all duration-300">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-blue-300 text-sm font-medium uppercase tracking-wider">Moon Sign</div>
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-blue-400/20 rounded-full flex items-center justify-center mr-3">
-                          <span className="text-blue-400 text-xl">{moonSignInfo.symbol}</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-blue-300">{moonSignInfo.sign}</div>
-                          <div className="text-xs text-blue-200">
-                            <span className="font-medium">Element:</span> {moonSignInfo.element} | 
-                            <span className="font-medium"> Quality:</span> {moonSignInfo.quality}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <p className="text-white/80 leading-relaxed mb-4 text-sm">{moonSignInfo.description}</p>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <h4 className="text-blue-300 font-semibold mb-2 text-sm flex items-center">
-                          <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
-                          Emotional Traits
-                        </h4>
-                        <div className="flex flex-wrap gap-1">
-                          {moonSignInfo.traits?.slice(0, 4).map((trait, index) => (
-                            <span key={index} className="px-2 py-1 bg-blue-400/20 rounded text-xs text-blue-200">
-                              {trait}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {ascendantInfo && (
-                  <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/30 rounded-3xl p-6 backdrop-blur-sm hover:from-purple-500/20 hover:to-pink-500/20 transition-all duration-300 lg:col-span-2 xl:col-span-1">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-purple-300 text-sm font-medium uppercase tracking-wider">Ascendant</div>
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-purple-400/20 rounded-full flex items-center justify-center mr-3">
-                          <span className="text-purple-400 text-xl">{ascendantInfo.symbol}</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-purple-300">{ascendantInfo.sign}</div>
-                          <div className="text-xs text-purple-200">
-                            <span className="font-medium">Element:</span> {ascendantInfo.element} | 
-                            <span className="font-medium"> Quality:</span> {ascendantInfo.quality}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <p className="text-white/80 leading-relaxed mb-4 text-sm">{ascendantInfo.description}</p>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <h4 className="text-purple-300 font-semibold mb-2 text-sm flex items-center">
-                          <span className="w-2 h-2 bg-purple-400 rounded-full mr-2"></span>
-                          Social Traits
-                        </h4>
-                        <div className="flex flex-wrap gap-1">
-                          {ascendantInfo.traits?.slice(0, 4).map((trait, index) => (
-                            <span key={index} className="px-2 py-1 bg-purple-400/20 rounded text-xs text-purple-200">
-                              {trait}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-          </div>
+            <br />
+          </form>
         </div>
-        </div>
-      </div>
       </div>
     </CosmicBackground>
   );

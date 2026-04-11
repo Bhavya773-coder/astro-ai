@@ -71,7 +71,7 @@ const OnboardingStep3: React.FC = () => {
     return (
       <CosmicBackground className="min-h-screen flex items-center justify-center px-4">
         <div className="w-full max-w-md">
-          <GlassCard className="p-8 text-center" glow="pink">
+          <GlassCard className="p-8 text-center bg-black/60 border border-violet-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.2)]">
             <div className="w-16 h-16 rounded-full bg-red-500/20 mx-auto mb-4 flex items-center justify-center">
               <AlertTriangle className="w-7 h-7 text-red-400" />
             </div>
@@ -79,7 +79,7 @@ const OnboardingStep3: React.FC = () => {
             <p className="text-white/60 mb-6">{error}</p>
             <button
               onClick={() => navigate('/dashboard')}
-              className="w-full bg-cosmic-pink hover:bg-cosmic-pink/80 text-white font-semibold py-3 px-6 rounded-cosmic transition-colors"
+              className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold py-3 px-6 rounded-cosmic transition-colors"
             >
               Return to Dashboard
             </button>
@@ -95,23 +95,23 @@ const OnboardingStep3: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-center gap-3">
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cosmic-cyan to-cosmic-purple flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </div>
-            <div className="w-16 h-1 rounded-full bg-cosmic-cyan"></div>
+            <div className="w-16 h-1 rounded-full bg-fuchsia-500"></div>
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cosmic-cyan to-cosmic-purple flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </div>
-            <div className="w-16 h-1 rounded-full bg-cosmic-pink"></div>
+            <div className="w-16 h-1 rounded-full bg-fuchsia-500"></div>
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cosmic-pink to-cosmic-purple flex items-center justify-center shadow-neon-pink">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_15px_rgba(217,70,239,0.5)]">
                 <span className="text-white text-sm font-bold">3</span>
               </div>
             </div>
@@ -119,12 +119,12 @@ const OnboardingStep3: React.FC = () => {
           <p className="text-center text-sm text-white/60 mt-3">Step 3 of 3: Generating Insights</p>
         </div>
 
-        <GlassCard className="p-8" glow="purple">
+        <GlassCard className="p-8 bg-black/60 border border-violet-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.2)]">
           <div className="text-center">
             <div className="relative w-24 h-24 mx-auto mb-6">
-              <div className="absolute inset-0 rounded-full border-4 border-cosmic-purple/30"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-violet-500/30"></div>
               <div 
-                className="absolute inset-0 rounded-full border-4 border-t-cosmic-pink border-r-cosmic-pink border-b-transparent border-l-transparent animate-spin"
+                className="absolute inset-0 rounded-full border-4 border-t-fuchsia-500 border-r-fuchsia-500 border-b-transparent border-l-transparent animate-spin"
                 style={{ transform: `rotate(${progress * 3.6}deg)` }}
               ></div>
               <div className="absolute inset-0 flex items-center justify-center">
@@ -142,7 +142,7 @@ const OnboardingStep3: React.FC = () => {
 
             <div className="w-full bg-white/20 rounded-full h-3 mb-6 overflow-hidden">
               <div 
-                className="h-full rounded-full bg-gradient-to-r from-cosmic-purple via-cosmic-pink to-cosmic-cyan transition-all duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-violet-600 via-fuchsia-500 to-purple-600 transition-all duration-500"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -150,30 +150,30 @@ const OnboardingStep3: React.FC = () => {
             <div className="space-y-2 text-sm text-white/50">
               {progress >= 20 && (
                 <div className="flex items-center justify-center gap-2">
-                  <span className="text-cosmic-cyan">✓</span>
+                  <span className="text-fuchsia-400">✓</span>
                   <span>Analyzing birth chart patterns</span>
                 </div>
               )}
               {progress >= 40 && (
                 <div className="flex items-center justify-center gap-2">
-                  <span className="text-cosmic-cyan">✓</span>
+                  <span className="text-fuchsia-400">✓</span>
                   <span>Calculating numerology profiles</span>
                 </div>
               )}
               {progress >= 60 && (
                 <div className="flex items-center justify-center gap-2">
-                  <span className="text-cosmic-cyan">✓</span>
+                  <span className="text-fuchsia-400">✓</span>
                   <span>Processing life context data</span>
                 </div>
               )}
               {progress >= 80 && (
                 <div className="flex items-center justify-center gap-2">
-                  <span className="text-cosmic-cyan">✓</span>
+                  <span className="text-fuchsia-400">✓</span>
                   <span>Generating personalized insights</span>
                 </div>
               )}
               {progress >= 100 && (
-                <div className="flex items-center justify-center gap-2 text-cosmic-pink">
+                <div className="flex items-center justify-center gap-2 text-fuchsia-400">
                   <span>✓</span>
                   <span className="font-semibold">Complete! Redirecting to dashboard...</span>
                 </div>

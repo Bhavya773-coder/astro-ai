@@ -67,15 +67,15 @@ const OnboardingStep2: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-center gap-3">
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cosmic-cyan to-cosmic-purple flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </div>
-            <div className="w-16 h-1 rounded-full bg-cosmic-cyan"></div>
+            <div className="w-16 h-1 rounded-full bg-fuchsia-500"></div>
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cosmic-cyan to-cosmic-purple flex items-center justify-center shadow-neon-cyan">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_15px_rgba(217,70,239,0.5)]">
                 <span className="text-white text-sm font-bold">2</span>
               </div>
             </div>
@@ -89,10 +89,10 @@ const OnboardingStep2: React.FC = () => {
           <p className="text-center text-sm text-white/60 mt-3">Step 2 of 3: Life Context</p>
         </div>
 
-        <GlassCard className="p-8" glow="cyan">
+        <GlassCard className="p-8 bg-black/60 border border-violet-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.2)]">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cosmic-cyan/20 mb-4">
-              <Sparkles className="w-8 h-8 text-cosmic-cyan" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-fuchsia-500/20 mb-4">
+              <Sparkles className="w-8 h-8 text-fuchsia-400" />
             </div>
             <h1 className="font-display text-2xl font-bold text-white mb-2">Life Context</h1>
             <p className="text-white/60 text-sm">Help us understand your current life situation</p>
@@ -111,14 +111,14 @@ const OnboardingStep2: React.FC = () => {
                 name="career_stage"
                 value={formData.career_stage}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 transition-all"
+                className="w-full px-4 py-3 rounded-cosmic bg-black/60 border border-violet-500/30 text-white focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all"
                 required
               >
-                <option value="" className="bg-cosmic-deep-space">Select your career stage</option>
-                <option value="student" className="bg-cosmic-deep-space">Student</option>
-                <option value="early-career" className="bg-cosmic-deep-space">Early Career</option>
-                <option value="mid-career" className="bg-cosmic-deep-space">Mid Career</option>
-                <option value="entrepreneur" className="bg-cosmic-deep-space">Entrepreneur</option>
+                <option value="" className="bg-black">Select your career stage</option>
+                <option value="student" className="bg-black">Student</option>
+                <option value="early-career" className="bg-black">Early Career</option>
+                <option value="mid-career" className="bg-black">Mid Career</option>
+                <option value="entrepreneur" className="bg-black">Entrepreneur</option>
               </select>
             </div>
 
@@ -128,13 +128,13 @@ const OnboardingStep2: React.FC = () => {
                 name="relationship_status"
                 value={formData.relationship_status}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 transition-all"
+                className="w-full px-4 py-3 rounded-cosmic bg-black/60 border border-violet-500/30 text-white focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all"
                 required
               >
-                <option value="" className="bg-cosmic-deep-space">Select relationship status</option>
-                <option value="single" className="bg-cosmic-deep-space">Single</option>
-                <option value="relationship" className="bg-cosmic-deep-space">In a Relationship</option>
-                <option value="married" className="bg-cosmic-deep-space">Married</option>
+                <option value="" className="bg-black">Select relationship status</option>
+                <option value="single" className="bg-black">Single</option>
+                <option value="relationship" className="bg-black">In a Relationship</option>
+                <option value="married" className="bg-black">Married</option>
               </select>
             </div>
 
@@ -144,15 +144,15 @@ const OnboardingStep2: React.FC = () => {
                 name="main_life_focus"
                 value={formData.main_life_focus}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 transition-all"
+                className="w-full px-4 py-3 rounded-cosmic bg-black/60 border border-violet-500/30 text-white focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all"
                 required
               >
-                <option value="" className="bg-cosmic-deep-space">Select your main focus</option>
-                <option value="career" className="bg-cosmic-deep-space">Career</option>
-                <option value="relationships" className="bg-cosmic-deep-space">Relationships</option>
-                <option value="finance" className="bg-cosmic-deep-space">Finance</option>
-                <option value="health" className="bg-cosmic-deep-space">Health</option>
-                <option value="spirituality" className="bg-cosmic-deep-space">Spirituality</option>
+                <option value="" className="bg-black">Select your main focus</option>
+                <option value="career" className="bg-black">Career</option>
+                <option value="relationships" className="bg-black">Relationships</option>
+                <option value="finance" className="bg-black">Finance</option>
+                <option value="health" className="bg-black">Health</option>
+                <option value="spirituality" className="bg-black">Spirituality</option>
               </select>
             </div>
 
@@ -162,14 +162,14 @@ const OnboardingStep2: React.FC = () => {
                 name="personality_style"
                 value={formData.personality_style}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 transition-all"
+                className="w-full px-4 py-3 rounded-cosmic bg-black/60 border border-violet-500/30 text-white focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all"
                 required
               >
-                <option value="" className="bg-cosmic-deep-space">Select your personality style</option>
-                <option value="analytical" className="bg-cosmic-deep-space">Analytical</option>
-                <option value="emotional" className="bg-cosmic-deep-space">Emotional</option>
-                <option value="practical" className="bg-cosmic-deep-space">Practical</option>
-                <option value="spiritual" className="bg-cosmic-deep-space">Spiritual</option>
+                <option value="" className="bg-black">Select your personality style</option>
+                <option value="analytical" className="bg-black">Analytical</option>
+                <option value="emotional" className="bg-black">Emotional</option>
+                <option value="practical" className="bg-black">Practical</option>
+                <option value="spiritual" className="bg-black">Spiritual</option>
               </select>
             </div>
 
@@ -180,7 +180,7 @@ const OnboardingStep2: React.FC = () => {
                 value={formData.primary_life_problem}
                 onChange={handleChange}
                 rows={3}
-                className="w-full px-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 transition-all resize-none"
+                className="w-full px-4 py-3 rounded-cosmic bg-black/60 border border-violet-500/30 text-white placeholder-white/40 focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all resize-none"
                 placeholder="Describe your main life challenge or goal..."
                 required
               />

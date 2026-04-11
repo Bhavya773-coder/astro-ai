@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { register } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { CosmicButton, GlassCard, LoadingSpinner } from './CosmicUI';
@@ -10,7 +10,10 @@ const SignUpPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isBeliever, setIsBeliever] = useState(true);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialType = queryParams.get('type');
+  const [isBeliever, setIsBeliever] = useState(initialType !== 'non-believer');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [passwordFocus, setPasswordFocus] = useState(false);
@@ -157,7 +160,7 @@ const SignUpPage: React.FC = () => {
     try {
       const res = await register(email, password, isBeliever);
       setAuth(res.token, res.user);
-      navigate('/onboarding/step-1');
+      navigate('/onboarding');
     } catch (err: any) {
       setError(err?.message || 'Sign up failed');
     } finally {
@@ -172,14 +175,14 @@ const SignUpPage: React.FC = () => {
       <div className="relative z-10 flex items-start justify-center px-4 overflow-y-auto pt-8 sm:pt-12" style={{ height: '100vh', minHeight: '100vh' }}>
         <div className="w-full max-w-md animate-slide-up py-8" style={{ minHeight: 'fit-content' }}>
           <div className="text-center mb-6 sm:mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-pink mb-4 shadow-cosmic animate-pulse-glow">
+            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 mb-4 shadow-[0_0_15px_rgba(168,85,247,0.5)] animate-pulse-glow">
               <span className="text-white text-3xl font-bold font-display">A</span>
             </div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-2 text-glow">Create Account</h1>
             <p className="text-sm sm:text-base text-white/60 font-body">Begin your cosmic journey</p>
           </div>
 
-          <GlassCard className="p-6 sm:p-8" glow="cyan">
+          <GlassCard className="p-6 sm:p-8 bg-black/60 border border-violet-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.2)]">
             {error ? (
               <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-300">
                 <div className="flex items-center gap-2">
@@ -207,7 +210,7 @@ const SignUpPage: React.FC = () => {
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 text-sm sm:text-base"
+                    className="w-full pl-12 pr-4 py-3 rounded-cosmic bg-black/40 border border-violet-500/30 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 text-sm sm:text-base"
                     placeholder="Enter your email"
                     required
                   />
@@ -229,7 +232,7 @@ const SignUpPage: React.FC = () => {
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-12 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 text-sm sm:text-base"
+                    className="w-full pl-12 pr-12 py-3 rounded-cosmic bg-black/40 border border-violet-500/30 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 text-sm sm:text-base"
                     placeholder="Enter your password"
                     required
                   />
@@ -267,7 +270,7 @@ const SignUpPage: React.FC = () => {
                     id="confirmPassword"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-12 pr-12 py-3 rounded-cosmic bg-white/5 border border-white/20 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-cosmic-cyan focus:ring-2 focus:ring-cosmic-cyan/30 text-sm sm:text-base"
+                    className="w-full pl-12 pr-12 py-3 rounded-cosmic bg-black/40 border border-violet-500/30 text-white placeholder-white/40 transition-all duration-300 focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 text-sm sm:text-base"
                     placeholder="Confirm your password"
                     required
                   />
@@ -292,31 +295,31 @@ const SignUpPage: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 text-sm sm:text-sm text-white/80">
+                  <label className="flex items-center gap-2 text-sm sm:text-sm text-white/80 cursor-pointer">
                     <input
                       type="radio"
                       name="believer"
                       checked={isBeliever}
-                      onChange={(e) => setIsBeliever(e.target.value === 'true')}
-                      className="w-4 h-4 text-cosmic-cyan focus:ring-cosmic-cyan"
+                      onChange={() => setIsBeliever(true)}
+                      className="w-4 h-4 text-fuchsia-500 focus:ring-fuchsia-500"
                     />
-                    <span className="ml-2">Believer</span>
+                    <span className="ml-1">Believer</span>
                   </label>
-                  <label className="flex items-center gap-2 text-sm sm:text-sm text-white/80">
+                  <label className="flex items-center gap-2 text-sm sm:text-sm text-white/80 cursor-pointer">
                     <input
                       type="radio"
                       name="believer"
                       checked={!isBeliever}
-                      onChange={(e) => setIsBeliever(e.target.value === 'true')}
-                      className="w-4 h-4 text-cosmic-cyan focus:ring-cosmic-cyan"
+                      onChange={() => setIsBeliever(false)}
+                      className="w-4 h-4 text-fuchsia-500 focus:ring-fuchsia-500"
                     />
-                    <span className="ml-2">Non-Believer</span>
+                    <span className="ml-1">Non-Believer</span>
                   </label>
                 </div>
                 <button
                   type="button"
                   onClick={() => navigate('/login')}
-                  className="text-sm sm:text-sm text-cosmic-cyan hover:text-cosmic-pink transition-colors"
+                  className="text-sm sm:text-sm text-fuchsia-400 hover:text-violet-400 transition-colors drop-shadow-[0_0_5px_rgba(217,70,239,0.5)]"
                 >
                   Already have an account?
                 </button>
@@ -345,7 +348,7 @@ const SignUpPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="text-cosmic-cyan hover:text-white transition-colors duration-300 underline"
+                className="text-fuchsia-400 hover:text-violet-400 transition-colors duration-300 underline drop-shadow-[0_0_5px_rgba(217,70,239,0.5)]"
               >
                 Sign in here
               </button>
@@ -369,14 +372,14 @@ const SignUpPage: React.FC = () => {
       {/* Terms & Conditions Modal */}
       {showTerms && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <GlassCard className="w-full max-w-2xl max-h-[85vh] flex flex-col p-6 sm:p-8" glow="purple">
+          <GlassCard className="w-full max-w-2xl max-h-[85vh] flex flex-col p-6 sm:p-8 bg-black/80 border border-violet-500/30 backdrop-blur-2xl shadow-[0_0_30px_rgba(168,85,247,0.3)]">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-display font-bold text-white mb-2 text-glow">Terms and Conditions</h2>
               <p className="text-sm text-white/60">Please read and accept our terms to begin your cosmic journey</p>
             </div>
 
             <div className="flex-1 overflow-y-auto pr-4 space-y-5 text-white/80 text-sm pb-4">
-              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+              <div className="bg-black/60 rounded-lg p-4 border border-violet-500/30">
                 <p className="font-semibold text-white mb-2">Legal Disclaimer & Terms of Service</p>
                 <p>Welcome to Astro AI. By creating an account, you agree to these terms. Please read them carefully.</p>
               </div>

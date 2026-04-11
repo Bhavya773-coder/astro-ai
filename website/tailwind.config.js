@@ -29,8 +29,8 @@ module.exports = {
       },
       fontFamily: {
         'sans': ['Inter', 'system-ui', 'sans-serif'],
-        'display': ['Playfair Display', 'Cormorant Garamond', 'Georgia', 'serif'],
-        'body': ['Inter', 'Poppins', 'system-ui', 'sans-serif'],
+        'display': ['Inter', 'system-ui', 'sans-serif'],
+        'body': ['Inter', 'system-ui', 'sans-serif'],
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',

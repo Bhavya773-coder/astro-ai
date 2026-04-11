@@ -61,14 +61,14 @@ const VerifyOtpPage: React.FC = () => {
         <div className="w-full max-w-md animate-slide-up py-8" style={{ minHeight: 'fit-content' }}>
           {/* Logo/Brand Section */}
           <div className="text-center mb-6 sm:mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-pink mb-4 shadow-cosmic animate-pulse-glow">
+            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 mb-4 shadow-[0_0_20px_rgba(168,85,247,0.5)] animate-pulse-glow">
               <span className="text-white text-3xl font-bold font-display">A</span>
             </div>
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-2 text-glow">Verify Code</h1>
             <p className="text-sm sm:text-base text-white/60 font-body">Enter the 6-digit code sent to {email}</p>
           </div>
 
-          <GlassCard className="p-6 sm:p-8" glow="pink">
+          <GlassCard className="p-6 sm:p-8 bg-black/60 border border-violet-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.2)]">
             {error ? (
               <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-300 animate-shake">
                 <div className="flex items-center gap-2">
@@ -97,7 +97,7 @@ const VerifyOtpPage: React.FC = () => {
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
-                      className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold bg-white/5 border-2 border-white/20 rounded-xl text-white focus:outline-none focus:border-cosmic-pink focus:ring-2 focus:ring-cosmic-pink/30 transition-all duration-300"
+                      className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold bg-black/40 border-2 border-violet-500/30 rounded-xl text-white focus:outline-none focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/30 transition-all duration-300"
                       required
                     />
                   ))}

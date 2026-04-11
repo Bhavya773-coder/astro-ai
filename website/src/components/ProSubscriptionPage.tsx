@@ -58,8 +58,8 @@ const ProSubscriptionPage: React.FC = () => {
           
           {/* Header */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-6 shadow-lg">
-              <Star className="w-10 h-10 text-gray-900" />
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-full mb-6 shadow-[0_0_20px_rgba(168,85,247,0.5)] text-white">
+              <Star className="w-10 h-10" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Unlock <GradientText>Cosmic Wisdom</GradientText> with Pro
@@ -73,7 +73,7 @@ const ProSubscriptionPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
             
             {/* Free Plan */}
-            <GlassCard className="p-8 relative border border-white/20">
+            <GlassCard className="p-8 relative bg-black/40 border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
               <div className="text-center">
                 <h3 className="text-2xl font-bold text-white mb-2">Free</h3>
                 <p className="text-white/60 mb-6">Perfect for getting started</p>
@@ -108,9 +108,9 @@ const ProSubscriptionPage: React.FC = () => {
             </GlassCard>
 
             {/* Pro Plan - Most Popular */}
-            <GlassCard className="p-8 relative border-2 border-yellow-400/50 shadow-lg shadow-yellow-400/20">
+            <GlassCard className="p-8 relative bg-black/40 backdrop-blur-xl border border-fuchsia-500/30 shadow-[0_0_25px_rgba(217,70,239,0.15)] hover:border-fuchsia-500/50 hover:shadow-[0_0_30px_rgba(217,70,239,0.3)] transition-all">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 px-4 py-1 rounded-full text-sm font-bold">
+                <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-[0_0_10px_rgba(217,70,239,0.5)] text-white px-4 py-1 rounded-full text-sm font-bold tracking-wide">
                   MOST POPULAR
                 </span>
               </div>
@@ -124,7 +124,7 @@ const ProSubscriptionPage: React.FC = () => {
                       onClick={() => setSelectedPlan('monthly')}
                       className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
                         selectedPlan === 'monthly'
-                          ? 'bg-yellow-400/20 text-yellow-400'
+                          ? 'bg-fuchsia-500/20 text-fuchsia-400'
                           : 'text-white/60 hover:text-white'
                       }`}
                     >
@@ -134,7 +134,7 @@ const ProSubscriptionPage: React.FC = () => {
                       onClick={() => setSelectedPlan('yearly')}
                       className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
                         selectedPlan === 'yearly'
-                          ? 'bg-yellow-400/20 text-yellow-400'
+                          ? 'bg-fuchsia-500/20 text-fuchsia-400'
                           : 'text-white/60 hover:text-white'
                       }`}
                     >
@@ -147,13 +147,13 @@ const ProSubscriptionPage: React.FC = () => {
                   <span className="text-lg text-white/60">/{selectedPlan === 'monthly' ? 'month' : 'year'}</span>
                 </div>
                 {selectedPlan === 'yearly' && (
-                  <p className="text-green-400 text-sm mb-4">Save {monthlySavings}% annually</p>
+                  <p className="text-fuchsia-400 text-sm mb-4">Save {monthlySavings}% annually</p>
                 )}
                 
                 <button
                   onClick={() => handleSubscribe(selectedPlan)}
                   disabled={isProcessing}
-                  className="w-full py-3 px-6 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-semibold hover:from-yellow-500 hover:to-orange-600 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 px-6 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] text-white font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isProcessing ? (
                     <span className="flex items-center justify-center gap-2">
@@ -174,7 +174,7 @@ const ProSubscriptionPage: React.FC = () => {
                       <p className="text-white font-medium text-sm">{feature.title}</p>
                       <p className="text-white/60 text-xs">{feature.description}</p>
                     </div>
-                    <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
@@ -183,7 +183,7 @@ const ProSubscriptionPage: React.FC = () => {
             </GlassCard>
 
             {/* Enterprise Plan */}
-            <GlassCard className="p-8 relative border border-white/20 opacity-75">
+            <GlassCard className="p-8 relative bg-black/40 border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] opacity-75 hover:opacity-100 transition-opacity">
               <div className="text-center">
                 <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
                 <p className="text-white/60 mb-6">For professional astrologers</p>
@@ -249,7 +249,7 @@ const ProSubscriptionPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-white text-center mb-8">What Our Users Say</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                   <span className="text-2xl text-white">👤</span>
                 </div>
                 <p className="text-white/80 italic mb-3">
@@ -279,7 +279,7 @@ const ProSubscriptionPage: React.FC = () => {
           </GlassCard> */}
 
           {/* FAQ */}
-          <GlassCard className="p-8">
+          <GlassCard className="p-8 bg-black/40 border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
             <h2 className="text-2xl font-bold text-white text-center mb-8">Frequently Asked Questions</h2>
             <div className="space-y-6 max-w-3xl mx-auto">
               <div>

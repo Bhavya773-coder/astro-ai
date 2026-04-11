@@ -52,7 +52,7 @@ const GoogleAuthCallback: React.FC = () => {
   return (
     <CosmicBackground className="min-h-screen flex items-center justify-center px-4">
       <div className="text-center animate-fade-in">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-cyan mb-6 shadow-cosmic">
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 mb-6 shadow-[0_0_20px_rgba(168,85,247,0.5)]">
           <LoadingSpinner size="lg" className="text-white" />
         </div>
         <h2 className="font-display text-2xl font-bold text-white mb-2 text-glow">Completing Sign In</h2>

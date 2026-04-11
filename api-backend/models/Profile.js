@@ -27,6 +27,13 @@ const ProfileSchema = new mongoose.Schema(
       destiny: { type: String },
       personal_year: { type: String }
     },
+    style_preferences: {
+      work_setting: { type: String },
+      style_vibe: { type: String },
+      fit_preference: { type: String },
+      accessory_level: { type: String },
+      avoid_colors: { type: String }
+    },
     insights_generated: { type: Boolean, default: false },
     insights_generated_at: { type: Date },
     created_at: { type: Date, required: true, default: Date.now },

@@ -15,8 +15,24 @@ const createUser = async (req, res) => {
 };
 
 const listUsers = async (req, res) => {
-  const users = await User.find({}).sort({ created_at: -1 });
-  res.json(users);
+  const users = await User.aggregate([
+    {
+      $lookup: {
+        from: 'profiles',
+        localField: '_id',
+        foreignField: 'user_id',
+        as: 'profile'
+      }
+    },
+    { $sort: { created_at: -1 } }
+  ]);
+
+  const mappedUsers = users.map(u => ({
+    ...u,
+    name: u.profile && u.profile.length > 0 ? u.profile[0].full_name : 'No Name'
+  }));
+
+  res.json(mappedUsers);
 };
 
 const getUserById = async (req, res, next) => {

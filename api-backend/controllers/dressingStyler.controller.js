@@ -30,22 +30,6 @@ class DressingStylerController {
         });
       }
 
-      // Check if already generated today
-      const existingSuggestion = await DressingSuggestion.findOne({
-        user_id: userId,
-        date: today
-      });
-
-      if (existingSuggestion) {
-        console.log('[DressingStylerController] Already generated for today');
-        return res.json({
-          success: true,
-          data: existingSuggestion,
-          source: 'cache',
-          message: 'You have already generated your daily dressing suggestion. Come back tomorrow!'
-        });
-      }
-
       // Check if AI service is healthy
       const healthCheck = await aiService.healthCheck();
       if (!healthCheck.healthy) {
@@ -64,7 +48,8 @@ class DressingStylerController {
         moon_sign: profile.birth_chart_data?.moon_sign || 'Unknown',
         ascendant: profile.birth_chart_data?.ascendant || 'Unknown',
         numerology_life_path: profile.numerology_data?.life_path || 'Unknown',
-        life_context: profile.life_context || {}
+        life_context: profile.life_context || {},
+        style_preferences: profile.style_preferences || {}
       };
 
       // Get current season/weather context (simplified)
@@ -81,16 +66,22 @@ class DressingStylerController {
         },
         {
           role: 'user',
-          content: `Generate a personalized daily dressing suggestion for ${userContext.full_name} based on the following profile:
+          content: `Generate a high-end, hyper-personalized daily dressing suggestion for ${userContext.full_name} based on their cosmic and personal data:
 
 USER PROFILE:
 - Name: ${userContext.full_name}
-- Gender: ${userContext.gender}
 - Sun Sign: ${userContext.sun_sign}
 - Moon Sign: ${userContext.moon_sign}
 - Ascendant: ${userContext.ascendant}
 - Life Path Number: ${userContext.numerology_life_path}
 - Current Season: ${season}
+
+PERSONAL STYLE CONTEXT:
+- Occasion/Setting: ${userContext.style_preferences.work_setting || 'Daily Wear'}
+- Preferred Vibe: ${userContext.style_preferences.style_vibe || 'Authentic Self'}
+- Ideal Fit: ${userContext.style_preferences.fit_preference || 'Standard'}
+- Accessory Preference: ${userContext.style_preferences.accessory_level || 'Subtle'}
+- Colors/Patterns to Avoid: ${userContext.style_preferences.avoid_colors || 'None'}
 
 Provide a dressing suggestion with these exact sections (use these labels):
 
@@ -98,34 +89,16 @@ HEADLINE:
 [Creative headline for today's look - 5-8 words]
 
 OVERVIEW:
-[Brief 2-3 sentence explanation of why this style works for them today based on their astrological and numerological energies]
+[Brief 2-3 sentence explanation of why this specific style works for their profile today]
 
 COLOR_PALETTE:
-[List 3-4 specific colors that resonate with their sign and energy today, with brief explanation for each]
-
-OUTFIT_TOP:
-[Specific top/garment recommendation with color and style details]
-
-OUTFIT_BOTTOM:
-[Specific bottom/garment recommendation with color and style details]
-
-OUTFIT_FOOTWEAR:
-[Specific shoes/footwear recommendation]
-
-ACCESSORIES:
-[List 2-3 specific accessories that complete the look]
-
-JEWELRY:
-[Specific jewelry recommendations based on their zodiac element and numerology]
-
-MAKEUP_GROOMING:
-[Makeup or grooming tips aligned with their energy]
+[List 3-4 specific colors that resonate with their sign and requested setting today]
 
 LUCKY_ITEM:
 [One specific lucky item to carry or wear today]
 
 ASTROLOGICAL_REASON:
-[2-3 sentences explaining the astrological reasoning behind this suggestion]
+[2-3 sentences linking their specific signs and life path to this choice]
 
 MOOD_ENERGY:
 [The vibe/mood this outfit should evoke]`
@@ -151,32 +124,26 @@ MOOD_ENERGY:
         headline: parseSection(aiResponse, 'HEADLINE'),
         overview: parseSection(aiResponse, 'OVERVIEW'),
         color_palette: parseSection(aiResponse, 'COLOR_PALETTE'),
-        outfit_top: parseSection(aiResponse, 'OUTFIT_TOP'),
-        outfit_bottom: parseSection(aiResponse, 'OUTFIT_BOTTOM'),
-        outfit_footwear: parseSection(aiResponse, 'OUTFIT_FOOTWEAR'),
-        accessories: parseSection(aiResponse, 'ACCESSORIES'),
-        jewelry: parseSection(aiResponse, 'JEWELRY'),
-        makeup_grooming: parseSection(aiResponse, 'MAKEUP_GROOMING'),
         lucky_item: parseSection(aiResponse, 'LUCKY_ITEM'),
         astrological_reason: parseSection(aiResponse, 'ASTROLOGICAL_REASON'),
         mood_energy: parseSection(aiResponse, 'MOOD_ENERGY')
       };
 
-      // Store in database
+      // Store in database - use findOneAndUpdate with upsert to allow refreshes
       const userObjectId = mongoose.Types.ObjectId.isValid(userId) 
         ? new mongoose.Types.ObjectId(userId) 
         : userId;
 
-      const newSuggestion = new DressingSuggestion({
-        user_id: userObjectId,
-        date: today,
-        ...suggestion,
-        created_at: new Date()
-      });
+      const newSuggestion = await DressingSuggestion.findOneAndUpdate(
+        { user_id: userObjectId, date: today },
+        { 
+          ...suggestion,
+          created_at: new Date()
+        },
+        { upsert: true, new: true }
+      );
 
-      await newSuggestion.save();
-
-      console.log('[DressingStylerController] Suggestion saved for user:', userId);
+      console.log('[DressingStylerController] Suggestion saved/updated for user:', userId);
 
       res.json({
         success: true,

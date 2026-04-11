@@ -94,3 +94,18 @@ export const resetPassword = (token: string, password: string) => {
     body: JSON.stringify({ token, password })
   }) as Promise<{ ok: boolean }>;
 };
+
+export const getUsers = () => {
+  return apiFetch('/api/users', { method: 'GET' });
+};
+
+export const updateUser = (id: string, data: any) => {
+  return apiFetch(`/api/users/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data)
+  });
+};
+
+export const deleteUser = (id: string) => {
+  return apiFetch(`/api/users/${id}`, { method: 'DELETE' });
+};

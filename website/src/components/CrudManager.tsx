@@ -114,7 +114,7 @@ const CrudManager: React.FC = () => {
                       <button
                         onClick={() => remove(it._id)}
                         disabled={isLoading}
-                        className="text-sm text-cosmic-pink hover:text-cosmic-pink/80 disabled:opacity-50"
+                        className="text-sm text-fuchsia-400 hover:text-fuchsia-300 disabled:opacity-50"
                       >
                         Delete
                       </button>

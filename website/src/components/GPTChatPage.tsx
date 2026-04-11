@@ -54,9 +54,9 @@ function formatBirthDate(dateStr: string | null): string {
 // ChatGPT-style Typing Indicator
 const TypingIndicator: React.FC = () => (
   <div className="flex items-center gap-1 px-1">
-    <span className="w-2 h-2 rounded-full bg-cosmic-cyan animate-bounce" style={{ animationDelay: '0ms' }} />
-    <span className="w-2 h-2 rounded-full bg-cosmic-pink animate-bounce" style={{ animationDelay: '150ms' }} />
-    <span className="w-2 h-2 rounded-full bg-cosmic-gold animate-bounce" style={{ animationDelay: '300ms' }} />
+    <span className="w-2 h-2 rounded-full bg-fuchsia-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+    <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+    <span className="w-2 h-2 rounded-full bg-fuchsia-600 animate-bounce" style={{ animationDelay: '300ms' }} />
   </div>
 );
 
@@ -69,7 +69,7 @@ const UserAvatar: React.FC<{ name?: string | null }> = ({ name }) => (
 
 // AI Avatar
 const AIAvatar: React.FC = () => (
-  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-pink flex items-center justify-center text-white shrink-0 shadow-lg shadow-cosmic-purple/20">
+  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center text-white shrink-0 shadow-[0_0_10px_rgba(168,85,247,0.5)]">
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
     </svg>
@@ -601,7 +601,7 @@ const GPTChatPage: React.FC = () => {
                     onKeyDown={(e) => handleEditKeyDown(e, currentChat._id)}
                     onBlur={() => updateChatTitle(currentChat._id, editTitle)}
                     autoFocus
-                    className="text-lg font-semibold text-white bg-transparent border-b border-cosmic-cyan focus:outline-none px-1"
+                    className="text-lg font-semibold text-white bg-transparent border-b border-fuchsia-500 focus:outline-none px-1"
                   />
                 ) : (
                   <>
@@ -614,7 +614,7 @@ const GPTChatPage: React.FC = () => {
                           setEditingChatId(currentChat._id);
                           setEditTitle(currentChat.title || 'New Chat');
                         }}
-                        className="p-1 rounded hover:text-cosmic-cyan text-white/50 transition-all"
+                        className="p-1 rounded hover:text-fuchsia-400 text-white/50 transition-all"
                         title="Rename chat"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -643,7 +643,7 @@ const GPTChatPage: React.FC = () => {
             <div 
               id="chat-messages-container"
               ref={chatContainerRef}
-              className="flex-1 overflow-y-auto p-4 space-y-4"
+              className="flex-1 overflow-y-auto p-4 pb-24 md:pb-4 space-y-4"
             >
               {messages.map((message) => {
                 // Skip rendering placeholder messages with empty content (streaming placeholder)
@@ -710,8 +710,8 @@ const GPTChatPage: React.FC = () => {
                         <div
                           className={`rounded-2xl px-4 py-3 ${
                             isUser
-                              ? 'bg-white text-gray-900 font-medium'
-                              : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
+                              ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-medium shadow-[0_4px_15px_rgba(168,85,247,0.3)]'
+                              : 'bg-black/40 backdrop-blur-md text-white border border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.3)]'
                           }`}
                         >
                           <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -764,7 +764,7 @@ const GPTChatPage: React.FC = () => {
               {isLoading && (
                 <div className="flex gap-3 justify-start">
                   <AIAvatar />
-                  <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-3">
+                  <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-3 shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
                     <TypingIndicator />
                   </div>
                 </div>
@@ -793,37 +793,31 @@ const GPTChatPage: React.FC = () => {
                 </div>
               )}
               
-              {/* Floating Pill Input */}
-              <div className="w-full relative max-w-3xl mx-auto bg-transparent pb-4 md:pb-6">
-                <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="w-full relative flex items-end">
-                  <textarea
-                    ref={inputRef}
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Ask AstroAI anything..."
-                    className={`w-full bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] pl-6 pr-14 py-5 text-white placeholder-white/50 focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/40 transition-all shadow-2xl shadow-black/50 resize-none scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent ${
-                      inputMessage.split('\n').length > 3 || inputMessage.length > 120 
-                        ? 'overflow-y-auto' 
-                        : 'overflow-hidden'
-                    }`}
-                    rows={1}
-                    style={{ 
-                      minHeight: '64px',
-                      maxHeight: '160px',
-                    }}
-                  />
-                  <button
-                    type="submit"
-                    disabled={!inputMessage.trim() || isLoading}
-                    className="absolute right-3 bottom-3.5 p-2 bg-white text-black rounded-full hover:bg-gray-200 disabled:opacity-30 disabled:hover:bg-white transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
-                  >
-                    <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              {/* STICKY BOTTOM CHAT BAR */}
+              <form 
+                onSubmit={(e) => { e.preventDefault(); sendMessage(); }} 
+                className="shrink-0 px-4 pb-4 pt-2 bg-gradient-to-t from-black via-black/90 to-transparent w-full"
+              >
+                <div className="max-w-3xl mx-auto relative flex items-center group">
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask AstroAI any cosmic question..."
+                className="w-full bg-gradient-to-r from-violet-950/80 to-fuchsia-950/80 backdrop-blur-xl border border-violet-500/50 ring-1 ring-violet-500/30 rounded-full pl-5 pr-12 py-3.5 md:pl-6 md:pr-14 md:py-4 text-white placeholder-black focus:outline-none shadow-[0_0_25px_rgba(168,85,247,0.15)] transition-all"
+              />
+              <button
+                type="submit"
+                disabled={!inputMessage.trim() || isLoading}
+                className="absolute right-2 p-1.5 md:right-2.5 md:p-2 bg-violet-600 text-white rounded-full hover:bg-violet-700 disabled:opacity-50 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center shrink-0 shadow-lg"
+              >
+                    <svg className="w-4 h-4 md:w-5 md:h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
                     </svg>
                   </button>
-                </form>
-              </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>

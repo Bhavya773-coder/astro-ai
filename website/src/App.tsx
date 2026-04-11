@@ -9,9 +9,12 @@ import VerifyOtpPage from './components/VerifyOtpPage';
 import NewPasswordPage from './components/NewPasswordPage';
 import ResetPasswordPage from './components/ResetPasswordPage';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
-import OnboardingStep1 from './components/OnboardingStep1';
-import OnboardingStep2 from './components/OnboardingStep2';
-import OnboardingStep3 from './components/OnboardingStep3';
+import OnboardingFlow from './components/OnboardingFlow';
+import SupportPage from './components/SupportPage';
+import HelpCenterPage from './components/HelpCenterPage';
+import ContactPage from './components/ContactPage';
+import PrivacyPage from './components/PrivacyPage';
+import TermsPage from './components/TermsPage';
 import MainPage from './components/MainPage';
 import NumerologyPage from './components/NumerologyPage';
 import BirthChartPage from './components/BirthChartPage';
@@ -22,6 +25,8 @@ import SignUpPage from './components/SignUpPage';
 import ProtectedRoute from './auth/ProtectedRoute';
 import GPTChatPage from './components/GPTChatPage';
 import DressingStylerPage from './components/DressingStylerPage';
+import AdminDashboardPage from './components/AdminDashboardPage';
+import SettingsPage from './components/SettingsPage';
 import { AppDataProvider } from './state/AppDataContext';
 
 // Wrapper component to handle authenticated redirect for homepage
@@ -93,29 +98,21 @@ function App() {
             <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
             <Route path="/signup" element={<AuthPageWrapper><SignUpPage /></AuthPageWrapper>} />
             <Route
-              path="/onboarding/step-1"
+              path="/onboarding/*"
               element={
                 <ProtectedRoute>
-                  <OnboardingStep1 />
+                  <OnboardingFlow />
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/onboarding/step-2"
-              element={
-                <ProtectedRoute>
-                  <OnboardingStep2 />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/onboarding/step-3"
-              element={
-                <ProtectedRoute>
-                  <OnboardingStep3 />
-                </ProtectedRoute>
-              }
-            />
+            
+            {/* Public Legal & Support Routes */}
+            <Route path="/support" element={<SupportPage />} />
+            <Route path="/help-center" element={<HelpCenterPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+
             <Route
               path="/dashboard"
               element={
@@ -177,6 +174,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <SubscriptionSuccessPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-dashboard"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />

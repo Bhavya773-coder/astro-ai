@@ -373,10 +373,59 @@ const generateInsights = async (req, res, next) => {
   }
 };
 
+// Save style preferences
+const saveStylePreferences = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const {
+      work_setting,
+      style_vibe,
+      fit_preference,
+      accessory_level,
+      avoid_colors
+    } = req.body;
+
+    // Find and update profile
+    const profile = await Profile.findOne({ user_id: userId });
+
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Profile not found. Please complete basic profile first.'
+      });
+    }
+
+    // Update style preferences
+    profile.style_preferences = {
+      work_setting,
+      style_vibe,
+      fit_preference,
+      accessory_level,
+      avoid_colors
+    };
+    profile.updated_at = new Date();
+    await profile.save();
+
+    res.json({
+      success: true,
+      message: 'Style preferences saved successfully',
+      data: profile.style_preferences
+    });
+
+  } catch (error) {
+    console.error('Error saving style preferences:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to save style preferences'
+    });
+  }
+};
+
 module.exports = {
   getProfile,
   getInsightStatus,
   saveBasicProfile,
   saveLifeContext,
+  saveStylePreferences,
   generateInsights
 };

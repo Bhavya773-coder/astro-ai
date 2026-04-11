@@ -4,18 +4,30 @@ import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
 import { apiFetch } from '../api/client';
-import { Shirt, Sparkles, Palette, Scissors, Footprints, ShoppingBag, Gem, Wand2, Clover, Star, Moon, Hash, Zap, Clock } from 'lucide-react';
+import {
+  Shirt,
+  Sparkles,
+  Palette,
+  Scissors,
+  Clover,
+  Star,
+  Moon,
+  Zap,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  Settings2,
+  X,
+  CheckCircle2,
+  ArrowRight
+} from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface DressingSuggestion {
   headline: string;
   overview: string;
   color_palette: string;
-  outfit_top: string;
-  outfit_bottom: string;
-  outfit_footwear: string;
-  accessories: string;
-  jewelry: string;
-  makeup_grooming: string;
   lucky_item: string;
   astrological_reason: string;
   mood_energy: string;
@@ -30,8 +42,100 @@ const DressingStylerPage: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [hasGeneratedToday, setHasGeneratedToday] = useState(false);
   const [countdown, setCountdown] = useState<string>('');
+  const [questionInput, setQuestionInput] = useState('');
 
-  // Check if already generated today
+  // Survey State
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [surveyStep, setSurveyStep] = useState(1);
+  const [surveyData, setSurveyData] = useState({
+    work_setting: '',
+    style_vibe: '',
+    fit_preference: '',
+    accessory_level: '',
+    avoid_colors: ''
+  });
+  const [isSavingSurvey, setIsSavingSurvey] = useState(false);
+
+  const totalSlides = 4;
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Touch handlers for swipe
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = (onNext: () => void, onPrev: () => void) => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      onNext();
+    }
+    if (isRightSwipe) {
+      onPrev();
+    }
+  };
+
+  const handleNext = () => {
+    if (currentSlide < totalSlides - 1) {
+      setCurrentSlide(prev => prev + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentSlide > 0) {
+      setCurrentSlide(prev => prev - 1);
+    }
+  };
+
+  const createDashboardChatAndNavigate = async (message: string) => {
+    try {
+      const res = await apiFetch('/api/ai-chat/list');
+      let dashboardChatNumber = 1;
+
+      if (res?.success && Array.isArray(res?.data)) {
+        const dashboardChats = res.data.filter((chat: any) =>
+          chat.title?.startsWith('Dashboard Chat')
+        );
+        dashboardChatNumber = dashboardChats.length + 1;
+      }
+
+      const createRes = await apiFetch('/api/ai-chat/create', {
+        method: 'POST',
+        body: JSON.stringify({ title: `Dashboard Chat ${dashboardChatNumber}` })
+      });
+
+      if (createRes?.success && createRes?.data) {
+        const newChat = createRes.data;
+        navigate(`/ai-chat?chatId=${newChat._id}`, {
+          state: { initialMessage: message }
+        });
+      } else {
+        navigate('/ai-chat', { state: { initialMessage: message } });
+      }
+    } catch (err) {
+      console.error('Failed to create dashboard chat:', err);
+      navigate('/ai-chat', { state: { initialMessage: message } });
+    }
+  };
+
+  const handleAskQuestion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!questionInput.trim()) return;
+    await createDashboardChatAndNavigate(questionInput.trim());
+  };
+
   useEffect(() => {
     const checkTodaySuggestion = async () => {
       try {
@@ -48,7 +152,6 @@ const DressingStylerPage: React.FC = () => {
     checkTodaySuggestion();
   }, []);
 
-  // Countdown timer for next day
   useEffect(() => {
     if (!hasGeneratedToday) return;
 
@@ -57,12 +160,12 @@ const DressingStylerPage: React.FC = () => {
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(0, 0, 0, 0);
-      
+
       const diff = tomorrow.getTime() - now.getTime();
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
+
       setCountdown(`${hours}h ${minutes}m ${seconds}s`);
     };
 
@@ -81,13 +184,9 @@ const DressingStylerPage: React.FC = () => {
       });
 
       if (response?.success) {
-        if (response.source === 'cache') {
-          setSuggestion(response.data);
-          setHasGeneratedToday(true);
-        } else {
-          setSuggestion(response.data);
-          setHasGeneratedToday(true);
-        }
+        setSuggestion(response.data);
+        setHasGeneratedToday(true);
+        setCurrentSlide(0);
       } else {
         if (response?.message?.includes('Profile not found')) {
           setError('Please complete your profile first to get personalized styling suggestions.');
@@ -103,6 +202,30 @@ const DressingStylerPage: React.FC = () => {
     }
   };
 
+  const handleSaveSurvey = async () => {
+    setIsSavingSurvey(true);
+    try {
+      const response = await apiFetch('/api/profile/style-preferences', {
+        method: 'POST',
+        body: JSON.stringify(surveyData)
+      });
+
+      if (response?.success) {
+        toast.success('Cosmic style profile updated!');
+        setShowSurvey(false);
+        // Refresh suggestion to use new data
+        handleGenerate();
+      } else {
+        toast.error('Failed to save preferences');
+      }
+    } catch (error) {
+      console.error('Error saving survey:', error);
+      toast.error('Connection error');
+    } finally {
+      setIsSavingSurvey(false);
+    }
+  };
+
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -110,234 +233,486 @@ const DressingStylerPage: React.FC = () => {
     day: 'numeric'
   });
 
+  // Prepare slide data for consistent rendering
+  const dressingSlides = suggestion ? [
+    {
+      title: 'Cosmic Vibe',
+      subtitle: 'Today\'s Style Essence',
+      description: suggestion.overview,
+      points: [
+        'Zodiac-aligned energy',
+        'Daily vibration booster',
+        'Intuitive expression'
+      ],
+      icon: <Sparkles className="w-6 h-6" />,
+      color: 'violet',
+      bgColor: 'bg-violet-600/20',
+      borderColor: 'border-violet-500/30',
+      textColor: 'text-violet-300'
+    },
+    {
+      title: 'Power Palette',
+      subtitle: 'Color Alignment',
+      description: suggestion.color_palette,
+      points: [
+        'Strategic color shielding',
+        'Aura-compatible shades',
+        'Magnetic attraction colors'
+      ],
+      icon: <Palette className="w-6 h-6" />,
+      color: 'cyan',
+      bgColor: 'bg-cyan-600/20',
+      borderColor: 'border-cyan-500/30',
+      textColor: 'text-cyan-300'
+    },
+    {
+      title: 'Cosmic Alignment',
+      subtitle: 'Astrological Basis',
+      description: suggestion.astrological_reason,
+      points: [
+        'Sun sign influence',
+        'Current planetary transits',
+        'Lunar cycle synchronization'
+      ],
+      icon: <Star className="w-6 h-6" />,
+      color: 'fuchsia',
+      bgColor: 'bg-fuchsia-600/20',
+      borderColor: 'border-fuchsia-500/30',
+      textColor: 'text-fuchsia-300'
+    },
+    {
+      title: 'Daily Luck',
+      subtitle: 'Luck & Energy',
+      description: `Maximize your fortune today with specific items and mood alignment.`,
+      points: [
+        `Lucky Item: ${suggestion.lucky_item}`,
+        `Energy Mood: ${suggestion.mood_energy}`,
+        'Personal luck factor active'
+      ],
+      icon: <Clover className="w-6 h-6" />,
+      color: 'amber',
+      bgColor: 'bg-amber-600/20',
+      borderColor: 'border-amber-500/30',
+      textColor: 'text-amber-300'
+    }
+  ] : [];
+
+  const styleVibes = ['Minimalist', 'Bold & Vibrant', 'Classic / Professional', 'Bohemian', 'Avant-Garde', 'Streetwear'];
+  const workSettings = ['Corporate Office', 'Creative Space', 'Home Office', 'Special Event', 'Formal Banquet', 'Casual Outing'];
+
   return (
     <CosmicBackground>
-      <div className="flex min-h-screen overflow-hidden">
-        <Sidebar />
+      <div className="flex h-screen w-full overflow-hidden bg-black text-white selection:bg-fuchsia-500/30">
+        {/* Sidebar - Fixed on all screen sizes */}
+        <div className="hidden lg:block fixed top-0 left-0 h-full w-64 z-50">
+          <Sidebar />
+        </div>
 
-        <div className="flex-1 lg:ml-20 overflow-y-auto h-screen" id="main-content">
-          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            {/* Header */}
-            <div className="text-center mb-10">
-              <div className="flex justify-center mb-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-pink-400/20 to-purple-400/20 rounded-full flex items-center justify-center">
-                  <Shirt className="w-10 h-10 text-pink-300" />
-                </div>
+        {/* Mobile Sidebar */}
+        <div className="lg:hidden">
+          <Sidebar />
+        </div>
+
+        {/* Main Content Area */}
+        <div id="main-content" className="flex-1 lg:ml-64 h-full flex flex-col relative transition-all duration-300">
+
+          {/* CONTENT SCROLL AREA */}
+          <div className="flex-1 overflow-y-auto scrollbar-none">
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 md:py-12">
+              {/* Personalized Badge */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 backdrop-blur-md mb-4 animate-fade-in group">
+                <Sparkles className="w-3.5 h-3.5 text-fuchsia-400 group-hover:scale-125 transition-transform" />
+                <span className="text-[10px] font-bold text-fuchsia-300 uppercase tracking-widest">Personalized Alignment</span>
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold font-display">
-                <GradientText>Personal Dressing Styler</GradientText>
-              </h1>
-              <p className="mt-2 text-white/75 max-w-2xl mx-auto">
-                Get AI-powered outfit suggestions based on your astrological profile and numerology
+
+              <h1 className="text-3xl md:text-4xl font-bold font-display">Dressing Styler</h1>
+              <p className="mt-2 text-white/75 max-w-2xl">
+                Get daily cosmic style guidance based on your personal zodiac alignment and current planetary energies.
               </p>
-              <p className="mt-1 text-cosmic-cyan text-sm">{today}</p>
+
+              {/* Date & Refresh Badge Section */}
+              {hasGeneratedToday && (
+                <div className="flex flex-wrap items-center gap-3 mt-8 mb-4">
+                  <div className="px-4 py-1.5 bg-violet-600/10 border border-violet-500/20 rounded-full text-[10px] sm:text-xs font-bold text-violet-300 uppercase tracking-widest">
+                    {today}
+                  </div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/40 border border-violet-500/20 rounded-full text-[9px] sm:text-xs text-violet-300 backdrop-blur-md">
+                    <Clock className="w-3 h-3" />
+                    <span className="font-medium tracking-wide">Next Refresh: {countdown}</span>
+                  </div>
+                </div>
+              )}
+
+
+
+              {/* Main Content Area - Slide based like Numerology */}
+              {suggestion && (
+                <div className="mt-8 mb-12 space-y-8 animate-fade-in-up lg:max-w-2xl lg:mx-auto">
+
+                  {/* Success Header Area */}
+                  <div className="text-center mb-6">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
+                      "{suggestion.headline}"
+                    </h2>
+                    <p className="text-white/60 max-w-3xl mx-auto text-base sm:text-lg">
+                      Your daily style alignment is ready. Scroll through your personal cosmic styling blueprint below.
+                    </p>
+                  </div>
+
+                  <GlassCard 
+                    className="py-6 px-4 sm:py-8 sm:px-10 relative overflow-hidden" 
+                    glow="purple"
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={() => onTouchEnd(handleNext, handlePrev)}
+                  >
+                    {/* Progress indicator */}
+                    <div className="flex gap-2 mb-6">
+                      {dressingSlides.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentSlide(index)}
+                          className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${index <= currentSlide ? 'bg-gradient-to-r from-fuchsia-500 to-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'bg-white/20'
+                            }`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Active Slide Content */}
+                    <div className="text-center">
+                      {/* Big Icon Box */}
+                      <div className={`inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br ${dressingSlides[currentSlide]?.bgColor} mb-4 shadow-2xl border ${dressingSlides[currentSlide]?.borderColor} transform hover:scale-105 transition-transform duration-500`}>
+                        <div className={`${dressingSlides[currentSlide]?.textColor} scale-150`}>
+                          {dressingSlides[currentSlide]?.icon}
+                        </div>
+                      </div>
+
+                      {/* Header Area */}
+                      <div className="flex items-center justify-center gap-3 mb-1">
+                        <h2 className={`text-2xl sm:text-3xl font-bold ${dressingSlides[currentSlide]?.textColor} font-display uppercase tracking-wider`}>
+                          {dressingSlides[currentSlide]?.title}
+                        </h2>
+                      </div>
+                      <p className="text-white/50 text-xs sm:text-xs font-bold uppercase tracking-[0.3em] mb-4">
+                        {dressingSlides[currentSlide]?.subtitle}
+                      </p>
+
+                      {/* Main Description */}
+                      <p className="text-white/90 text-sm sm:text-base max-w-2xl mx-auto mb-6 leading-relaxed font-medium">
+                        {dressingSlides[currentSlide]?.description}
+                      </p>
+
+                      {/* Points Box - key for mobile visibility */}
+                      <div className="bg-black/60 backdrop-blur-md rounded-2xl p-4 sm:p-5 mb-6 text-left max-w-md mx-auto border border-white/5 shadow-inner">
+                        <ul className="space-y-3">
+                          {dressingSlides[currentSlide]?.points.map((point, idx) => (
+                            <li key={idx} className="flex items-start gap-3 text-white/80 text-sm sm:text-base">
+                              <span className={`mt-2 w-2 h-2 rounded-full flex-shrink-0 animate-pulse ${dressingSlides[currentSlide]?.textColor.replace('text-', 'bg-')}`}></span>
+                              <span className="leading-tight">{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Slide Counter Indicator */}
+                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-4">
+                        Blueprint Part {currentSlide + 1} of {totalSlides}
+                      </p>
+                    </div>
+
+                    {/* Navigation Row */}
+                    <div className="flex items-center justify-between gap-4 mt-2">
+                      <button
+                        onClick={handlePrev}
+                        disabled={currentSlide === 0}
+                        className={`p-3 sm:p-4 rounded-full transition-all duration-300 ${currentSlide === 0
+                          ? 'bg-white/5 text-white/20 cursor-not-allowed'
+                          : 'bg-white/10 text-white hover:bg-white/20 hover:scale-110 active:scale-95'
+                          } border border-white/10`}
+                      >
+                        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                      </button>
+
+                      <div className="flex gap-2 sm:gap-3">
+                        {dressingSlides.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentSlide(index)}
+                            className={`h-2.5 rounded-full transition-all duration-500 ${index === currentSlide ? 'bg-fuchsia-500 w-8 shadow-[0_0_15px_rgba(217,70,239,0.5)]' : 'bg-white/20 hover:bg-white/40 w-2.5'
+                              }`}
+                            aria-label={`Go to section ${index + 1}`}
+                          />
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={handleNext}
+                        disabled={currentSlide === totalSlides - 1}
+                        className={`p-3 sm:p-4 rounded-full transition-all duration-300 ${currentSlide === totalSlides - 1
+                          ? 'bg-white/5 text-white/20 cursor-not-allowed'
+                          : 'bg-white/10 text-white hover:bg-white/20 hover:scale-110 active:scale-95'
+                          } border border-white/10`}
+                      >
+                        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                      </button>
+                    </div>
+                  </GlassCard>
+
+                  {/* Secondary Action Buttons */}
+                  <div className="flex flex-col sm:flex-row justify-center items-center gap-4 lg:gap-6 pt-6">
+                    <button
+                      onClick={() => {
+                        setSurveyStep(1);
+                        setShowSurvey(true);
+                      }}
+                      className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-fuchsia-600/20 to-violet-600/20 hover:from-fuchsia-600/30 hover:to-violet-600/30 border border-fuchsia-500/30 rounded-2xl flex items-center justify-center gap-3 text-sm font-bold transition-all group shadow-[0_0_20px_rgba(168,85,247,0.2)]"
+                    >
+                      <Settings2 className="w-5 h-5 text-fuchsia-400 group-hover:rotate-90 transition-transform duration-500" />
+                      <span>Refine My Style Profile</span>
+                    </button>
+
+                    <button
+                      onClick={() => navigate('/dashboard')}
+                      className="text-white/40 hover:text-white transition-colors text-sm font-medium"
+                    >
+                      Back to Dashboard
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* No Data / Initial CTA Area */}
+              {!suggestion && !isGenerating && !hasGeneratedToday && (
+                <div className="text-center py-16 animate-fade-in">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-fuchsia-400/20 rounded-full mb-8 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+                    <Shirt className="w-9 h-9 text-fuchsia-400" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-white mb-4">Reveal Your Cosmic Look</h2>
+                  <p className="text-white/60 mb-10 max-w-lg mx-auto text-lg leading-relaxed">
+                    Synthesize your sun sign, planetary transits, and personal style profile into the perfect daily ensemble.
+                  </p>
+                  <button
+                    onClick={handleGenerate}
+                    disabled={isGenerating}
+                    className="bg-gradient-to-r from-fuchsia-600 to-violet-600 text-white shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:shadow-[0_0_35px_rgba(168,85,247,0.8)] font-bold py-4 px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3 mx-auto"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <LoadingSpinner size="sm" />
+                        <span>Aligning Cosmic Vibe...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5" />
+                        <span>Generate Style Reading</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
             </div>
-
-            {/* Generate Button or Countdown */}
-            {!hasGeneratedToday ? (
-              <GlassCard className="p-8 text-center mb-8" glow="pink">
-                <div className="mb-6 flex justify-center">
-                  <Sparkles className="w-12 h-12 text-pink-300" />
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-4">
-                  Discover Your Perfect Look for Today
-                </h2>
-                <p className="text-white/70 mb-6 max-w-lg mx-auto">
-                  Our AI analyzes your zodiac sign, numerology, and cosmic energies to suggest 
-                  the perfect outfit that aligns with your personal vibration.
-                </p>
-                <button
-                  onClick={handleGenerate}
-                  disabled={isGenerating}
-                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 mx-auto"
-                >
-                  {isGenerating ? (
-                    <>
-                      <LoadingSpinner size="sm" className="text-white" />
-                      <span>Consulting the Cosmic Stylist...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Shirt className="w-5 h-5" />
-                      <span>Generate Today's Style</span>
-                    </>
-                  )}
-                </button>
-              </GlassCard>
-            ) : (
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-cosmic-cyan/30 rounded-full">
-                  <Clock className="w-4 h-4 text-cosmic-cyan" />
-                  <span className="text-white/80 text-sm">Next suggestion available in: {countdown}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-              <GlassCard className="p-6 mb-8 border-red-500/30" glow="pink">
-                <div className="flex items-center gap-3 text-red-400">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p>{error}</p>
-                </div>
-                {error.includes('profile') && (
-                  <button
-                    onClick={() => navigate('/onboarding/step-1')}
-                    className="mt-4 text-cosmic-cyan hover:underline text-sm"
-                  >
-                    Complete your profile →
-                  </button>
-                )}
-              </GlassCard>
-            )}
-
-            {/* Suggestion Display */}
-            {suggestion && (
-              <div className="space-y-6">
-                {/* Headline */}
-                <div className="text-center">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white">
-                    "{suggestion.headline}"
-                  </h2>
-                </div>
-
-                {/* Overview */}
-                <GlassCard className="p-6" glow="purple">
-                  <h3 className="text-lg font-semibold text-cosmic-pink mb-3 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" /> Today's Cosmic Vibe
-                  </h3>
-                  <p className="text-white/80 leading-relaxed">{suggestion.overview}</p>
-                </GlassCard>
-
-                {/* Color Palette */}
-                <GlassCard className="p-6" glow="cyan">
-                  <h3 className="text-lg font-semibold text-cosmic-cyan mb-3 flex items-center gap-2">
-                    <Palette className="w-4 h-4" /> Your Power Colors
-                  </h3>
-                  <p className="text-white/80 leading-relaxed whitespace-pre-line">{suggestion.color_palette}</p>
-                </GlassCard>
-
-                {/* Outfit Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <GlassCard className="p-5" glow="pink">
-                    <h4 className="text-pink-300 font-semibold mb-2 flex items-center gap-2">
-                      <Shirt className="w-4 h-4" /> Top
-                    </h4>
-                    <p className="text-white/80 text-sm">{suggestion.outfit_top}</p>
-                  </GlassCard>
-
-                  <GlassCard className="p-5" glow="purple">
-                    <h4 className="text-purple-300 font-semibold mb-2 flex items-center gap-2">
-                      <Scissors className="w-4 h-4" /> Bottom
-                    </h4>
-                    <p className="text-white/80 text-sm">{suggestion.outfit_bottom}</p>
-                  </GlassCard>
-
-                  <GlassCard className="p-5" glow="cyan">
-                    <h4 className="text-cosmic-cyan font-semibold mb-2 flex items-center gap-2">
-                      <Footprints className="w-4 h-4" /> Footwear
-                    </h4>
-                    <p className="text-white/80 text-sm">{suggestion.outfit_footwear}</p>
-                  </GlassCard>
-                </div>
-
-                {/* Accessories & Jewelry */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <GlassCard className="p-5" glow="gold">
-                    <h4 className="text-yellow-300 font-semibold mb-2 flex items-center gap-2">
-                      <ShoppingBag className="w-4 h-4" /> Accessories
-                    </h4>
-                    <p className="text-white/80 text-sm whitespace-pre-line">{suggestion.accessories}</p>
-                  </GlassCard>
-
-                  <GlassCard className="p-5" glow="pink">
-                    <h4 className="text-pink-300 font-semibold mb-2 flex items-center gap-2">
-                      <Gem className="w-4 h-4" /> Jewelry
-                    </h4>
-                    <p className="text-white/80 text-sm">{suggestion.jewelry}</p>
-                  </GlassCard>
-                </div>
-
-                {/* Makeup & Lucky Item */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <GlassCard className="p-5" glow="purple">
-                    <h4 className="text-purple-300 font-semibold mb-2 flex items-center gap-2">
-                      <Wand2 className="w-4 h-4" /> Makeup & Grooming
-                    </h4>
-                    <p className="text-white/80 text-sm">{suggestion.makeup_grooming}</p>
-                  </GlassCard>
-
-                  <GlassCard className="p-5" glow="gold">
-                    <h4 className="text-yellow-300 font-semibold mb-2 flex items-center gap-2">
-                      <Clover className="w-4 h-4" /> Lucky Item
-                    </h4>
-                    <p className="text-white/80 text-sm">{suggestion.lucky_item}</p>
-                  </GlassCard>
-                </div>
-
-                {/* Astrological Reason */}
-                <GlassCard className="p-6" glow="cyan">
-                  <h3 className="text-lg font-semibold text-cosmic-cyan mb-3 flex items-center gap-2">
-                    <Star className="w-4 h-4" /> Why This Works
-                  </h3>
-                  <p className="text-white/80 leading-relaxed">{suggestion.astrological_reason}</p>
-                </GlassCard>
-
-                {/* Mood Energy */}
-                <div className="text-center">
-                  <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-400/30 rounded-full">
-                    <Sparkles className="w-5 h-5 text-pink-300" />
-                    <span className="text-white font-medium">{suggestion.mood_energy}</span>
-                  </div>
-                </div>
-
-                {/* Share/Copy Section */}
-                <div className="flex justify-center gap-3 pt-4">
-                  <button
-                    onClick={() => {
-                      const text = `Today's Look: "${suggestion.headline}"\n\n${suggestion.overview}\n\nColors: ${suggestion.color_palette}\n\nTop: ${suggestion.outfit_top}\nBottom: ${suggestion.outfit_bottom}\nShoes: ${suggestion.outfit_footwear}\n\n#LuckyFit`;
-                      navigator.clipboard.writeText(text);
-                    }}
-                    className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white/80 text-sm rounded-lg transition-colors flex items-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                    </svg>
-                    Copy to Clipboard
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Info Section */}
-            {!suggestion && !isGenerating && !hasGeneratedToday && (
-              <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center p-4">
-                  <div className="w-12 h-12 bg-cosmic-cyan/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Moon className="w-6 h-6 text-cosmic-cyan" />
-                  </div>
-                  <h4 className="text-white font-medium mb-2">Astrology-Based</h4>
-                  <p className="text-white/60 text-sm">Suggestions based on your sun, moon, and rising signs</p>
-                </div>
-                <div className="text-center p-4">
-                  <div className="w-12 h-12 bg-pink-400/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Hash className="w-6 h-6 text-pink-400" />
-                  </div>
-                  <h4 className="text-white font-medium mb-2">Numerology Enhanced</h4>
-                  <p className="text-white/60 text-sm">Your life path number influences color and style choices</p>
-                </div>
-                <div className="text-center p-4">
-                  <div className="w-12 h-12 bg-purple-400/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Zap className="w-6 h-6 text-purple-400" />
-                  </div>
-                  <h4 className="text-white font-medium mb-2">Daily Fresh</h4>
-                  <p className="text-white/60 text-sm">New suggestions every day aligned with cosmic energies</p>
-                </div>
-              </div>
-            )}
           </div>
+
+          {/* STICKY BOTTOM CHAT BAR */}
+          <form
+            onSubmit={handleAskQuestion}
+            className="shrink-0 px-4 pb-4 pt-2 bg-gradient-to-t from-black via-black/90 to-transparent"
+          >
+            <div className="max-w-3xl mx-auto relative flex items-center group">
+              <input
+                type="text"
+                value={questionInput}
+                onChange={(e) => setQuestionInput(e.target.value)}
+                placeholder="Ask AstroAI about your style..."
+                className="w-full bg-gradient-to-r from-violet-950/80 to-fuchsia-950/80 backdrop-blur-xl border border-violet-500/50 ring-1 ring-violet-500/30 rounded-full pl-5 pr-12 py-3.5 md:pl-6 md:pr-14 md:py-4 text-white placeholder-black focus:outline-none shadow-[0_0_25px_rgba(168,85,247,0.15)] transition-all"
+              />
+              <button
+                type="submit"
+                disabled={!questionInput.trim()}
+                className="absolute right-2 p-1.5 md:right-2.5 md:p-2 bg-violet-600 text-white rounded-full hover:bg-violet-700 disabled:opacity-50 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center shrink-0 shadow-lg"
+              >
+                <svg className="w-4 h-4 md:w-5 md:h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                </svg>
+              </button>
+            </div>
+            <br />
+          </form>
+
+          {/* STYLE REFINE MODAL (SURVEY) - Centered Popup */}
+          {showSurvey && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+              <div className="relative w-full max-w-lg bg-[#0a0a0c] border border-white/10 rounded-[2rem] p-6 sm:p-8 md:p-10 shadow-[0_0_60px_rgba(168,85,247,0.25)] max-h-[90vh] overflow-y-auto scrollbar-none">
+                <button
+                  onClick={() => setShowSurvey(false)}
+                  className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-all"
+                >
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
+
+                <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+                  {/* Step Header */}
+                  <div className="text-center pt-2 sm:pt-0">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-fuchsia-500/10 rounded-full text-[10px] font-bold text-fuchsia-400 uppercase tracking-widest mb-2 sm:mb-3">
+                      Step {surveyStep} of 5
+                    </div>
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold font-display">Deep Style Profile</h2>
+                  </div>
+
+                  {/* Step Content */}
+                  <div className="min-h-[200px] sm:min-h-[240px] md:min-h-[280px] flex flex-col justify-center animate-fade-in-up">
+
+                    {surveyStep === 1 && (
+                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
+                        <label className="block text-sm sm:text-base md:text-lg font-semibold text-center mb-3 sm:mb-4 md:mb-6">What is your primary setting today?</label>
+                        <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:gap-3">
+                          {workSettings.map(setting => (
+                            <button
+                              key={setting}
+                              onClick={() => {
+                                setSurveyData({ ...surveyData, work_setting: setting });
+                                setSurveyStep(2);
+                              }}
+                              className={`p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl border text-xs sm:text-sm transition-all ${surveyData.work_setting === setting
+                                ? 'bg-fuchsia-600 border-fuchsia-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+                                : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+                                }`}
+                            >
+                              {setting}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {surveyStep === 2 && (
+                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
+                        <label className="block text-sm sm:text-base md:text-lg font-semibold text-center mb-3 sm:mb-4 md:mb-6">Choose your preferred style aesthetic</label>
+                        <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:gap-3">
+                          {styleVibes.map(vibe => (
+                            <button
+                              key={vibe}
+                              onClick={() => {
+                                setSurveyData({ ...surveyData, style_vibe: vibe });
+                                setSurveyStep(3);
+                              }}
+                              className={`p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl border text-xs sm:text-sm transition-all ${surveyData.style_vibe === vibe
+                                ? 'bg-violet-600 border-violet-500 text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]'
+                                : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+                                }`}
+                            >
+                              {vibe}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {surveyStep === 3 && (
+                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
+                        <label className="block text-sm sm:text-base md:text-lg font-semibold text-center mb-3 sm:mb-4 md:mb-6">How should your clothes fit today?</label>
+                        <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:gap-3">
+                          {['Oversized', 'Relaxed', 'Tailored', 'Slim Fit'].map(fit => (
+                            <button
+                              key={fit}
+                              onClick={() => {
+                                setSurveyData({ ...surveyData, fit_preference: fit });
+                                setSurveyStep(4);
+                              }}
+                              className={`p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl border text-xs sm:text-sm transition-all ${surveyData.fit_preference === fit
+                                ? 'bg-fuchsia-600 border-fuchsia-500 text-white'
+                                : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+                                }`}
+                            >
+                              {fit}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {surveyStep === 4 && (
+                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
+                        <label className="block text-sm sm:text-base md:text-lg font-semibold text-center mb-3 sm:mb-4 md:mb-6">Level of accessorizing?</label>
+                        <div className="grid grid-cols-1 gap-2 sm:gap-2.5 md:gap-3">
+                          {[
+                            { id: 'None', desc: 'Keep it pure and simple' },
+                            { id: 'Subtle', desc: 'Minimalist accents' },
+                            { id: 'Statement', desc: 'Bold, expressive pieces' }
+                          ].map(item => (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                setSurveyData({ ...surveyData, accessory_level: item.id });
+                                setSurveyStep(5);
+                              }}
+                              className={`p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl border text-left transition-all flex justify-between items-center ${surveyData.accessory_level === item.id
+                                ? 'bg-violet-600 border-violet-500 text-white'
+                                : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+                                }`}
+                            >
+                              <div>
+                                <div className="font-bold text-xs sm:text-sm md:text-base">{item.id}</div>
+                                <div className="text-[10px] sm:text-xs opacity-60">{item.desc}</div>
+                              </div>
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {surveyStep === 5 && (
+                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
+                        <label className="block text-sm sm:text-base md:text-lg font-semibold text-center mb-2 sm:mb-3 md:mb-4">Any colors or patterns to avoid?</label>
+                        <textarea
+                          autoFocus
+                          value={surveyData.avoid_colors}
+                          onChange={(e) => setSurveyData({ ...surveyData, avoid_colors: e.target.value })}
+                          placeholder="e.g. Neon colors, animal prints, All black..."
+                          className="w-full bg-white/5 border border-white/10 rounded-lg sm:rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 text-white placeholder-white/20 focus:outline-none focus:border-fuchsia-500/50 min-h-[80px] sm:min-h-[100px] md:min-h-[120px] text-xs sm:text-sm md:text-base"
+                        />
+                        <button
+                          onClick={handleSaveSurvey}
+                          disabled={isSavingSurvey}
+                          className="w-full bg-gradient-to-r from-fuchsia-600 to-violet-600 py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+                        >
+                          {isSavingSurvey ? <LoadingSpinner size="sm" /> : <><CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" /> <span>Sync Cosmic Style</span></>}
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/* Navigation Footer - Responsive spacing */}
+                  {surveyStep < 5 && (
+                    <div className="flex justify-between items-center pt-2 sm:pt-3 md:pt-4">
+                      {surveyStep > 1 ? (
+                        <button onClick={() => setSurveyStep(prev => prev - 1)} className="text-white/40 hover:text-white transition-colors flex items-center gap-1 text-[10px] sm:text-xs md:text-sm font-medium">
+                          <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Back
+                        </button>
+                      ) : <div />}
+
+                      <div className="flex gap-0.5 sm:gap-1">
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === surveyStep ? 'bg-fuchsia-500 shadow-[0_0_8px_rgba(232,121,249,0.8)]' : 'bg-white/10'}`} />
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => setSurveyStep(prev => prev + 1)}
+                        className={`text-fuchsia-400 hover:text-fuchsia-300 transition-colors flex items-center gap-1 text-[10px] sm:text-xs md:text-sm font-bold ${!surveyData[Object.keys(surveyData)[surveyStep - 1] as keyof typeof surveyData] ? 'opacity-30 pointer-events-none' : ''}`}
+                      >
+                        Skip <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </CosmicBackground>
