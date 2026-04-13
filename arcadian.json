@@ -1,0 +1,97 @@
+{
+  "name": "Arcadian Works - Homepage",
+  "type": "FRAME",
+  "width": 1440,
+  "height": 4000,
+  "fills": [{"type": "SOLID", "color": {"r": 0.03, "g": 0.03, "b": 0.05}}],
+  "children": [
+    {
+      "type": "TEXT",
+      "name": "Hero Headline",
+      "characters": "Build Real AI.\nWe Back the Right Builders.",
+      "style": {
+        "fontSize": 64,
+        "fontWeight": 700,
+        "textAlignHorizontal": "CENTER"
+      },
+      "x": 200,
+      "y": 120,
+      "fills": [{"type": "SOLID", "color": {"r": 1, "g": 1, "b": 1}}]
+    },
+    {
+      "type": "TEXT",
+      "name": "Subtext",
+      "characters": "Arcadian Works provides access to high-performance computing and a real development environment for graduates and early-stage entrepreneurs.",
+      "style": {
+        "fontSize": 20,
+        "textAlignHorizontal": "CENTER"
+      },
+      "x": 300,
+      "y": 260,
+      "fills": [{"type": "SOLID", "color": {"r": 0.7, "g": 0.7, "b": 0.75}}]
+    },
+    {
+      "type": "TEXT",
+      "name": "Section - What We Do",
+      "characters": "Infrastructure. Environment. Execution.",
+      "style": {"fontSize": 36, "fontWeight": 600},
+      "x": 120,
+      "y": 500,
+      "fills": [{"type": "SOLID", "color": {"r": 1, "g": 1, "b": 1}}]
+    },
+    {
+      "type": "TEXT",
+      "name": "Section - Problem",
+      "characters": "Most Builders Never Get Real Infrastructure",
+      "style": {"fontSize": 36, "fontWeight": 600},
+      "x": 120,
+      "y": 800,
+      "fills": [{"type": "SOLID", "color": {"r": 1, "g": 1, "b": 1}}]
+    },
+    {
+      "type": "TEXT",
+      "name": "Section - Solution",
+      "characters": "A Real Build Environment",
+      "style": {"fontSize": 36, "fontWeight": 600},
+      "x": 120,
+      "y": 1100,
+      "fills": [{"type": "SOLID", "color": {"r": 1, "g": 1, "b": 1}}]
+    },
+    {
+      "type": "TEXT",
+      "name": "Section - Builder Platform",
+      "characters": "Not a Course. Not Just a Tool. A Build Platform.",
+      "style": {"fontSize": 36, "fontWeight": 600},
+      "x": 120,
+      "y": 1400,
+      "fills": [{"type": "SOLID", "color": {"r": 1, "g": 1, "b": 1}}]
+    },
+    {
+      "type": "TEXT",
+      "name": "Section - How It Works",
+      "characters": "Apply → Build → Unlock → Get Backed",
+      "style": {"fontSize": 32},
+      "x": 120,
+      "y": 1700,
+      "fills": [{"type": "SOLID", "color": {"r": 0.8, "g": 0.6, "b": 1}}]
+    },
+    {
+      "type": "TEXT",
+      "name": "Section - Partnership",
+      "characters": "Access First. Partnership Later.",
+      "style": {"fontSize": 36, "fontWeight": 600},
+      "x": 120,
+      "y": 2000,
+      "fills": [{"type": "SOLID", "color": {"r": 1, "g": 1, "b": 1}}]
+    },
+    {
+      "type": "TEXT",
+      "name": "Section - Trust",
+      "characters": "Transparent by Design",
+      "style": {"fontSize": 36, "fontWeight": 600},
+      "x": 120,
+      "y": 2300,
+      "fills": [{"type": "SOLID", "color": {"r": 1, "g": 1, "b": 1}}]
+    }
+  ]
+}

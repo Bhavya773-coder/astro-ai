@@ -647,30 +647,30 @@ const MainPage: React.FC = () => {
             </div>
           </div>
 
-          {/* STICKY BOTTOM CHAT BAR */}
+          {/* FLOATING CHAT INPUT - ChatGPT Style */}
           <form
             onSubmit={handleAskQuestion}
-            className="shrink-0 px-4 pb-4 pt-2 bg-gradient-to-t from-black via-black/90 to-transparent"
+            className="w-full px-4 py-6 md:py-8"
           >
-            <div className="max-w-3xl mx-auto relative flex items-center group">
+            <div className="max-w-3xl mx-auto relative flex items-center">
               <input
                 type="text"
                 value={questionInput}
                 onChange={(e) => setQuestionInput(e.target.value)}
                 placeholder="Ask AstroAI about your destiny..."
-                className="w-full bg-gradient-to-r from-violet-950/80 to-fuchsia-950/80 backdrop-blur-xl border border-violet-500/50 ring-1 ring-violet-500/30 rounded-full pl-5 pr-12 py-3.5 md:pl-6 md:pr-14 md:py-4 text-white placeholder-black focus:outline-none shadow-[0_0_25px_rgba(168,85,247,0.15)] transition-all"
+                className="w-full bg-white/5 hover:bg-white/10 focus:bg-white/10 backdrop-blur-xl border border-white/20 hover:border-white/30 focus:border-violet-500/50 rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all shadow-lg"
               />
               <button
                 type="submit"
                 disabled={!questionInput.trim()}
-                className="absolute right-2 p-1.5 md:right-2.5 md:p-2 bg-violet-600 text-white rounded-full hover:bg-violet-700 disabled:opacity-50 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center shrink-0 shadow-lg"
+                className="absolute right-2 p-2 md:right-3 bg-violet-600 hover:bg-violet-500 disabled:bg-white/10 disabled:opacity-40 text-white rounded-xl transition-all disabled:cursor-not-allowed"
               >
-                <svg className="w-4 h-4 md:w-5 md:h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
                 </svg>
               </button>
             </div>
-            <br />
+            <p className="text-center text-white/30 text-xs mt-2">AstroAI can make mistakes. Consider checking important information.</p>
           </form>
         </div>
       </div>

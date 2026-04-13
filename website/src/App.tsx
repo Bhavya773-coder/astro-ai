@@ -27,6 +27,7 @@ import GPTChatPage from './components/GPTChatPage';
 import DressingStylerPage from './components/DressingStylerPage';
 import AdminDashboardPage from './components/AdminDashboardPage';
 import SettingsPage from './components/SettingsPage';
+import SharedChatPage from './components/SharedChatPage';
 import { AppDataProvider } from './state/AppDataContext';
 
 // Wrapper component to handle authenticated redirect for homepage
@@ -153,6 +154,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            {/* Public shared chat route - no auth required */}
+            <Route path="/shared-chat/:shareId" element={<SharedChatPage />} />
             <Route
               path="/dressing-styler"
               element={

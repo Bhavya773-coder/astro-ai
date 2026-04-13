@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { apiFetch, getBaseUrl } from '../api/client';
 import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
@@ -19,6 +21,8 @@ interface Chat {
   message_count?: number;
   created_at: string;
   updated_at: string;
+  is_public?: boolean;
+  share_id?: string;
 }
 
 interface ProfileSummary {
@@ -100,6 +104,14 @@ const GPTChatPage: React.FC = () => {
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
   const [editMsgContent, setEditMsgContent] = useState('');
+  
+  // Share modal state
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [isSharing, setIsSharing] = useState(false);
+  
+  // Track if title has been auto-generated
+  const [titleGenerated, setTitleGenerated] = useState(false);
 
   // Handle initial message from navigation (when coming from MainPage dashboard)
   useEffect(() => {
@@ -243,6 +255,16 @@ const GPTChatPage: React.FC = () => {
     return [];
   }, []);
 
+  // Listen for chat updates from other components (e.g., Sidebar)
+  useEffect(() => {
+    const handleChatUpdated = () => {
+      loadChats();
+    };
+
+    window.addEventListener('chatsUpdated', handleChatUpdated);
+    return () => window.removeEventListener('chatsUpdated', handleChatUpdated);
+  }, [loadChats]);
+
   const loadMessages = async (chatId: string) => {
     try {
       const res = await apiFetch(`/api/ai-chat/${chatId}/messages`);
@@ -275,6 +297,8 @@ const GPTChatPage: React.FC = () => {
         setSidebarOpen(false);
         // Update URL with new chat ID
         navigate(`/ai-chat?chatId=${newChat._id}`, { replace: true });
+        // Notify Sidebar to refresh chat list
+        window.dispatchEvent(new Event('chatsUpdated'));
       }
     } catch (err) {
       console.error('Failed to create chat:', err);
@@ -293,6 +317,8 @@ const GPTChatPage: React.FC = () => {
       
       if (res?.success) {
         setChats(prev => prev.filter(c => c._id !== chatId));
+        // Notify Sidebar to refresh chat list
+        window.dispatchEvent(new Event('chatsUpdated'));
         if (currentChat?._id === chatId) {
           // Create new chat instead of going to another chat
           await createNewChat();
@@ -331,6 +357,9 @@ const GPTChatPage: React.FC = () => {
         if (currentChat?._id === chatId) {
           setCurrentChat(prev => prev ? { ...prev, title: newTitle.trim() } : null);
         }
+        
+        // Notify Sidebar to refresh chat list
+        window.dispatchEvent(new Event('chatsUpdated'));
         
         setEditingChatId(null);
         setEditTitle('');
@@ -542,6 +571,64 @@ const GPTChatPage: React.FC = () => {
         setIsLoading(false);
       }
     }
+    
+    // Auto-generate title if this is the first message and title hasn't been generated yet
+    if (currentChat && messages.length <= 2 && !titleGenerated && currentChat.title === 'New Chat') {
+      generateChatTitle(currentChat._id, toSend);
+    }
+  };
+
+  // Auto-generate chat title based on first message
+  const generateChatTitle = async (chatId: string, message: string) => {
+    try {
+      const res = await apiFetch('/api/ai-chat/generate-title', {
+        method: 'POST',
+        body: JSON.stringify({ chatId, message })
+      });
+      
+      if (res?.success && res?.data?.title) {
+        setCurrentChat(prev => prev ? { ...prev, title: res.data.title } : null);
+        setTitleGenerated(true);
+        // Update chats list to reflect the new title
+        loadChats();
+        // Notify Sidebar to refresh chat list
+        window.dispatchEvent(new Event('chatsUpdated'));
+      }
+    } catch (err) {
+      console.error('Failed to generate chat title:', err);
+    }
+  };
+
+  // Share chat functionality
+  const shareChat = async () => {
+    if (!currentChat) return;
+    
+    setIsSharing(true);
+    try {
+      const res = await apiFetch(`/api/ai-chat/${currentChat._id}/share`, {
+        method: 'POST'
+      });
+      
+      if (res?.success && res?.data?.shareUrl) {
+        setShareUrl(res.data.shareUrl);
+        setCurrentChat(prev => prev ? { ...prev, is_public: true, share_id: res.data.shareId } : null);
+        setShowShareModal(true);
+      } else {
+        alert('Failed to share chat. Please try again.');
+      }
+    } catch (err) {
+      console.error('Failed to share chat:', err);
+      alert('Failed to share chat. Please try again.');
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  // Copy share link to clipboard
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('Share link copied to clipboard!');
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -576,7 +663,7 @@ const GPTChatPage: React.FC = () => {
         <Sidebar />
         
         {/* Main Content */}
-        <div className="flex-1 lg:ml-20 transition-all duration-300 overflow-y-auto h-screen" id="main-content">
+        <div className="flex-1 lg:ml-64 transition-all duration-300 overflow-y-auto h-screen" id="main-content">
           <div className="flex flex-col h-full">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10 bg-slate-950/50 backdrop-blur-sm">
@@ -637,13 +724,35 @@ const GPTChatPage: React.FC = () => {
                   )}
                 </div>
               )}
+              
+              {/* Share Button */}
+              {currentChat && (
+                <button
+                  onClick={shareChat}
+                  disabled={isSharing}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors text-sm"
+                  title="Share chat"
+                >
+                  {isSharing ? (
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                  )}
+                  <span className="hidden sm:inline">Share</span>
+                </button>
+              )}
             </div>
 
-            {/* Chat Messages Container */}
+            {/* Chat Messages Container - ChatGPT Style */}
             <div 
               id="chat-messages-container"
               ref={chatContainerRef}
-              className="flex-1 overflow-y-auto p-4 pb-24 md:pb-4 space-y-4"
+              className="flex-1 overflow-y-auto pb-32"
             >
               {messages.map((message) => {
                 // Skip rendering placeholder messages with empty content (streaming placeholder)
@@ -669,103 +778,147 @@ const GPTChatPage: React.FC = () => {
 
                 const handleSaveEditMsg = () => {
                   if (!editMsgContent.trim()) return;
-                  // Update message locally then resend
                   setMessages(prev => prev.filter(m => {
                     const idx = prev.findIndex(x => x._id === msgId);
                     return prev.indexOf(m) <= idx;
                   }).map(m => m._id === msgId ? { ...m, content: editMsgContent } : m));
                   setEditingMsgId(null);
-                  // The edited msg replaces content, then we send from that point
                   sendMessage(editMsgContent);
                 };
 
                 return (
                   <div
                     key={message._id}
-                    className={`group flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
+                    className={`group py-6 ${isUser ? 'bg-transparent' : 'bg-black/20'}`}
                   >
-                    {!isUser && <AIAvatar />}
-                    <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[70%]`}>
-                      {isEditingThis ? (
-                        <div className="w-full">
-                          <textarea
-                            value={editMsgContent}
-                            onChange={e => setEditMsgContent(e.target.value)}
-                            className="w-full bg-white/10 border border-white/30 rounded-2xl px-4 py-3 text-white text-sm resize-none focus:outline-none focus:border-white/60"
-                            rows={3}
-                            autoFocus
-                          />
-                          <div className="flex gap-2 mt-2 justify-end">
-                            <button
-                              onClick={() => setEditingMsgId(null)}
-                              className="px-3 py-1 text-xs text-white/60 hover:text-white border border-white/20 rounded-lg transition-colors"
-                            >Cancel</button>
-                            <button
-                              onClick={handleSaveEditMsg}
-                              className="px-3 py-1 text-xs bg-white text-black rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                            >Send</button>
-                          </div>
+                    <div className="max-w-3xl mx-auto px-4 flex gap-4">
+                      {/* Avatar */}
+                      {isUser ? (
+                        <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white text-sm font-medium shrink-0 order-2">
+                          {profileSummary?.full_name ? profileSummary.full_name.charAt(0).toUpperCase() : 'U'}
                         </div>
                       ) : (
-                        <div
-                          className={`rounded-2xl px-4 py-3 ${
-                            isUser
-                              ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-medium shadow-[0_4px_15px_rgba(168,85,247,0.3)]'
-                              : 'bg-black/40 backdrop-blur-md text-white border border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.3)]'
-                          }`}
-                        >
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                            {message.content}
-                          </p>
-                        </div>
+                        <AIAvatar />
                       )}
 
-                      {/* Action buttons — ChatGPT style, show on group hover */}
-                      {!isEditingThis && (
-                        <div className={`flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                          {/* Copy button */}
-                          <button
-                            onClick={handleCopy}
-                            title="Copy message"
-                            className="p-1.5 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/10 transition-all"
-                          >
-                            {copiedMsgId === msgId ? (
-                              <svg className="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                              </svg>
+                      {/* Message Content */}
+                      <div className={`flex-1 ${isUser ? 'order-1 text-right' : 'order-2'}`}>
+                        {isEditingThis ? (
+                          <div className="w-full">
+                            <textarea
+                              value={editMsgContent}
+                              onChange={e => setEditMsgContent(e.target.value)}
+                              className="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white text-sm resize-none focus:outline-none focus:border-white/60"
+                              rows={3}
+                              autoFocus
+                            />
+                            <div className="flex gap-2 mt-2 justify-end">
+                              <button
+                                onClick={() => setEditingMsgId(null)}
+                                className="px-3 py-1 text-xs text-white/60 hover:text-white border border-white/20 rounded-lg transition-colors"
+                              >Cancel</button>
+                              <button
+                                onClick={handleSaveEditMsg}
+                                className="px-3 py-1 text-xs bg-white text-black rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                              >Send</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            {isUser ? (
+                              <div className="inline-block bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-4 py-2.5 rounded-2xl text-sm leading-relaxed">
+                                {message.content}
+                              </div>
                             ) : (
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                              </svg>
+                              <div className="text-white/90 text-base leading-7">
+                                <ReactMarkdown 
+                                  remarkPlugins={[remarkGfm]}
+                                  components={{
+                                    p: ({ children }: { children?: React.ReactNode }) => <p className="mb-4 last:mb-0">{children}</p>,
+                                    ul: ({ children }: { children?: React.ReactNode }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
+                                    ol: ({ children }: { children?: React.ReactNode }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
+                                    li: ({ children }: { children?: React.ReactNode }) => <li className="mb-1">{children}</li>,
+                                    code: ({ inline, children }: { inline?: boolean; children?: React.ReactNode }) => (
+                                      inline ? (
+                                        <code className="bg-white/20 px-1.5 py-0.5 rounded text-sm font-mono text-white">
+                                          {children}
+                                        </code>
+                                      ) : (
+                                        <pre className="bg-[#1a1a2e] p-4 rounded-lg overflow-x-auto my-4 border border-white/10">
+                                          <code className="text-sm font-mono text-white/90 block">{children}</code>
+                                        </pre>
+                                      )
+                                    ),
+                                    h1: ({ children }: { children?: React.ReactNode }) => <h1 className="text-2xl font-bold mb-4 mt-6 text-white">{children}</h1>,
+                                    h2: ({ children }: { children?: React.ReactNode }) => <h2 className="text-xl font-bold mb-3 mt-5 text-white">{children}</h2>,
+                                    h3: ({ children }: { children?: React.ReactNode }) => <h3 className="text-lg font-bold mb-3 mt-4 text-white">{children}</h3>,
+                                    strong: ({ children }: { children?: React.ReactNode }) => <strong className="font-bold text-white">{children}</strong>,
+                                    em: ({ children }: { children?: React.ReactNode }) => <em className="italic text-white/90">{children}</em>,
+                                    blockquote: ({ children }: { children?: React.ReactNode }) => (
+                                      <blockquote className="border-l-4 border-violet-500 pl-4 my-4 italic text-white/80">
+                                        {children}
+                                      </blockquote>
+                                    ),
+                                    a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+                                      <a href={href} target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 underline">
+                                        {children}
+                                      </a>
+                                    ),
+                                    hr: () => <hr className="my-4 border-white/20" />,
+                                  }}
+                                >
+                                  {message.content}
+                                </ReactMarkdown>
+                              </div>
                             )}
-                          </button>
 
-                          {/* Edit button — only for user messages */}
-                          {isUser && (
-                            <button
-                              onClick={handleStartEditMsg}
-                              title="Edit message"
-                              className="p-1.5 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/10 transition-all"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                              </svg>
-                            </button>
-                          )}
-                        </div>
-                      )}
+                            {/* Action buttons */}
+                            {!isEditingThis && (
+                              <div className={`flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity ${isUser ? 'justify-end' : 'justify-start'}`}>
+                                <button
+                                  onClick={handleCopy}
+                                  title="Copy message"
+                                  className="p-1.5 rounded text-white/40 hover:text-white/80 hover:bg-white/10 transition-all"
+                                >
+                                  {copiedMsgId === msgId ? (
+                                    <svg className="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  ) : (
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                  )}
+                                </button>
+                                {isUser && (
+                                  <button
+                                    onClick={handleStartEditMsg}
+                                    title="Edit message"
+                                    className="p-1.5 rounded text-white/40 hover:text-white/80 hover:bg-white/10 transition-all"
+                                  >
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                    {isUser && <UserAvatar name={profileSummary?.full_name} />}
                   </div>
                 );
               })}
               
-              {/* Typing Indicator */}
+              {/* Typing Indicator - ChatGPT Style */}
               {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <AIAvatar />
-                  <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl px-4 py-3 shadow-[0_4px_15px_rgba(0,0,0,0.3)]">
-                    <TypingIndicator />
+                <div className="py-6 bg-black/20">
+                  <div className="max-w-3xl mx-auto px-4 flex gap-4">
+                    <AIAvatar />
+                    <div className="flex-1 pt-2">
+                      <TypingIndicator />
+                    </div>
                   </div>
                 </div>
               )}
@@ -793,35 +946,103 @@ const GPTChatPage: React.FC = () => {
                 </div>
               )}
               
-              {/* STICKY BOTTOM CHAT BAR */}
-              <form 
-                onSubmit={(e) => { e.preventDefault(); sendMessage(); }} 
-                className="shrink-0 px-4 pb-4 pt-2 bg-gradient-to-t from-black via-black/90 to-transparent w-full"
+              {/* FLOATING CHAT INPUT - ChatGPT Style */}
+              <form
+                onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
+                className="w-full px-4 py-4 md:py-6"
               >
-                <div className="max-w-3xl mx-auto relative flex items-center group">
-              <input
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask AstroAI any cosmic question..."
-                className="w-full bg-gradient-to-r from-violet-950/80 to-fuchsia-950/80 backdrop-blur-xl border border-violet-500/50 ring-1 ring-violet-500/30 rounded-full pl-5 pr-12 py-3.5 md:pl-6 md:pr-14 md:py-4 text-white placeholder-black focus:outline-none shadow-[0_0_25px_rgba(168,85,247,0.15)] transition-all"
-              />
-              <button
-                type="submit"
-                disabled={!inputMessage.trim() || isLoading}
-                className="absolute right-2 p-1.5 md:right-2.5 md:p-2 bg-violet-600 text-white rounded-full hover:bg-violet-700 disabled:opacity-50 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center shrink-0 shadow-lg"
-              >
-                    <svg className="w-4 h-4 md:w-5 md:h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                <div className="max-w-3xl mx-auto relative flex items-center">
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask AstroAI any cosmic question..."
+                    className="w-full bg-white/5 hover:bg-white/10 focus:bg-white/10 backdrop-blur-xl border border-white/20 hover:border-white/30 focus:border-violet-500/50 rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all shadow-lg"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!inputMessage.trim() || isLoading}
+                    className="absolute right-2 p-2 md:right-3 bg-violet-600 hover:bg-violet-500 disabled:bg-white/10 disabled:opacity-40 text-white rounded-xl transition-all disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
                     </svg>
                   </button>
                 </div>
+                <p className="text-center text-white/30 text-xs mt-2">AstroAI can make mistakes. Consider checking important information.</p>
               </form>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Share Chat Modal */}
+      {showShareModal && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+          onClick={() => setShowShareModal(false)}
+        >
+          <div 
+            className="relative w-full max-w-md bg-[#0a0a0c] border border-white/10 rounded-2xl p-6 shadow-[0_0_60px_rgba(168,85,247,0.25)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-white">Share Chat</h2>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <p className="text-white/60 text-sm mb-4">
+              Anyone with this link can view this chat. You can revoke access at any time.
+            </p>
+
+            {/* Share URL */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-3 mb-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={shareUrl}
+                  readOnly
+                  className="flex-1 bg-transparent text-white text-sm focus:outline-none"
+                />
+                <button
+                  onClick={copyShareLink}
+                  className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-sm rounded-lg transition-colors whitespace-nowrap"
+                >
+                  Copy Link
+                </button>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  window.open(shareUrl, '_blank');
+                }}
+                className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium"
+              >
+                Open Link
+              </button>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="flex-1 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-colors text-sm font-medium"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </CosmicBackground>
   );
 };

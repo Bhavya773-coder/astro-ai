@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Chat = require('../models/Chat');
 const Message = require('../models/Message');
 const Profile = require('../models/Profile');
+const User = require('../models/User');
 const aiService = require('../services/aiService');
 const contextBuilder = require('../services/contextBuilder');
 const chatMemory = require('../services/chatMemory');
@@ -206,9 +207,13 @@ class AIChatController {
         await chat.save();
       }
 
-      // Get user profile for astrology context
-      const profile = await Profile.findOne({ user_id: userObjectId }).lean();
-      console.log('[AIChatController] Profile found:', !!profile);
+      // Get user and profile for astrology context
+      const [user, profile] = await Promise.all([
+        User.findById(userObjectId).lean(),
+        Profile.findOne({ user_id: userObjectId }).lean()
+      ]);
+      console.log('[AIChatController] User found:', !!user, 'Profile found:', !!profile);
+      console.log('[AIChatController] User isBeliever:', user?.is_believer);
 
       // Build system prompt with kundli context
       const systemPrompt = await contextBuilder.buildSystemPrompt(profile);
@@ -217,12 +222,13 @@ class AIChatController {
       const history = await chatMemory.getContextWindow(chatId);
       console.log('[AIChatController] History length:', history.length);
 
-      // Build messages array for AI with kundli context
+      // Build messages array for AI with kundli context and user belief type
       const messages = await contextBuilder.buildMessagesArray(
         systemPrompt,
         history,
         message.trim(),
-        profile
+        profile,
+        user
       );
 
       // Generate AI response
@@ -339,15 +345,19 @@ class AIChatController {
         chat.preview = message.trim().substring(0, 100);
       }
 
-      // Get profile and build context
-      const profile = await Profile.findOne({ user_id: userObjectId }).lean();
+      // Get user and profile and build context
+      const [user, profile] = await Promise.all([
+        User.findById(userObjectId).lean(),
+        Profile.findOne({ user_id: userObjectId }).lean()
+      ]);
       const systemPrompt = await contextBuilder.buildSystemPrompt(profile);
       const history = await chatMemory.getContextWindow(chatId);
       const messages = contextBuilder.buildMessagesArray(
         systemPrompt,
         history,
         message.trim(),
-        profile
+        profile,
+        user
       );
 
       let fullResponse = '';
@@ -500,6 +510,273 @@ class AIChatController {
       res.status(500).json({
         success: false,
         message: 'Failed to update chat'
+      });
+    }
+  }
+
+  /**
+   * Search chats by title
+   */
+  searchChats = async (req, res) => {
+    try {
+      const userId = req.user.userId;
+      const userObjectId = toObjectId(userId);
+      const { query } = req.query;
+
+      if (!query || query.trim() === '') {
+        // Return all chats if no query
+        const chats = await Chat.find({ user_id: userObjectId })
+          .sort({ updated_at: -1 })
+          .lean();
+        
+        return res.json({
+          success: true,
+          data: chats
+        });
+      }
+
+      // Search chats by title (case-insensitive)
+      const chats = await Chat.find({
+        user_id: userObjectId,
+        title: { $regex: query.trim(), $options: 'i' }
+      })
+        .sort({ updated_at: -1 })
+        .lean();
+
+      res.json({
+        success: true,
+        data: chats
+      });
+    } catch (error) {
+      console.error('[AIChatController] Error searching chats:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to search chats'
+      });
+    }
+  }
+
+  /**
+   * Generate chat title using AI based on first message
+   */
+  generateChatTitle = async (req, res) => {
+    try {
+      const userId = req.user.userId;
+      const userObjectId = toObjectId(userId);
+      const { chatId, message } = req.body;
+
+      if (!chatId || !message) {
+        return res.status(400).json({
+          success: false,
+          message: 'Chat ID and message are required'
+        });
+      }
+
+      // Verify chat belongs to user
+      const chat = await Chat.findOne({
+        _id: chatId,
+        user_id: userObjectId
+      });
+
+      if (!chat) {
+        return res.status(404).json({
+          success: false,
+          message: 'Chat not found'
+        });
+      }
+
+      // Only generate title if it's still "New Chat" or default
+      if (chat.title && chat.title !== 'New Chat' && !chat.title.startsWith('Chat ')) {
+        return res.json({
+          success: true,
+          data: { title: chat.title },
+          message: 'Chat already has a custom title'
+        });
+      }
+
+      // Generate title using AI
+      const titlePrompt = `Based on this user's first message, generate a short, descriptive chat title (2-4 words max). Be concise and relevant.
+
+User message: "${message.substring(0, 200)}"
+
+Rules:
+- 2-4 words maximum
+- No quotes in the title
+- Should summarize the main topic
+- Examples: "Career Guidance", "Love Life Reading", "Birth Chart Help"
+
+Return only the title, nothing else.`;
+
+      const messages = [
+        { role: 'system', content: 'You are a helpful assistant that generates concise chat titles.' },
+        { role: 'user', content: titlePrompt }
+      ];
+
+      let generatedTitle = 'New Chat';
+      try {
+        const aiResponse = await aiService.generateCompletion(messages);
+        generatedTitle = aiResponse.trim().replace(/["']/g, '').substring(0, 50);
+        if (!generatedTitle || generatedTitle.length < 2) {
+          generatedTitle = message.substring(0, 30).trim() || 'New Chat';
+        }
+      } catch (aiError) {
+        console.error('[AIChatController] AI title generation failed:', aiError);
+        // Fallback: use first 30 chars of message
+        generatedTitle = message.substring(0, 30).trim() || 'New Chat';
+      }
+
+      // Update chat with generated title
+      chat.title = generatedTitle;
+      await chat.save();
+
+      res.json({
+        success: true,
+        data: { title: generatedTitle }
+      });
+
+    } catch (error) {
+      console.error('[AIChatController] Error generating chat title:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to generate chat title'
+      });
+    }
+  }
+
+  /**
+   * Share a chat - make it public and return share link
+   */
+  shareChat = async (req, res) => {
+    try {
+      const userId = req.user.userId;
+      const userObjectId = toObjectId(userId);
+      const { chatId } = req.params;
+
+      // Verify chat belongs to user
+      const chat = await Chat.findOne({
+        _id: chatId,
+        user_id: userObjectId
+      });
+
+      if (!chat) {
+        return res.status(404).json({
+          success: false,
+          message: 'Chat not found'
+        });
+      }
+
+      // Generate share ID if not already shared
+      if (!chat.share_id) {
+        chat.generateShareId();
+        await chat.save();
+      } else {
+        chat.is_public = true;
+        await chat.save();
+      }
+
+      // Use FRONTEND_BASE_URL from env, or fallback to production domain or localhost
+      const frontendUrl = process.env.FRONTEND_BASE_URL || process.env.FRONTEND_URL || 'https://astroai4u.com';
+      const shareUrl = `${frontendUrl}/shared-chat/${chat.share_id}`;
+
+      res.json({
+        success: true,
+        data: {
+          shareId: chat.share_id,
+          shareUrl: shareUrl,
+          isPublic: chat.is_public
+        }
+      });
+
+    } catch (error) {
+      console.error('[AIChatController] Error sharing chat:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to share chat'
+      });
+    }
+  }
+
+  /**
+   * Unshare a chat - make it private
+   */
+  unshareChat = async (req, res) => {
+    try {
+      const userId = req.user.userId;
+      const userObjectId = toObjectId(userId);
+      const { chatId } = req.params;
+
+      const chat = await Chat.findOneAndUpdate(
+        { _id: chatId, user_id: userObjectId },
+        { is_public: false },
+        { new: true }
+      );
+
+      if (!chat) {
+        return res.status(404).json({
+          success: false,
+          message: 'Chat not found'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: { isPublic: false }
+      });
+
+    } catch (error) {
+      console.error('[AIChatController] Error unsharing chat:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to unshare chat'
+      });
+    }
+  }
+
+  /**
+   * Get shared chat (public access - no auth required)
+   */
+  getSharedChat = async (req, res) => {
+    try {
+      const { shareId } = req.params;
+
+      const chat = await Chat.findOne({
+        share_id: shareId,
+        is_public: true
+      }).lean();
+
+      if (!chat) {
+        return res.status(404).json({
+          success: false,
+          message: 'Shared chat not found or is private'
+        });
+      }
+
+      // Get all messages for this chat
+      const messages = await chatMemory.getFullHistory(chat._id, 1000);
+
+      // Remove sensitive user info
+      const safeChat = {
+        _id: chat._id,
+        title: chat.title,
+        preview: chat.preview,
+        message_count: chat.message_count,
+        created_at: chat.created_at,
+        updated_at: chat.updated_at
+      };
+
+      res.json({
+        success: true,
+        data: {
+          chat: safeChat,
+          messages: messages
+        }
+      });
+
+    } catch (error) {
+      console.error('[AIChatController] Error getting shared chat:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get shared chat'
       });
     }
   }

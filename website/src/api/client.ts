@@ -1,10 +1,25 @@
 import { AuthUser } from '../auth/AuthContext';
 
 export const getBaseUrl = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return process.env.REACT_APP_API_BASE_URL || '';
+  // Check if we're in production (on astroai4u.com)
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    // Production domain - API is on the same domain or use relative paths
+    if (hostname === 'astroai4u.com' || hostname === 'www.astroai4u.com') {
+      // If API is on the same domain, use relative path
+      // If API is on different subdomain/port, set REACT_APP_API_BASE_URL
+      return process.env.REACT_APP_API_BASE_URL || '';
+    }
+    
+    // Local development
+    if (process.env.NODE_ENV === 'development' || hostname === 'localhost') {
+      return process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
+    }
   }
-  return process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001';
+  
+  // Default fallback
+  return process.env.REACT_APP_API_BASE_URL || '';
 };
 
 const TOKEN_KEY = 'astroai_token';

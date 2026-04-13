@@ -782,10 +782,12 @@ const BirthChartPage: React.FC = () => {
     return (
       <div className="flex min-h-screen overflow-hidden bg-black text-white">
         <Sidebar />
-        <div className="flex-1 lg:ml-20 overflow-y-auto h-screen flex items-center justify-center">
-          <div className="text-center pt-16 lg:pt-0">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <p className="text-white text-lg">Loading Birth Chart...</p>
+        <div className="flex-1 lg:ml-64 transition-all duration-300 h-screen flex flex-col" id="main-content">
+          <div className="flex-1 overflow-y-auto flex items-center justify-center">
+            <div className="text-center pt-16 lg:pt-0">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+              <p className="text-white text-lg">Loading Birth Chart...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -796,19 +798,21 @@ const BirthChartPage: React.FC = () => {
     return (
       <div className="flex min-h-screen overflow-hidden bg-black text-white">
         <Sidebar />
-        <div className="flex-1 lg:ml-20 overflow-y-auto h-screen flex items-center justify-center">
-          <div className="text-center max-w-md mx-auto p-8 pt-16 lg:pt-8">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-400/10 mx-auto mb-6">
-              <AlertTriangle className="w-8 h-8 text-red-400" />
+        <div className="flex-1 lg:ml-64 transition-all duration-300 h-screen flex flex-col" id="main-content">
+          <div className="flex-1 overflow-y-auto flex items-center justify-center">
+            <div className="text-center max-w-md mx-auto p-8 pt-16 lg:pt-8">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-400/10 mx-auto mb-6">
+                <AlertTriangle className="w-8 h-8 text-red-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-4">Birth Chart Error</h2>
+              <p className="text-white/70 mb-6">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 border border-white/20"
+              >
+                Try Again
+              </button>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-4">Birth Chart Error</h2>
-            <p className="text-white/70 mb-6">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 border border-white/20"
-            >
-              Try Again
-            </button>
           </div>
         </div>
       </div>
@@ -820,120 +824,123 @@ const BirthChartPage: React.FC = () => {
     return (
       <div className="flex min-h-screen overflow-hidden bg-black text-white">
         <Sidebar />
-        <div className="flex-1 lg:ml-20 overflow-y-auto h-screen">
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-20 lg:pt-12">
-            {/* Header */}
-            <div className="text-center mb-16">
-              <h1 className="text-4xl md:text-5xl font-bold font-display mb-6">
-                Birth Chart
-              </h1>
-              <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-                Discover your cosmic blueprint - a personalized map of the heavens at the moment of your birth.
-              </p>
-            </div>
-
-            {/* What is Birth Chart Section */}
-            <div className="mb-16 bg-white/5 border border-white/10 rounded-3xl p-10 backdrop-blur-sm">
-              <h2 className="text-3xl font-bold text-white mb-8 text-center">What is a Birth Chart?</h2>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-                <div className="space-y-6">
-                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold text-orange-400 mb-4 flex items-center gap-2">
-                      <Star className="w-6 h-6" />
-                      Your Cosmic Blueprint
-                    </h3>
-                    <p className="text-white/70 leading-relaxed">
-                      A birth chart is a snapshot of the sky at the exact moment you were born. It shows the precise positions of the Sun, Moon, planets, and stars in relation to Earth, creating a unique cosmic map that's yours alone.
-                    </p>
-                  </div>
-
-                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
-                      <Telescope className="w-6 h-6" />
-                      Personal Insights
-                    </h3>
-                    <p className="text-white/70 leading-relaxed">
-                      Through your birth chart, you can understand your personality traits, life patterns, relationship dynamics, career potentials, and spiritual journey with remarkable accuracy.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold text-purple-400 mb-4 flex items-center gap-2">
-                      <Clock className="w-6 h-6" />
-                      Timeless Wisdom
-                    </h3>
-                    <p className="text-white/70 leading-relaxed">
-                      This ancient astrological tool, used for thousands of years, combines celestial wisdom with modern understanding to provide practical guidance for your life's journey.
-                    </p>
-                  </div>
-
-                  <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                    <h3 className="text-xl font-semibold text-fuchsia-400 mb-4 flex items-center gap-2">
-                      <Target className="w-6 h-6" />
-                      Life Navigation
-                    </h3>
-                    <p className="text-white/70 leading-relaxed">
-                      Your birth chart serves as a compass, helping you navigate life's challenges, make aligned decisions, and fulfill your highest potential.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* All Zodiac Signs */}
-              <h3 className="text-2xl font-bold text-white mb-8 text-center">The Complete Zodiac Guide</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {zodiacSignsData.map((sign) => (
-                  <div key={sign.sign} className="bg-white/5 rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-colors duration-300">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ backgroundColor: sign.color + '20' }}>
-                          <span className="text-lg" style={{ color: sign.color }}>{sign.symbol}</span>
-                        </div>
-                        <h4 className="text-lg font-bold text-white">{sign.sign}</h4>
-                      </div>
-                      <div className="text-sm">
-                        <span className="px-2 py-1 rounded-full text-xs" style={{ backgroundColor: sign.color + '20', color: sign.color }}>
-                          {sign.element}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-white/60 text-sm leading-relaxed mb-3">
-                      {sign.description}
-                    </p>
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap gap-2">
-                        {sign.traits.map((trait, index) => (
-                          <span key={index} className="px-2 py-1 bg-white/10 rounded text-xs text-white/80">
-                            {trait}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="text-xs text-white/50 mt-3">
-                        <span className="font-medium">Ruler:</span> {sign.ruler} |
-                        <span className="font-medium">Quality:</span> {sign.quality}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Call to Action */}
-            <div className="text-center">
-              <div className="bg-black/60 border border-violet-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)] rounded-3xl p-12 backdrop-blur-xl">
-                <h2 className="text-3xl font-bold text-white mb-6">Ready to Discover Your Cosmic Blueprint?</h2>
-                <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
-                  Complete your onboarding process to generate your personalized Birth Chart with detailed planetary positions and astrological insights.
+        <div className="flex-1 lg:ml-64 transition-all duration-300 h-screen flex flex-col" id="main-content">
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 lg:py-16">
+              {/* Header */}
+              <div className="text-center mb-16">
+                <h1 className="text-4xl md:text-5xl font-bold font-display mb-6">
+                  Birth Chart
+                </h1>
+                <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+                  Discover your cosmic blueprint - a personalized map of the heavens at the moment of your birth.
                 </p>
-                <button
-                  onClick={handleCompleteGettingStarted}
-                  className="bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:shadow-[0_0_25px_rgba(168,85,247,0.8)] text-white font-bold text-lg py-4 px-12 rounded-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  Complete Getting Started
-                </button>
+              </div>
+
+              {/* What is Birth Chart Section */}
+              <div className="mb-16 bg-white/5 border border-white/10 rounded-3xl p-10 backdrop-blur-sm">
+                <h2 className="text-3xl font-bold text-white mb-8 text-center">What is a Birth Chart?</h2>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+                  <div className="space-y-6">
+                    <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                      <h3 className="text-xl font-semibold text-orange-400 mb-4 flex items-center gap-2">
+                        <Star className="w-6 h-6" />
+                        Your Cosmic Blueprint
+                      </h3>
+                      <p className="text-white/70 leading-relaxed">
+                        A birth chart is a snapshot of the sky at the exact moment you were born. It shows the precise positions of the Sun, Moon, planets, and stars in relation to Earth, creating a unique cosmic map that's yours alone.
+                      </p>
+                    </div>
+
+                    <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                      <h3 className="text-xl font-semibold text-blue-400 mb-4 flex items-center gap-2">
+                        <Telescope className="w-6 h-6" />
+                        Personal Insights
+                      </h3>
+                      <p className="text-white/70 leading-relaxed">
+                        Through your birth chart, you can understand your personality traits, life patterns, relationship dynamics, career potentials, and spiritual journey with remarkable accuracy.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                      <h3 className="text-xl font-semibold text-purple-400 mb-4 flex items-center gap-2">
+                        <Clock className="w-6 h-6" />
+                        Timeless Wisdom
+                      </h3>
+                      <p className="text-white/70 leading-relaxed">
+                        This ancient astrological tool, used for thousands of years, combines celestial wisdom with modern understanding to provide practical guidance for your life's journey.
+                      </p>
+                    </div>
+
+                    <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                      <h3 className="text-xl font-semibold text-fuchsia-400 mb-4 flex items-center gap-2">
+                        <Target className="w-6 h-6" />
+                        Life Navigation
+                      </h3>
+                      <p className="text-white/70 leading-relaxed">
+                        Your birth chart serves as a compass, helping you navigate life's challenges, make aligned decisions, and fulfill your highest potential.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* All Zodiac Signs */}
+                <h3 className="text-2xl font-bold text-white mb-8 text-center">The Complete Zodiac Guide</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {zodiacSignsData.map((sign) => (
+                    <div key={sign.sign} className="bg-white/5 rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-colors duration-300">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ backgroundColor: sign.color + '20' }}>
+                            <span className="text-lg" style={{ color: sign.color }}>{sign.symbol}</span>
+                          </div>
+                          <h4 className="text-lg font-bold text-white">{sign.sign}</h4>
+                        </div>
+                        <div className="text-sm">
+                          <span className="px-2 py-1 rounded-full text-xs" style={{ backgroundColor: sign.color + '20', color: sign.color }}>
+                            {sign.element}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-white/60 text-sm leading-relaxed mb-3">
+                        {sign.description}
+                      </p>
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-2">
+                          {sign.traits.map((trait, index) => (
+                            <span key={index} className="px-2 py-1 bg-white/10 rounded text-xs text-white/80">
+                              {trait}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="text-xs text-white/50 mt-3">
+                          <span className="font-medium">Ruler:</span> {sign.ruler} |
+                          <span className="font-medium">Quality:</span> {sign.quality}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Call to Action */}
+              <div className="text-center">
+                <div className="bg-black/60 border border-violet-500/30 shadow-[0_0_15px_rgba(168,85,247,0.3)] rounded-3xl p-12 backdrop-blur-xl">
+                  <h2 className="text-3xl font-bold text-white mb-6">Ready to Discover Your Cosmic Blueprint?</h2>
+                  <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
+                    Complete your onboarding process to generate your personalized Birth Chart with detailed planetary positions and astrological insights.
+                  </p>
+                  <button
+                    onClick={handleCompleteGettingStarted}
+                    className="bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:shadow-[0_0_25px_rgba(168,85,247,0.8)] text-white font-bold text-lg py-4 px-12 rounded-xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    Complete Getting Started
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -947,9 +954,10 @@ const BirthChartPage: React.FC = () => {
     <CosmicBackground>
       <div className="flex min-h-screen overflow-hidden">
         <Sidebar />
-        <div className="flex-1 lg:ml-20 h-screen flex flex-col" id="main-content">
-          <div className="flex-1 overflow-y-auto pb-24">
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 md:py-12">
+        <div className="flex-1 lg:ml-64 transition-all duration-300 h-screen flex flex-col" id="main-content">
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 lg:py-16">
               {/* Header */}
               <div className="text-center mb-12">
                 <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
@@ -1298,30 +1306,30 @@ const BirthChartPage: React.FC = () => {
             </div>
           </div>
 
-          {/* STICKY BOTTOM CHAT BAR */}
+          {/* FLOATING CHAT INPUT - ChatGPT Style */}
           <form
             onSubmit={handleAskQuestion}
-            className="shrink-0 px-4 pb-4 pt-2 bg-gradient-to-t from-black via-black/90 to-transparent"
+            className="w-full px-4 py-6 md:py-8"
           >
-            <div className="max-w-3xl mx-auto relative flex items-center group">
+            <div className="max-w-3xl mx-auto relative flex items-center">
               <input
                 type="text"
                 value={questionInput}
                 onChange={(e) => setQuestionInput(e.target.value)}
                 placeholder="Ask AstroAI about your birth chart..."
-                className="w-full bg-gradient-to-r from-violet-950/80 to-fuchsia-950/80 backdrop-blur-xl border border-violet-500/50 ring-1 ring-violet-500/30 rounded-full pl-5 pr-12 py-3.5 md:pl-6 md:pr-14 md:py-4 text-white placeholder-black focus:outline-none shadow-[0_0_25px_rgba(168,85,247,0.15)] transition-all"
+                className="w-full bg-white/5 hover:bg-white/10 focus:bg-white/10 backdrop-blur-xl border border-white/20 hover:border-white/30 focus:border-violet-500/50 rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all shadow-lg"
               />
               <button
                 type="submit"
                 disabled={!questionInput.trim()}
-                className="absolute right-2 p-1.5 md:right-2.5 md:p-2 bg-violet-600 text-white rounded-full hover:bg-violet-700 disabled:opacity-50 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center shrink-0 shadow-lg"
+                className="absolute right-2 p-2 md:right-3 bg-violet-600 hover:bg-violet-500 disabled:bg-white/10 disabled:opacity-40 text-white rounded-xl transition-all disabled:cursor-not-allowed"
               >
-                <svg className="w-4 h-4 md:w-5 md:h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
                 </svg>
               </button>
             </div>
-            <br />
+            <p className="text-center text-white/30 text-xs mt-2">AstroAI can make mistakes. Consider checking important information.</p>
           </form>
         </div>
       </div>

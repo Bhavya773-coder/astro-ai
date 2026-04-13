@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 const chatSchema = new mongoose.Schema({
   user_id: {
@@ -22,6 +23,17 @@ const chatSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  // Share functionality fields
+  is_public: {
+    type: Boolean,
+    default: false
+  },
+  share_id: {
+    type: String,
+    unique: true,
+    sparse: true,
+    index: true
+  },
   created_at: {
     type: Date,
     default: Date.now
@@ -44,5 +56,12 @@ chatSchema.pre('save', function(next) {
   this.updated_at = new Date();
   next();
 });
+
+// Method to generate unique share ID
+chatSchema.methods.generateShareId = function() {
+  this.share_id = crypto.randomBytes(16).toString('hex');
+  this.is_public = true;
+  return this.share_id;
+};
 
 module.exports = mongoose.model('Chat', chatSchema);

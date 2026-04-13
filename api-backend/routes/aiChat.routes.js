@@ -16,7 +16,15 @@ const chatLimiter = rateLimit({
   legacyHeaders: false
 });
 
-// All chat routes require authentication
+// Public route - get shared chat (must be before auth middleware)
+/**
+ * @route   GET /api/chat/shared/:shareId
+ * @desc    Get shared chat (public access)
+ * @access  Public
+ */
+router.get('/shared/:shareId', aiChatController.getSharedChat);
+
+// All other chat routes require authentication
 router.use(requireAuth);
 
 /**
@@ -32,6 +40,20 @@ router.get('/list', aiChatController.getChats);
  * @access  Private
  */
 router.post('/create', aiChatController.createChat);
+
+/**
+ * @route   GET /api/chat/search
+ * @desc    Search chats by title
+ * @access  Private
+ */
+router.get('/search', aiChatController.searchChats);
+
+/**
+ * @route   POST /api/chat/generate-title
+ * @desc    Generate chat title using AI based on first message
+ * @access  Private
+ */
+router.post('/generate-title', aiChatController.generateChatTitle);
 
 /**
  * @route   GET /api/chat/:chatId
@@ -74,5 +96,19 @@ router.put('/:chatId', aiChatController.updateChat);
  * @access  Private
  */
 router.delete('/:chatId', aiChatController.deleteChat);
+
+/**
+ * @route   POST /api/chat/:chatId/share
+ * @desc    Share a chat - make it public
+ * @access  Private
+ */
+router.post('/:chatId/share', aiChatController.shareChat);
+
+/**
+ * @route   POST /api/chat/:chatId/unshare
+ * @desc    Unshare a chat - make it private
+ * @access  Private
+ */
+router.post('/:chatId/unshare', aiChatController.unshareChat);
 
 module.exports = router;

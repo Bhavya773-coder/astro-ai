@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { apiFetch } from '../api/client';
+import ViewAllChatsModal from './ViewAllChatsModal';
 
 interface Chat {
   _id: string;
@@ -18,6 +19,8 @@ const Sidebar: React.FC = () => {
   const [loadingChats, setLoadingChats] = useState(false);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [showAllChatsModal, setShowAllChatsModal] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState<string | undefined>();
 
   // Load chats on component mount and when user changes
   useEffect(() => {
@@ -32,6 +35,18 @@ const Sidebar: React.FC = () => {
       loadChats();
     }
   }, [isAIChatExpanded, user]);
+
+  // Listen for chat updates from other components (e.g., auto-title generation)
+  useEffect(() => {
+    const handleChatUpdated = () => {
+      if (user) {
+        loadChats();
+      }
+    };
+
+    window.addEventListener('chatsUpdated', handleChatUpdated);
+    return () => window.removeEventListener('chatsUpdated', handleChatUpdated);
+  }, [user]);
 
   const loadChats = async () => {
     setLoadingChats(true);
@@ -427,8 +442,8 @@ const Sidebar: React.FC = () => {
                       ))}
                       {chats.length > 5 && (
                         <button
-                          onClick={() => navigate('/ai-chat')}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs text-fuchsia-400 hover:text-fuchsia-300 transition-all"
+                          onClick={() => setShowAllChatsModal(true)}
+                          className="w-full text-left px-3 py-2 rounded-lg text-xs text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-400/10 transition-all"
                         >
                           View all chats →
                         </button>
@@ -502,6 +517,41 @@ const Sidebar: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* View All Chats Modal */}
+      <ViewAllChatsModal
+        isOpen={showAllChatsModal}
+        onClose={() => setShowAllChatsModal(false)}
+        onSelectChat={(chatId) => {
+          navigate(`/ai-chat?chatId=${chatId}`);
+          setIsMobileMenuOpen(false);
+          loadChats(); // Refresh the list
+        }}
+        onDeleteChat={async (chatId) => {
+          const res = await apiFetch(`/api/ai-chat/${chatId}`, {
+            method: 'DELETE'
+          });
+          if (res?.success) {
+            setChats(prev => prev.filter(c => c._id !== chatId));
+            // Notify other components
+            window.dispatchEvent(new Event('chatsUpdated'));
+          }
+        }}
+        onUpdateChatTitle={async (chatId, newTitle) => {
+          const res = await apiFetch(`/api/ai-chat/${chatId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ title: newTitle })
+          });
+          if (res?.success) {
+            setChats(prev => prev.map(chat => 
+              chat._id === chatId ? { ...chat, title: newTitle } : chat
+            ));
+            // Notify other components
+            window.dispatchEvent(new Event('chatsUpdated'));
+          }
+        }}
+        currentChatId={currentChatId}
+      />
     </>
   );
 };
