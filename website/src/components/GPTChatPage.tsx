@@ -874,7 +874,7 @@ const GPTChatPage: React.FC = () => {
 
                             {/* Action buttons */}
                             {!isEditingThis && (
-                              <div className={`flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity ${isUser ? 'justify-end' : 'justify-start'}`}>
+                              <div className={`flex items-center gap-1 mt-2 opacity-100 transition-opacity ${isUser ? 'justify-end' : 'justify-start'}`}>
                                 <button
                                   onClick={handleCopy}
                                   title="Copy message"

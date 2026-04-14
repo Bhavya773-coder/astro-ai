@@ -609,9 +609,9 @@ const MainPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Dressing Styler Feature Card */}
+              {/* StyleForcaster Feature Card */}
               <button
-                onClick={() => navigate('/dressing-styler')}
+                onClick={() => navigate('/style-forcaster')}
                 className="w-full text-left mb-8"
               >
                 <GlassCard className="p-6 bg-black/60 border border-violet-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:border-fuchsia-500/50 transition-all">
@@ -620,7 +620,7 @@ const MainPage: React.FC = () => {
                       <Shirt className="w-7 h-7 text-fuchsia-300" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-white mb-1">Personal Dressing Styler</h3>
+                      <h3 className="text-lg font-bold text-white mb-1">StyleForcaster</h3>
                       <p className="text-white/70 text-sm">Get AI-powered outfit suggestions based on your astrology and numerology</p>
                     </div>
                     <div className="text-fuchsia-400">

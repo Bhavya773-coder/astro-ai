@@ -315,7 +315,7 @@ const DressingStylerPage: React.FC = () => {
                 <span className="text-[10px] font-bold text-fuchsia-300 uppercase tracking-widest">Personalized Alignment</span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold font-display">Dressing Styler</h1>
+              <h1 className="text-3xl md:text-4xl font-bold font-display">StyleForcaster</h1>
               <p className="mt-2 text-white/75 max-w-2xl">
                 Get daily cosmic style guidance based on your personal zodiac alignment and current planetary energies.
               </p>

@@ -157,7 +157,7 @@ function App() {
             {/* Public shared chat route - no auth required */}
             <Route path="/shared-chat/:shareId" element={<SharedChatPage />} />
             <Route
-              path="/dressing-styler"
+              path="/style-forcaster"
               element={
                 <ProtectedRoute>
                   <DressingStylerPage />
