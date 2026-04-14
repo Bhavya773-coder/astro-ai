@@ -4,8 +4,8 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
-const { notFound } = require('./middleware/notFound');
-const { errorHandler } = require('./middleware/errorHandler');
+const { secureNotFound, secureErrorHandler } = require('./middleware/secureErrorHandler');
+const { secureLogger } = require('./utils/secureLogger');
 
 const authRoutes = require('./routes/auth.routes');
 const googleAuthRoutes = require('./routes/googleAuth.routes');
@@ -26,6 +26,7 @@ const aiChatHealthRoutes = require('./routes/aiChatHealth.routes');
 const reportsRoutes = require('./routes/reports.routes');
 const horoscopeRoutes = require('./routes/horoscope.routes');
 const dressingStylerRoutes = require('./routes/dressingStyler.routes');
+const sharedInsightRoutes = require('./routes/sharedInsight.routes');
 
 const app = express();
 
@@ -34,8 +35,18 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Secure request logging - replaces Morgan
 if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('dev'));
+  app.use((req, res, next) => {
+    const start = Date.now();
+    
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      secureLogger.logResponse(req, res, duration);
+    });
+    
+    next();
+  });
 }
 
 app.get('/api/health', (req, res) => {
@@ -71,17 +82,18 @@ app.use('/api/ai-chat', aiChatHealthRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/horoscope', horoscopeRoutes);
 app.use('/api/dressing-styler', dressingStylerRoutes);
+app.use('/api', sharedInsightRoutes);
 
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../website/build')));
 app.get('*', (req, res, next) => {
   if (req.originalUrl.startsWith('/api/')) {
-    return notFound(req, res, next);
+    return secureNotFound(req, res, next);
   }
   res.sendFile(path.join(__dirname, '../website/build/index.html'));
 });
 
-app.use(notFound);
-app.use(errorHandler);
+app.use(secureNotFound);
+app.use(secureErrorHandler);
 
 module.exports = { app };

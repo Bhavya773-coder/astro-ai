@@ -6,8 +6,9 @@ import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
 import { useAuth } from '../auth/AuthContext';
 import { apiFetch } from '../api/client';
-import { Shirt, ChevronRight, Star } from 'lucide-react';
+import { Shirt, ChevronRight, Star, Share2 } from 'lucide-react';
 import FeatureTour from './FeatureTour';
+import toast from 'react-hot-toast';
 
 interface HoroscopeData {
   zodiac: string;
@@ -43,6 +44,7 @@ const MainPage: React.FC = () => {
 
   // Horoscope carousel state for mobile
   const [activeHoroscopeSlide, setActiveHoroscopeSlide] = useState(0);
+  const [isSharingHoroscope, setIsSharingHoroscope] = useState(false);
   const horoscopeSlides = [
     { id: 'horoscope', title: 'Daily Horoscope', content: horoscope?.horoscope, color: 'fuchsia' },
     { id: 'insights', title: 'Insights', content: horoscope?.insights, color: 'fuchsia' },
@@ -276,6 +278,42 @@ const MainPage: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const AUTO_PLAY_INTERVAL = 3000; // 3 seconds
 
+  // Share horoscope function
+  const shareHoroscope = async () => {
+    if (!horoscope || !user) return;
+    
+    setIsSharingHoroscope(true);
+    try {
+      const res = await apiFetch('/api/share/horoscope', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_name: profileData?.full_name || user?.email?.split('@')[0] || 'Anonymous',
+          zodiac: horoscope.zodiac,
+          horoscope_data: {
+            date: horoscope.date,
+            horoscope: horoscope.horoscope,
+            insights: horoscope.insights,
+            reason: horoscope.reason,
+            actions: horoscope.actions
+          }
+        })
+      });
+
+      if (res?.success && res?.data?.shareUrl) {
+        // Copy to clipboard
+        await navigator.clipboard.writeText(res.data.shareUrl);
+        toast.success('Horoscope link copied to clipboard!');
+      } else {
+        toast.error('Failed to share horoscope');
+      }
+    } catch (err) {
+      console.error('Error sharing horoscope:', err);
+      toast.error('Failed to share horoscope');
+    } finally {
+      setIsSharingHoroscope(false);
+    }
+  };
+
   useEffect(() => {
     if (!showHoroscope || isGenerating || isPaused) return;
 
@@ -406,15 +444,32 @@ const MainPage: React.FC = () => {
                           <p className="text-white/60 text-sm">{horoscope?.date || today}</p>
                         </div>
                       </div>
-                      <button
-                        onClick={() => setShowHoroscope(false)}
-                        className="text-white/60 hover:text-white text-sm flex items-center gap-1 transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Regenerate
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={shareHoroscope}
+                          disabled={isSharingHoroscope}
+                          className="text-white/60 hover:text-fuchsia-400 text-sm flex items-center gap-1 transition-colors disabled:opacity-50"
+                          title="Share horoscope"
+                        >
+                          {isSharingHoroscope ? (
+                            <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                          ) : (
+                            <Share2 className="w-4 h-4" />
+                          )}
+                          Share
+                        </button>
+                        <button
+                          onClick={() => setShowHoroscope(false)}
+                          className="text-white/60 hover:text-white text-sm flex items-center gap-1 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Regenerate
+                        </button>
+                      </div>
                     </div>
 
                     {isGenerating ? (
@@ -658,7 +713,7 @@ const MainPage: React.FC = () => {
                 value={questionInput}
                 onChange={(e) => setQuestionInput(e.target.value)}
                 placeholder="Ask AstroAI about your destiny..."
-                className="w-full bg-white/5 hover:bg-white/10 focus:bg-white/10 backdrop-blur-xl border border-white/20 hover:border-white/30 focus:border-violet-500/50 rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all shadow-lg"
+                className="w-full bg-purple-800/90 hover:bg-purple-800 focus:bg-purple-800 backdrop-blur-xl border border-purple-600/50 hover:border-purple-500 focus:border-purple-500 rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-white placeholder-black/60 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all shadow-lg"
               />
               <button
                 type="submit"

@@ -515,7 +515,7 @@ const DressingStylerPage: React.FC = () => {
                 value={questionInput}
                 onChange={(e) => setQuestionInput(e.target.value)}
                 placeholder="Ask your cosmic stylist..."
-                className="w-full bg-white/5 hover:bg-white/10 focus:bg-white/10 backdrop-blur-xl border border-white/20 hover:border-white/30 focus:border-violet-500/50 rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all shadow-lg"
+                className="w-full bg-purple-800/90 hover:bg-purple-800 focus:bg-purple-800 backdrop-blur-xl border border-purple-600/50 hover:border-purple-500 focus:border-purple-500 rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-white placeholder-black/60 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all shadow-lg"
               />
               <button
                 type="submit"

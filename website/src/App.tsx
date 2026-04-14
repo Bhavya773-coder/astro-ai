@@ -28,6 +28,8 @@ import DressingStylerPage from './components/DressingStylerPage';
 import AdminDashboardPage from './components/AdminDashboardPage';
 import SettingsPage from './components/SettingsPage';
 import SharedChatPage from './components/SharedChatPage';
+import SharedHoroscopePage from './components/SharedHoroscopePage';
+import SharedNumerologyPage from './components/SharedNumerologyPage';
 import { AppDataProvider } from './state/AppDataContext';
 
 // Wrapper component to handle authenticated redirect for homepage
@@ -154,8 +156,10 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            {/* Public shared chat route - no auth required */}
+            {/* Public shared routes - no auth required */}
             <Route path="/shared-chat/:shareId" element={<SharedChatPage />} />
+            <Route path="/shared-horoscope/:shareId" element={<SharedHoroscopePage />} />
+            <Route path="/shared-numerology/:shareId" element={<SharedNumerologyPage />} />
             <Route
               path="/style-forcaster"
               element={

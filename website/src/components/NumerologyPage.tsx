@@ -7,7 +7,7 @@ import AstroNumerologyFlow from './AstroNumerologyFlow';
 import toast from 'react-hot-toast';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
-import { Sparkles, AlertTriangle, Target, Calendar, Telescope, Crosshair, LandPlot, Clock, Landmark, BarChart2, Triangle, Columns } from 'lucide-react';
+import { Sparkles, AlertTriangle, Target, Calendar, Telescope, Crosshair, LandPlot, Clock, Landmark, BarChart2, Triangle, Columns, Share2 } from 'lucide-react';
 
 interface NumerologyData {
   life_path: string;
@@ -28,6 +28,9 @@ const NumerologyPage: React.FC = () => {
 
   // Core numbers carousel state (permanent display)
   const [coreSlide, setCoreSlide] = useState(0);
+
+  // Share state
+  const [isSharingNumerology, setIsSharingNumerology] = useState(false);
 
   // Touch handlers for swipe
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -109,6 +112,42 @@ const NumerologyPage: React.FC = () => {
   const handleCorePrev = () => {
     if (coreSlide > 0) {
       setCoreSlide((prev) => prev - 1);
+    }
+  };
+
+  // Share numerology function
+  const shareNumerology = async () => {
+    if (!numerology) return;
+    
+    setIsSharingNumerology(true);
+    try {
+      // Get user profile for name
+      const profileRes = await apiFetch('/api/profile');
+      const userName = profileRes?.data?.full_name || 'Anonymous';
+      
+      const res = await apiFetch('/api/share/numerology', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_name: userName,
+          numerology_data: {
+            life_path: numerology.life_path,
+            destiny: numerology.destiny,
+            personal_year: numerology.personal_year
+          }
+        })
+      });
+
+      if (res?.success && res?.data?.shareUrl) {
+        await navigator.clipboard.writeText(res.data.shareUrl);
+        toast.success('Numerology link copied to clipboard!');
+      } else {
+        toast.error('Failed to share numerology');
+      }
+    } catch (err) {
+      console.error('Error sharing numerology:', err);
+      toast.error('Failed to share numerology');
+    } finally {
+      setIsSharingNumerology(false);
     }
   };
 
@@ -540,7 +579,23 @@ const NumerologyPage: React.FC = () => {
                 <div className="mt-8 mb-12">
                   {/* Success Header - Now above carousel */}
                   <div className="text-center mb-8">
-                    <h3 className="text-3xl font-bold text-white mb-4">Your Personal Numerology Blueprint</h3>
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                      <h3 className="text-3xl font-bold text-white">Your Personal Numerology Blueprint</h3>
+                      <button
+                        onClick={shareNumerology}
+                        disabled={isSharingNumerology}
+                        className="p-2 rounded-full bg-white/10 hover:bg-fuchsia-500/20 text-white/70 hover:text-fuchsia-400 transition-all disabled:opacity-50"
+                        title="Share numerology"
+                      >
+                        {isSharingNumerology ? (
+                          <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                        ) : (
+                          <Share2 className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                     <p className="text-white/60 max-w-3xl mx-auto text-lg">
                       Your unique numbers reveal the cosmic blueprint of your life. Each number carries specific energies and lessons that guide your journey through life.
                     </p>
@@ -732,7 +787,7 @@ const NumerologyPage: React.FC = () => {
                 value={questionInput}
                 onChange={(e) => setQuestionInput(e.target.value)}
                 placeholder="Ask AstroAI about your numbers..."
-                className="w-full bg-white/5 hover:bg-white/10 focus:bg-white/10 backdrop-blur-xl border border-white/20 hover:border-white/30 focus:border-violet-500/50 rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500/30 transition-all shadow-lg"
+                className="w-full bg-purple-800/90 hover:bg-purple-800 focus:bg-purple-800 backdrop-blur-xl border border-purple-600/50 hover:border-purple-500 focus:border-purple-500 rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-white placeholder-black/60 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all shadow-lg"
               />
               <button
                 type="submit"

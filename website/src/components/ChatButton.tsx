@@ -123,10 +123,11 @@ const ChatButton: React.FC<ChatButtonProps> = ({
       className={`
         fixed bottom-6 right-6 z-50
         flex items-center gap-2 px-5 py-3
-        bg-gradient-to-r from-violet-600 to-fuchsia-600
-        text-white font-medium text-sm
-        rounded-full shadow-[0_0_20px_rgba(168,85,247,0.5)]
-        hover:shadow-[0_0_30px_rgba(168,85,247,0.8)]
+        bg-gradient-to-r from-fuchsia-500 via-purple-500 to-violet-500
+        text-white font-bold text-sm
+        rounded-full shadow-[0_0_25px_rgba(217,70,239,0.7)] border-2 border-white/30
+        hover:shadow-[0_0_35px_rgba(217,70,239,0.9)]
+        hover:border-white/60
         hover:scale-105
         transition-all duration-300
         ${className}
