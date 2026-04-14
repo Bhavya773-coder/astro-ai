@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getUsers, updateUser, deleteUser } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { CosmicButton, GlassCard, LoadingSpinner } from './CosmicUI';
+import UserFeedbackModal from './UserFeedbackModal';
 import toast from 'react-hot-toast';
 
 const AdminDashboardPage: React.FC = () => {
@@ -11,6 +12,7 @@ const AdminDashboardPage: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [viewingFeedback, setViewingFeedback] = useState<any | null>(null);
 
   useEffect(() => {
     if (isInitializing) return;
@@ -107,6 +109,17 @@ const AdminDashboardPage: React.FC = () => {
           </GlassCard>
         ) : null}
 
+        {/* User Feedback Modal */}
+        {viewingFeedback && (
+          <UserFeedbackModal
+            userId={viewingFeedback._id}
+            userEmail={viewingFeedback.email}
+            userName={viewingFeedback.name || 'No Name'}
+            isOpen={!!viewingFeedback}
+            onClose={() => setViewingFeedback(null)}
+          />
+        )}
+
         <GlassCard className="p-6 overflow-x-auto bg-black/40 border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -131,6 +144,7 @@ const AdminDashboardPage: React.FC = () => {
                   </td>
                   <td className="py-3 px-4 flex gap-2">
                     <button onClick={() => setEditingUser(u)} className="text-violet-400 hover:text-fuchsia-400 transition-colors">Edit</button>
+                    <button onClick={() => setViewingFeedback(u)} className="text-amber-400 hover:text-amber-300 transition-colors">View Feedback</button>
                     <button onClick={() => handleDelete(u._id)} className="text-red-400 hover:text-red-300 transition-colors">Delete</button>
                   </td>
                 </tr>

@@ -30,6 +30,7 @@ import SettingsPage from './components/SettingsPage';
 import SharedChatPage from './components/SharedChatPage';
 import SharedHoroscopePage from './components/SharedHoroscopePage';
 import SharedNumerologyPage from './components/SharedNumerologyPage';
+import FeedbackButton from './components/FeedbackButton';
 import { AppDataProvider } from './state/AppDataContext';
 
 // Wrapper component to handle authenticated redirect for homepage
@@ -202,6 +203,7 @@ function App() {
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <FeedbackButton />
         </AppDataProvider>
       </div>
     </Router>

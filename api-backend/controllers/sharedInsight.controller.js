@@ -1,6 +1,5 @@
 const SharedInsight = require('../models/SharedInsight');
 const mongoose = require('mongoose');
-const { secureLogger } = require('../utils/secureLogger');
 
 // Helper function to convert string ID to ObjectId
 const toObjectId = (id) => {
@@ -53,7 +52,7 @@ class SharedInsightController {
       });
 
     } catch (error) {
-      secureLogger.error('Error sharing horoscope', error, { userId: req.user?.userId });
+      console.error('[SharedInsightController] Error sharing horoscope:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to share horoscope'
@@ -102,7 +101,7 @@ class SharedInsightController {
       });
 
     } catch (error) {
-      secureLogger.error('Error sharing numerology', error, { userId: req.user?.userId });
+      console.error('[SharedInsightController] Error sharing numerology:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to share numerology'
@@ -141,7 +140,7 @@ class SharedInsightController {
       });
 
     } catch (error) {
-      secureLogger.error('Error getting shared horoscope', error, { shareId: req.params?.shareId });
+      console.error('[SharedInsightController] Error getting shared horoscope:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to get shared horoscope'
@@ -179,7 +178,7 @@ class SharedInsightController {
       });
 
     } catch (error) {
-      secureLogger.error('Error getting shared numerology', error, { shareId: req.params?.shareId });
+      console.error('[SharedInsightController] Error getting shared numerology:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to get shared numerology'
@@ -214,7 +213,7 @@ class SharedInsightController {
       });
 
     } catch (error) {
-      secureLogger.error('Error deleting shared insight', error, { userId: req.user?.userId, shareId: req.params?.shareId });
+      console.error('[SharedInsightController] Error deleting shared insight:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to delete shared insight'
