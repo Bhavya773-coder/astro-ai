@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CosmicBackground from './CosmicBackground';
+import { SEO } from './SEO';
 import { Telescope, Hash, BarChart2, Bot, Mail, Camera, ChevronDown, ChevronUp, Sparkles, MessageSquare, Star } from 'lucide-react';
 
 const OnboardingOverlay: React.FC<{ onComplete: (believer: boolean) => void }> = ({ onComplete }) => {
@@ -149,6 +150,54 @@ const HomePage: React.FC = () => {
     setActiveFaq(activeFaq === index ? null : index);
   };
 
+  // FAQPage JSON-LD Schema
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'How does AstroAI generate my readings?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'AstroAI uses advanced algorithms and traditional astrological calculations combined with AI-powered insights to generate personalized readings based on your birth chart and numerology data.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Is AstroAI free to use?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes! AstroAI offers free daily horoscopes, basic numerology insights, and AI chat features. Premium plans unlock advanced birth chart analysis, compatibility reports, and detailed yearly forecasts.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'How accurate are the predictions?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Our AI combines traditional astrology with modern data science for highly personalized insights. While astrology is for entertainment and self-reflection, users consistently report that our readings resonate with their life experiences.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'What information do I need to provide?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'For basic features, just your zodiac sign. For detailed readings, provide your birth date, time, and location. This allows us to calculate your complete birth chart including sun, moon, and rising signs.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I share my readings with friends?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Absolutely! You can share horoscopes, numerology insights, and chat responses via unique links. Friends can view shared content without creating an account.'
+        }
+      }
+    ]
+  };
+
   const faqs = [
     {
       question: "How does AstroAI generate my readings?",
@@ -199,6 +248,19 @@ const HomePage: React.FC = () => {
 
   return (
     <CosmicBackground>
+      <SEO
+        title="Astro AI | AI Astrology & Personalized Oracle | Astroai4u"
+        description="Astro AI - Your Personal AI Astrologer & My Oracle. Get AI-powered astrology readings, daily horoscopes, personalized tarot, numerology insights, birth charts & face reading."
+        keywords="Astro AI, Astroai4u, AI Astrology, Personalized AI, My Oracle, Astrology Using AI"
+        canonical="https://astroai4u.com/"
+        ogImage="https://astroai4u.com/og-image.jpg"
+      />
+      
+      {/* FAQPage JSON-LD Schema */}
+      <script type="application/ld+json">
+        {JSON.stringify(faqSchema)}
+      </script>
+      
       {/* Hero Section with Video Background */}
       <div className="relative overflow-hidden" style={{ height: '100vh' }}>
         {/* Background Effects with Video */}
@@ -641,10 +703,10 @@ const HomePage: React.FC = () => {
             <div>
               <h4 className="text-lg font-semibold mb-4 text-white">Resources</h4>
               <ul className="space-y-2">
-                <li><button className="text-white/90 hover:text-amber-300 transition-colors">Astrology Guide</button></li>
-                <li><button className="text-white/90 hover:text-amber-300 transition-colors">Numerology Basics</button></li>
-                <li><button className="text-white/90 hover:text-amber-300 transition-colors">Blog & Articles</button></li>
-                <li><button className="text-white/90 hover:text-amber-300 transition-colors">Video Tutorials</button></li>
+                <li><button onClick={() => navigate('/horoscope')} className="text-white/90 hover:text-amber-300 transition-colors">Free Daily Horoscope</button></li>
+                <li><button onClick={() => navigate('/birth-chart-info')} className="text-white/90 hover:text-amber-300 transition-colors">Birth Chart Guide</button></li>
+                <li><button onClick={() => navigate('/numerology-info')} className="text-white/90 hover:text-amber-300 transition-colors">Numerology Basics</button></li>
+                <li><button onClick={() => navigate('/ai-astrologer')} className="text-white/90 hover:text-amber-300 transition-colors">AI Astrologer</button></li>
               </ul>
             </div>
 

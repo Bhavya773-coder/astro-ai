@@ -23,6 +23,7 @@
     "postcss": "^8.5.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-helmet-async": "^2.0.5",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.22.3",
     "react-scripts": "5.0.1",
@@ -31,11 +32,35 @@
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
+  "devDependencies": {
+    "@types/react-helmet-async": "^1.0.3",
+    "react-snap": "^1.23.0"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "postbuild": "react-snap",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
+  },
+  "reactSnap": {
+    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
+    "renderAfterDocumentEvent": "render-event",
+    "publicPath": "/",
+    "crawl": true,
+    "include": [
+      "/",
+      "/horoscope",
+      "/birth-chart-info",
+      "/numerology-info",
+      "/ai-astrologer",
+      "/reports-info",
+      "/support",
+      "/help-center",
+      "/contact",
+      "/privacy",
+      "/terms"
+    ]
   },
   "eslintConfig": {
     "extends": [

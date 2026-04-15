@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 
 interface SEOProps {
   title?: string;
@@ -28,66 +28,40 @@ export const SEO: React.FC<SEOProps> = ({
   canonical,
   noIndex = false,
 }) => {
-  useEffect(() => {
-    // Update title
-    document.title = title;
+  const finalOgTitle = ogTitle || title;
+  const finalOgDescription = ogDescription || description;
 
-    // Update meta tags
-    const updateMetaTag = (name: string, content: string, property = false) => {
-      const selector = property ? `meta[property="${name}"]` : `meta[name="${name}"]`;
-      let element = document.querySelector(selector) as HTMLMetaElement;
+  return (
+    <Helmet>
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      <meta name="keywords" content={keywords} />
       
-      if (!element) {
-        element = document.createElement('meta');
-        if (property) {
-          element.setAttribute('property', name);
-        } else {
-          element.setAttribute('name', name);
-        }
-        document.head.appendChild(element);
-      }
-      element.setAttribute('content', content);
-    };
-
-    // Standard meta tags
-    updateMetaTag('description', description);
-    updateMetaTag('keywords', keywords);
-    
-    // Open Graph
-    updateMetaTag('og:title', ogTitle || title, true);
-    updateMetaTag('og:description', ogDescription || description, true);
-    updateMetaTag('og:image', ogImage, true);
-    
-    // Twitter
-    updateMetaTag('twitter:title', ogTitle || title, true);
-    updateMetaTag('twitter:description', ogDescription || description, true);
-    updateMetaTag('twitter:image', ogImage, true);
-    
-    // Robots
-    if (noIndex) {
-      updateMetaTag('robots', 'noindex, nofollow');
-    } else {
-      updateMetaTag('robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
-    }
-
-    // Canonical URL
-    if (canonical) {
-      let linkElement = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-      if (!linkElement) {
-        linkElement = document.createElement('link');
-        linkElement.setAttribute('rel', 'canonical');
-        document.head.appendChild(linkElement);
-      }
-      linkElement.setAttribute('href', canonical);
-    }
-
-    // Cleanup function
-    return () => {
-      // Meta tags are updated on next render, no cleanup needed
-    };
-  }, [title, description, keywords, ogTitle, ogDescription, ogImage, canonical, noIndex]);
-
-  return null;
+      {/* Canonical */}
+      {canonical && <link rel="canonical" href={canonical} />}
+      
+      {/* Robots */}
+      {noIndex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      )}
+      
+      {/* Open Graph */}
+      <meta property="og:title" content={finalOgTitle} />
+      <meta property="og:description" content={finalOgDescription} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:type" content="website" />
+      <meta property="og:site_name" content="Astro AI" />
+      {canonical && <meta property="og:url" content={canonical} />}
+      
+      {/* Twitter */}
+      <meta name="twitter:title" content={finalOgTitle} />
+      <meta name="twitter:description" content={finalOgDescription} />
+      <meta name="twitter:image" content={ogImage} />
+      <meta name="twitter:card" content="summary_large_image" />
+    </Helmet>
+  );
 };
 
 // Pre-configured SEO presets for common pages

@@ -31,6 +31,11 @@ import SharedChatPage from './components/SharedChatPage';
 import SharedHoroscopePage from './components/SharedHoroscopePage';
 import SharedNumerologyPage from './components/SharedNumerologyPage';
 import SharedChatResponsePage from './components/SharedChatResponsePage';
+import PublicHoroscopePage from './components/PublicHoroscopePage';
+import PublicBirthChartPage from './components/PublicBirthChartPage';
+import PublicNumerologyPage from './components/PublicNumerologyPage';
+import PublicAIChatPage from './components/PublicAIChatPage';
+import PublicReportsPage from './components/PublicReportsPage';
 import FeedbackButton from './components/FeedbackButton';
 import { AppDataProvider } from './state/AppDataContext';
 
@@ -163,8 +168,18 @@ function App() {
             <Route path="/shared-horoscope/:shareId" element={<SharedHoroscopePage />} />
             <Route path="/shared-numerology/:shareId" element={<SharedNumerologyPage />} />
             <Route path="/shared-response/:shareId" element={<SharedChatResponsePage />} />
+            
+            {/* Public landing pages for SEO */}
+            <Route path="/horoscope" element={<PublicHoroscopePage />} />
+            <Route path="/birth-chart-info" element={<PublicBirthChartPage />} />
+            <Route path="/numerology-info" element={<PublicNumerologyPage />} />
+            <Route path="/ai-astrologer" element={<PublicAIChatPage />} />
+            <Route path="/reports-info" element={<PublicReportsPage />} />
+            
+            {/* Redirect old URL to new spelling */}
+            <Route path="/style-forcaster" element={<Navigate to="/style-forecaster" replace />} />
             <Route
-              path="/style-forcaster"
+              path="/style-forecaster"
               element={
                 <ProtectedRoute>
                   <DressingStylerPage />

@@ -1,5 +1,13 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /admin-dashboard
+Disallow: /onboarding
+Disallow: /subscription-success
+Disallow: /verify-otp
+Disallow: /new-password
+Disallow: /reset-password
+Disallow: /auth/
+Allow: /
 
 Sitemap: https://astroai4u.com/sitemap.xml

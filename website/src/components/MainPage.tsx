@@ -667,7 +667,7 @@ const MainPage: React.FC = () => {
 
               {/* StyleForecaster Feature Card */}
               <button
-                onClick={() => navigate('/style-forcaster')}
+                onClick={() => navigate('/style-forecaster')}
                 className="w-full text-left mb-8"
               >
                 <GlassCard className="p-6 bg-black/60 border border-violet-500/30 backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.2)] hover:border-fuchsia-500/50 transition-all">
