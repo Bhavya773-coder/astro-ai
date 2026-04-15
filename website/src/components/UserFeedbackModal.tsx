@@ -12,7 +12,7 @@ interface Feedback {
     horoscope: number | null;
     numerology: number | null;
     chat: number | null;
-    dressing_styler: number | null;
+    style_forecaster: number | null;
     birth_chart: number | null;
   };
   ease_of_use: number | null;
@@ -203,10 +203,10 @@ const UserFeedbackModal: React.FC<UserFeedbackModalProps> = ({
                       <StarDisplay rating={selectedFeedback.feature_ratings.chat} />
                     </div>
                   )}
-                  {selectedFeedback.feature_ratings.dressing_styler && (
+                  {selectedFeedback.feature_ratings.style_forecaster && (
                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                      <span className="text-white/70 text-sm">Dressing Styler</span>
-                      <StarDisplay rating={selectedFeedback.feature_ratings.dressing_styler} />
+                      <span className="text-white/70 text-sm">StyleForecaster</span>
+                      <StarDisplay rating={selectedFeedback.feature_ratings.style_forecaster} />
                     </div>
                   )}
                   {selectedFeedback.feature_ratings.birth_chart && (

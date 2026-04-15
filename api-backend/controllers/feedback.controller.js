@@ -289,7 +289,7 @@ class FeedbackController {
             horoscope: '$feature_ratings.horoscope',
             numerology: '$feature_ratings.numerology',
             chat: '$feature_ratings.chat',
-            dressing_styler: '$feature_ratings.dressing_styler',
+            style_forecaster: '$feature_ratings.style_forecaster',
             birth_chart: '$feature_ratings.birth_chart'
           }
         },
@@ -299,7 +299,7 @@ class FeedbackController {
             avgHoroscope: { $avg: '$horoscope' },
             avgNumerology: { $avg: '$numerology' },
             avgChat: { $avg: '$chat' },
-            avgDressingStyler: { $avg: '$dressing_styler' },
+            avgStyleForecaster: { $avg: '$style_forecaster' },
             avgBirthChart: { $avg: '$birth_chart' }
           }
         }

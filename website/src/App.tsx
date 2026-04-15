@@ -30,6 +30,7 @@ import SettingsPage from './components/SettingsPage';
 import SharedChatPage from './components/SharedChatPage';
 import SharedHoroscopePage from './components/SharedHoroscopePage';
 import SharedNumerologyPage from './components/SharedNumerologyPage';
+import SharedChatResponsePage from './components/SharedChatResponsePage';
 import FeedbackButton from './components/FeedbackButton';
 import { AppDataProvider } from './state/AppDataContext';
 
@@ -161,6 +162,7 @@ function App() {
             <Route path="/shared-chat/:shareId" element={<SharedChatPage />} />
             <Route path="/shared-horoscope/:shareId" element={<SharedHoroscopePage />} />
             <Route path="/shared-numerology/:shareId" element={<SharedNumerologyPage />} />
+            <Route path="/shared-response/:shareId" element={<SharedChatResponsePage />} />
             <Route
               path="/style-forcaster"
               element={

@@ -7,6 +7,7 @@ import { apiFetch, getBaseUrl } from '../api/client';
 import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, LoadingSpinner, GradientText } from './CosmicUI';
+import toast from 'react-hot-toast';
 
 interface ChatMessage {
   _id?: string;
@@ -787,6 +788,48 @@ const GPTChatPage: React.FC = () => {
                   sendMessage(editMsgContent);
                 };
 
+                const handleShareResponse = async () => {
+                  // Find the previous user message (the question)
+                  const msgIndex = messages.findIndex(m => m._id === msgId);
+                  let question = '';
+                  
+                  // Look backwards to find the user question
+                  for (let i = msgIndex - 1; i >= 0; i--) {
+                    if (messages[i].role === 'user') {
+                      question = messages[i].content;
+                      break;
+                    }
+                  }
+                  
+                  if (!question) {
+                    toast.error('Could not find the question for this response');
+                    return;
+                  }
+                  
+                  setIsSharing(true);
+                  try {
+                    const res = await apiFetch('/api/chat-response/share', {
+                      method: 'POST',
+                      body: JSON.stringify({
+                        question: question,
+                        response: message.content
+                      })
+                    });
+                    
+                    if (res?.success) {
+                      setShareUrl(res.data.shareUrl);
+                      setShowShareModal(true);
+                      toast.success('Response shared! Copy the link to share.');
+                    } else {
+                      toast.error(res?.message || 'Failed to share response');
+                    }
+                  } catch (err) {
+                    toast.error('Failed to share response');
+                  } finally {
+                    setIsSharing(false);
+                  }
+                };
+
                 return (
                   <div
                     key={message._id}
@@ -891,6 +934,24 @@ const GPTChatPage: React.FC = () => {
                                     </svg>
                                   )}
                                 </button>
+                                {!isUser && (
+                                  <button
+                                    onClick={handleShareResponse}
+                                    disabled={isSharing}
+                                    title="Share response"
+                                    className="p-1.5 rounded text-white/40 hover:text-white/80 hover:bg-white/10 transition-all disabled:opacity-50"
+                                  >
+                                    {isSharing ? (
+                                      <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                      </svg>
+                                    ) : (
+                                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                )}
                                 {isUser && (
                                   <button
                                     onClick={handleStartEditMsg}

@@ -112,8 +112,8 @@ export const SEOPresets = {
     description: 'Discover your life path number and personal numerology with AI. Get accurate numerology readings and predictions.',
     keywords: 'Numerology Calculator, Life Path Number, AI Numerology, Personal Numbers',
   },
-  styleForcaster: {
-    title: 'StyleForcaster | AI Fashion & Style Guide | Astro AI',
+  styleForecaster: {
+    title: 'StyleForecaster | AI Fashion & Style Guide | Astro AI',
     description: 'Get AI-powered daily style and fashion recommendations based on your astrological profile. Dress in harmony with cosmic energies.',
     keywords: 'AI Style Guide, Fashion Astrology, Daily Style Tips, Cosmic Fashion',
   },

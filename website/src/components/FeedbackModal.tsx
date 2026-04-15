@@ -14,7 +14,7 @@ interface FeedbackData {
     horoscope: number | null;
     numerology: number | null;
     chat: number | null;
-    dressing_styler: number | null;
+    style_forecaster: number | null;
     birth_chart: number | null;
   };
   ease_of_use: number | null;
@@ -118,7 +118,7 @@ const FeatureSelect: React.FC<{
     { id: 'horoscope', name: 'Horoscope', icon: '✨' },
     { id: 'numerology', name: 'Numerology', icon: '🔢' },
     { id: 'chat', name: 'AI Chat', icon: '💬' },
-    { id: 'dressing_styler', name: 'Dressing Styler', icon: '👔' },
+    { id: 'style_forecaster', name: 'StyleForecaster', icon: '👔' },
     { id: 'birth_chart', name: 'Birth Chart', icon: '🌟' },
     { id: 'other', name: 'Other', icon: '🤔' }
   ];
@@ -157,7 +157,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
       horoscope: null,
       numerology: null,
       chat: null,
-      dressing_styler: null,
+      style_forecaster: null,
       birth_chart: null
     },
     ease_of_use: null,
@@ -329,9 +329,9 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
               />
               
               <StarRating
-                rating={feedback.feature_ratings.dressing_styler}
-                onRate={(r) => updateFeatureRating('dressing_styler', r)}
-                label="Dressing Styler"
+                rating={feedback.feature_ratings.style_forecaster}
+                onRate={(r) => updateFeatureRating('style_forecaster', r)}
+                label="StyleForecaster"
               />
               
               <StarRating

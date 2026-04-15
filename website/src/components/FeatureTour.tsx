@@ -68,7 +68,7 @@ const features: Feature[] = [
   },
   {
     id: 'styler',
-    title: 'StyleForcaster',
+    title: 'StyleForecaster',
     description: 'Get AI-powered outfit suggestions based on your astrology and numerology. Dress in harmony with your cosmic energy.',
     icon: (
       <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">

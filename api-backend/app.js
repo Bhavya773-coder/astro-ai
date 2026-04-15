@@ -28,6 +28,7 @@ const horoscopeRoutes = require('./routes/horoscope.routes');
 const dressingStylerRoutes = require('./routes/dressingStyler.routes');
 const sharedInsightRoutes = require('./routes/sharedInsight.routes');
 const feedbackRoutes = require('./routes/feedback.routes');
+const sharedChatResponseRoutes = require('./routes/sharedChatResponse.routes');
 
 const app = express();
 
@@ -75,6 +76,7 @@ app.use('/api/horoscope', horoscopeRoutes);
 app.use('/api/dressing-styler', dressingStylerRoutes);
 app.use('/api', sharedInsightRoutes);
 app.use('/api', feedbackRoutes);
+app.use('/api', sharedChatResponseRoutes);
 
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../website/build')));

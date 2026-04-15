@@ -33,7 +33,7 @@ const feedbackSchema = new mongoose.Schema({
     horoscope: { type: Number, min: 1, max: 5, default: null },
     numerology: { type: Number, min: 1, max: 5, default: null },
     chat: { type: Number, min: 1, max: 5, default: null },
-    dressing_styler: { type: Number, min: 1, max: 5, default: null },
+    style_forecaster: { type: Number, min: 1, max: 5, default: null },
     birth_chart: { type: Number, min: 1, max: 5, default: null }
   },
   // General feedback questions
@@ -56,7 +56,7 @@ const feedbackSchema = new mongoose.Schema({
   // Favorite feature
   favorite_feature: {
     type: String,
-    enum: ['horoscope', 'numerology', 'chat', 'dressing_styler', 'birth_chart', 'other', null],
+    enum: ['horoscope', 'numerology', 'chat', 'style_forecaster', 'birth_chart', 'other', null],
     default: null
   },
   // Text feedback
