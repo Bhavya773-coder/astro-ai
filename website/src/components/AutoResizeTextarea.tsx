@@ -36,12 +36,8 @@ const AutoResizeTextarea: React.FC<AutoResizeTextareaProps> = ({
     const newHeight = Math.min(textarea.scrollHeight, maxHeight);
     textarea.style.height = `${newHeight}px`;
     
-    // Enable/disable scrollbar based on content
-    if (textarea.scrollHeight > maxHeight) {
-      textarea.style.overflowY = 'auto';
-    } else {
-      textarea.style.overflowY = 'hidden';
-    }
+    // Always hide scrollbar - overflow handling is managed by parent container
+    textarea.style.overflowY = 'hidden';
   }, [value, maxRows]);
 
   return (

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/client';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard } from './CosmicUI';
+import AutoResizeTextarea from './AutoResizeTextarea';
 import { Send, User, Bot, Telescope } from 'lucide-react';
 import toast from 'react-hot-toast';
 import FeatureTour from './FeatureTour';
@@ -78,7 +79,6 @@ const OnboardingFlow: React.FC = () => {
   const [showTour, setShowTour] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -159,15 +159,35 @@ const OnboardingFlow: React.FC = () => {
 
   const handleSend = async (explicitValue?: string, explicitDisplay?: string) => {
     const currentQuestion = QUESTIONS[currentQuestionIndex];
-    const answer = explicitValue !== undefined ? explicitValue : inputValue.trim();
+    let answer = explicitValue !== undefined ? explicitValue : inputValue.trim();
     const display = explicitDisplay !== undefined ? explicitDisplay : answer;
 
     if (!answer && currentQuestion.type !== 'select') return;
 
+    // Date from native input is already YYYY-MM-DD, keep as is
+    if (currentQuestion.field === 'date_of_birth') {
+      // Native date input returns YYYY-MM-DD format already
+      // Just validate it's a proper date
+      if (answer && !isNaN(Date.parse(answer))) {
+        // Keep the format as is (YYYY-MM-DD)
+        answer = answer;
+      }
+    }
+
+    // Time from native input is already HH:MM (24-hour), keep as is
+    if (currentQuestion.field === 'time_of_birth') {
+      // Native time input returns HH:MM format already
+      // Just ensure proper formatting
+      const timeMatch = answer.match(/^(\d{2}):(\d{2})$/);
+      if (timeMatch) {
+        answer = `${timeMatch[1]}:${timeMatch[2]}`;
+      }
+    }
+
     // Add user message to chat
     setChatHistory(prev => [...prev, { type: 'user', text: display || 'Selected an option' }]);
 
-    // Update local answers state
+    // Update local answers state with normalized value
     const updatedAnswers = { ...answers, [currentQuestion.field]: answer };
     setAnswers(updatedAnswers);
     setInputValue('');
@@ -269,72 +289,6 @@ const OnboardingFlow: React.FC = () => {
     }
   };
 
-  const renderInput = () => {
-    const q = QUESTIONS[currentQuestionIndex];
-    if (!q) return null;
-
-    if (q.type === 'select') {
-      return (
-        <div className="flex flex-wrap gap-2 animate-fade-in-up mt-2">
-          {q.options?.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => {
-                // Pass both value for DB and label for Chat
-                handleSend(opt.value, opt.label);
-              }}
-              className="px-4 py-2 bg-violet-600/20 hover:bg-violet-600/40 border border-violet-500/30 rounded-xl text-sm font-medium text-white transition-all whitespace-nowrap"
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      );
-    }
-
-    return (
-      <div className="relative group w-full">
-        <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-violet-500/10 rounded-2xl blur group-focus-within:opacity-100 opacity-50 transition-all duration-500" />
-        <div className="relative flex items-end gap-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-2 transition-all group-focus-within:border-violet-500/50">
-          {q.type === 'textarea' ? (
-            <textarea
-              ref={inputRef as any}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="Tell me more..."
-              className="w-full bg-transparent border-none text-white placeholder-white/20 p-3 focus:ring-0 resize-none min-h-[60px] text-sm"
-            />
-          ) : (
-            <input
-              ref={inputRef as any}
-              type={q.type}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSend();
-              }}
-              placeholder={`Enter your ${q.field.replace(/_/g, ' ')}...`}
-              className="w-full bg-transparent border-none text-white placeholder-white/20 p-3 focus:ring-0 text-sm"
-            />
-          )}
-          <button
-            onClick={() => handleSend()}
-            disabled={!inputValue.trim()}
-            className="p-3 bg-white hover:bg-violet-100 disabled:bg-white/10 disabled:text-white/20 text-violet-900 rounded-xl transition-all"
-          >
-            <Send className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   if (isFinishing) {
     return (
       <CosmicBackground className="min-h-screen flex items-center justify-center px-4">
@@ -426,14 +380,132 @@ const OnboardingFlow: React.FC = () => {
         </div>
       </div>
 
-      {/* Input Bar Section */}
-      <div className="p-4 sm:p-6 bg-gradient-to-t from-black via-black/90 to-transparent shrink-0">
-        <div className="max-w-2xl mx-auto">
-          {renderInput()}
-          <p className="mt-3 text-[10px] text-center text-white/20 uppercase tracking-[0.2em]">
-            Powered by AstroAI Quantum Intelligence
-          </p>
+      {/* FLOATING CHAT INPUT - ChatGPT Style */}
+      <div className="w-full px-4 py-6 md:py-8">
+        <div className="max-w-3xl mx-auto">
+          {/* Select Options - shown when question type is select */}
+          {QUESTIONS[currentQuestionIndex]?.type === 'select' && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {QUESTIONS[currentQuestionIndex]?.options?.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleSend(opt.value, opt.label)}
+                  className="px-4 py-2 bg-violet-600/20 hover:bg-violet-600/40 border border-violet-500/30 rounded-xl text-sm font-medium text-white transition-all whitespace-nowrap"
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {/* Date Input */}
+          {(QUESTIONS[currentQuestionIndex]?.field === 'date_of_birth') && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (inputValue.trim()) {
+                  handleSend();
+                }
+              }}
+            >
+              <div className="relative flex items-end">
+                <input
+                  type="date"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="w-full bg-purple-900/95 hover:bg-purple-900 focus:bg-purple-900 backdrop-blur-xl border-2 border-white/70 hover:border-white focus:border-white rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-lg text-white placeholder-white/90 focus:outline-none focus:ring-4 focus:ring-purple-400/60 transition-all shadow-xl shadow-purple-500/20 [color-scheme:dark]"
+                />
+                <button
+                  type="submit"
+                  disabled={!inputValue.trim()}
+                  className="absolute right-2 bottom-2 p-2 md:right-3 md:bottom-3 bg-white hover:bg-gray-100 disabled:bg-white/20 disabled:opacity-50 text-purple-900 rounded-xl transition-all disabled:cursor-not-allowed shadow-lg border-2 border-purple-300"
+                >
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Time Input */}
+          {(QUESTIONS[currentQuestionIndex]?.field === 'time_of_birth') && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (inputValue.trim()) {
+                  handleSend();
+                }
+              }}
+            >
+              <div className="relative flex items-end">
+                <input
+                  type="time"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="w-full bg-purple-900/95 hover:bg-purple-900 focus:bg-purple-900 backdrop-blur-xl border-2 border-white/70 hover:border-white focus:border-white rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-lg text-white placeholder-white/90 focus:outline-none focus:ring-4 focus:ring-purple-400/60 transition-all shadow-xl shadow-purple-500/20 [color-scheme:dark]"
+                />
+                <button
+                  type="submit"
+                  disabled={!inputValue.trim()}
+                  className="absolute right-2 bottom-2 p-2 md:right-3 md:bottom-3 bg-white hover:bg-gray-100 disabled:bg-white/20 disabled:opacity-50 text-purple-900 rounded-xl transition-all disabled:cursor-not-allowed shadow-lg border-2 border-purple-300"
+                >
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Text/Textarea Input - for all other non-select types */}
+          {QUESTIONS[currentQuestionIndex]?.type !== 'select' && 
+           QUESTIONS[currentQuestionIndex]?.field !== 'date_of_birth' && 
+           QUESTIONS[currentQuestionIndex]?.field !== 'time_of_birth' && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (inputValue.trim()) {
+                  handleSend();
+                }
+              }}
+            >
+              <div className="relative flex items-end">
+                <AutoResizeTextarea
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (inputValue.trim()) {
+                        handleSend();
+                      }
+                    }
+                  }}
+                  placeholder={
+                    QUESTIONS[currentQuestionIndex]?.type === 'textarea'
+                      ? "Tell me more..."
+                      : `Enter your ${QUESTIONS[currentQuestionIndex]?.field?.replace(/_/g, ' ') || 'answer'}...`
+                  }
+                  maxRows={6}
+                  className="w-full bg-purple-900/95 hover:bg-purple-900 focus:bg-purple-900 backdrop-blur-xl border-2 border-white/70 hover:border-white focus:border-white rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-lg text-white placeholder-white/90 focus:outline-none focus:ring-4 focus:ring-purple-400/60 transition-all shadow-xl shadow-purple-500/20"
+                />
+                <button
+                  type="submit"
+                  disabled={!inputValue.trim()}
+                  className="absolute right-2 bottom-2 p-2 md:right-3 md:bottom-3 bg-white hover:bg-gray-100 disabled:bg-white/20 disabled:opacity-50 text-purple-900 rounded-xl transition-all disabled:cursor-not-allowed shadow-lg border-2 border-purple-300"
+                >
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          )}
         </div>
+        <p className="text-center text-white/50 text-xs mt-2">
+          {QUESTIONS[currentQuestionIndex]?.type === 'select' ? 'Select an option above' : 'Press Enter to submit your answer'}
+        </p>
       </div>
     </CosmicBackground>
   );

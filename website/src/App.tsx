@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './auth/AuthContext';
 import HomePage from './components/HomePage';
@@ -38,6 +38,27 @@ import PublicAIChatPage from './components/PublicAIChatPage';
 import PublicReportsPage from './components/PublicReportsPage';
 import FeedbackButton from './components/FeedbackButton';
 import { AppDataProvider } from './state/AppDataContext';
+
+// Pages where feedback button should be visible
+const FEEDBACK_ENABLED_PATHS = [
+  '/dashboard',
+  '/numerology',
+  '/onboarding',
+  '/style-forecaster',
+  '/ai-chat',
+  '/reports',
+  '/birth-chart'
+];
+
+// Component to conditionally render feedback button
+const ConditionalFeedbackButton: React.FC = () => {
+  const location = useLocation();
+  const shouldShowFeedback = FEEDBACK_ENABLED_PATHS.some(path => 
+    location.pathname === path || location.pathname.startsWith(path + '/')
+  );
+  
+  return shouldShowFeedback ? <FeedbackButton /> : null;
+};
 
 // Wrapper component to handle authenticated redirect for homepage
 const HomePageWrapper: React.FC = () => {
@@ -220,7 +241,7 @@ function App() {
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <FeedbackButton />
+          <ConditionalFeedbackButton />
         </AppDataProvider>
       </div>
     </Router>
