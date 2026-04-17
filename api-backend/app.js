@@ -33,7 +33,35 @@ const sharedChatResponseRoutes = require('./routes/sharedChatResponse.routes');
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+
+// Proper CORS configuration with preflight handling
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      'https://astroai4u.com',
+      'https://www.astroai4u.com',
+      'http://localhost:3000',
+      'http://localhost:5001',
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200  // Safari needs 200, not 204
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));  // Handle ALL preflight requests explicitly
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 

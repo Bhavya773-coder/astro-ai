@@ -237,8 +237,9 @@ const OnboardingFlow: React.FC = () => {
           await apiFetch('/api/profile/context', { method: 'POST', body: JSON.stringify(contextData) });
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving progress:', err);
+      toast.error(err?.message || 'Failed to save progress. Please try again.');
     }
 
     // Move to next question or finish

@@ -29,7 +29,7 @@ export type LoginResponse = {
   user: AuthUser;
 };
 
-export const apiFetch = async (path: string, init?: RequestInit) => {
+export const apiFetch = async (path: string, init?: RequestInit, retries = 2): Promise<any> => {
   const url = `${getBaseUrl()}${path}`;
   const token = localStorage.getItem(TOKEN_KEY);
 
@@ -40,21 +40,49 @@ export const apiFetch = async (path: string, init?: RequestInit) => {
 
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(url, { ...init, headers });
+  // Timeout controller — 20s for mobile networks
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
 
-  if (!res.ok) {
-    let message = 'Request failed';
-    try {
-      const body = await res.json();
-      message = body?.message || message;
-    } catch {
-      // ignore
+  try {
+    const res = await fetch(url, {
+      ...init,
+      headers,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      let message = 'Request failed';
+      try {
+        const body = await res.json();
+        message = body?.message || message;
+      } catch { /* ignore */ }
+      throw new Error(message);
     }
-    throw new Error(message);
-  }
 
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+
+    // Retry on network errors (not on abort/timeout, not on 4xx/5xx)
+    if (retries > 0 && err.name !== 'AbortError' && err.message === 'Failed to fetch') {
+      console.warn(`[apiFetch] Retrying ${path}... (${retries} left)`);
+      await new Promise(r => setTimeout(r, 1500));
+      return apiFetch(path, init, retries - 1);
+    }
+
+    // Re-throw with user-friendly message
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. Please check your connection.');
+    }
+    if (err.message === 'Failed to fetch') {
+      throw new Error('Could not reach the server. Please check your connection.');
+    }
+    throw err;
+  }
 };
 
 export const login = (email: string, password: string) => {
