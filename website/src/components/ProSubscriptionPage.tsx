@@ -1,304 +1,219 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import AppNavbar from './AppNavbar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
-import { Star, BarChart2, Hash, FileText, Target, Zap, Smartphone, Gift, Telescope, BookOpen, Users, Wrench, Lock, MessageSquare } from 'lucide-react';
+import { Star, Hand, Coffee, User, Coins, Sparkles, Zap } from 'lucide-react';
+import { createPaymentOrder, verifyPayment, getPaymentStatus } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 
 const ProSubscriptionPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+  const [credits, setCredits] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const handleSubscribe = async (plan: 'monthly' | 'yearly') => {
-    setIsProcessing(true);
-    
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      // Redirect to success page or show success message
-      navigate('/subscription-success');
-    }, 2000);
+  useEffect(() => {
+    loadCredits();
+  }, []);
+
+  const loadCredits = async () => {
+    try {
+      const data = await getPaymentStatus();
+      if (data.success) {
+        setCredits(data.credits.current);
+      }
+    } catch (err) {
+      console.error('Failed to load credits:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const monthlyPrice = 100;
-  const yearlyPrice = 999; // 17% discount for yearly
-  const monthlySavings = Math.round(((12 * monthlyPrice - yearlyPrice) / (12 * monthlyPrice)) * 100);
+  const handleBuyCredits = async (plan: 'pro' | 'ultra') => {
+    setIsProcessing(true);
+    try {
+      const orderData = await createPaymentOrder(plan);
 
-  const freeFeatures = [
-    { icon: <MessageSquare className="w-5 h-5" />, title: 'Limited Chat', description: '50 messages per month', available: true },
-    { icon: <BarChart2 className="w-5 h-5" />, title: 'Basic Birth Chart', description: 'Simple astrological analysis', available: true },
-    { icon: <Hash className="w-5 h-5" />, title: 'Basic Numerology', description: 'Life path number only', available: true },
-    { icon: <FileText className="w-5 h-5" />, title: 'Limited Reports', description: '3 reports per month', available: true },
-    { icon: <Target className="w-5 h-5" />, title: 'Standard Support', description: 'Community support only', available: true },
-    { icon: <Zap className="w-5 h-5" />, title: 'AI Chat Speed', description: 'Standard response time', available: true },
-    { icon: <Smartphone className="w-5 h-5" />, title: 'Mobile Access', description: 'Basic mobile features', available: true },
+      const options = {
+        key: orderData.key_id,
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
+        order_id: orderData.order.id,
+        name: 'AstroAi4u',
+        description: `${orderData.credits} Credits Pack`,
+        handler: async (response: any) => {
+          const verifyData = await verifyPayment({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            plan,
+          });
+          if (verifyData.success) {
+            if (verifyData.credits_added > 0) {
+              toast.success(`${verifyData.credits_added} credits added! Your new balance: ${verifyData.new_balance}`);
+            } else {
+              toast.success(`Credits already added! Your balance: ${verifyData.new_balance}`);
+            }
+            setCredits(verifyData.new_balance);
+            // Notify sidebar to update credits
+            window.dispatchEvent(new CustomEvent('credits-updated', { detail: { credits: verifyData.new_balance } }));
+          }
+        },
+        prefill: { email: user?.email || '' },
+        theme: { color: '#7c3aed' },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err: any) {
+      console.error('[Payment Error]', err);
+      if (err?.message?.includes('not configured')) {
+        toast.error('Payment service is not configured. Please contact support.');
+      } else if (err?.message?.includes('Failed to fetch') || err?.message?.includes('Network')) {
+        toast.error('Network error. Please check your connection and try again.');
+      } else {
+        toast.error(err?.message || 'Payment failed. Please try again.');
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const creditPacks = [
+    {
+      id: 'pro',
+      name: 'Pro Pack',
+      credits: 100,
+      price: 99,
+      icon: <Zap className="w-8 h-8" />,
+      color: 'from-violet-600 to-fuchsia-600',
+      popular: true
+    },
+    {
+      id: 'ultra',
+      name: 'Ultra Pack',
+      credits: 300,
+      price: 199,
+      icon: <Sparkles className="w-8 h-8" />,
+      color: 'from-amber-500 to-orange-500',
+      popular: false,
+      savings: '33%'
+    }
   ];
 
-  const proFeatures = [
-    { icon: <MessageSquare className="w-5 h-5" />, title: 'Unlimited Chat', description: 'Endless conversations with AI astrologer', available: true },
-    { icon: <BarChart2 className="w-5 h-5" />, title: 'Advanced Birth Chart', description: 'Detailed Vedic analysis with dasha periods', available: true },
-    { icon: <Hash className="w-5 h-5" />, title: 'Complete Numerology', description: 'All numbers and predictions', available: true },
-    { icon: <FileText className="w-5 h-5" />, title: 'Unlimited Reports', description: 'Generate unlimited detailed reports', available: true },
-    { icon: <Target className="w-5 h-5" />, title: 'Priority Support', description: '24/7 dedicated astrologer support', available: true },
-    { icon: <Zap className="w-5 h-5" />, title: 'Lightning Fast AI', description: 'Priority processing with faster responses', available: true },
-    { icon: <Smartphone className="w-5 h-5" />, title: 'Premium Mobile App', description: 'Full-featured mobile experience', available: true },
-    { icon: <Gift className="w-5 h-5" />, title: 'Exclusive Content', description: 'Advanced tutorials and astrological courses', available: true },
-    { icon: <Telescope className="w-5 h-5" />, title: 'Personalized Remedies', description: 'Custom gemstone and mantra recommendations', available: true },
-    { icon: <Star className="w-5 h-5" />, title: 'Compatibility Analysis', description: 'Detailed relationship compatibility reports', available: true },
-    { icon: <BookOpen className="w-5 h-5" />, title: 'Astrological Library', description: 'Access to ancient astrological texts', available: true },
+  const readingTypes = [
+    { icon: <Hand className="w-6 h-6" />, name: 'Palm Reading', cost: 1 },
+    { icon: <Coffee className="w-6 h-6" />, name: 'Coffee Reading', cost: 1 },
+    { icon: <User className="w-6 h-6" />, name: 'Face Reading', cost: 1 }
   ];
 
   return (
     <CosmicBackground>
       <AppNavbar />
-      
+
       <div className="pt-16 min-h-screen">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          
+
           {/* Header */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-full mb-6 shadow-[0_0_20px_rgba(168,85,247,0.5)] text-white">
-              <Star className="w-10 h-10" />
+              <Coins className="w-10 h-10" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Unlock <GradientText>Cosmic Wisdom</GradientText> with Pro
+              Buy <GradientText>Credits</GradientText>
             </h1>
             <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              Get unlimited access to personalized Vedic astrology insights, advanced birth charts, and premium features that transform your spiritual journey.
+              Purchase credits to unlock AI-powered readings. Each reading costs just 1 credit!
             </p>
           </div>
 
-          {/* Pricing Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-            
-            {/* Free Plan */}
-            <GlassCard className="p-8 relative bg-black/40 border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-white mb-2">Free</h3>
-                <p className="text-white/60 mb-6">Perfect for getting started</p>
-                <div className="text-4xl font-bold text-white mb-8">
-                  ₹0<span className="text-lg text-white/60">/month</span>
-                </div>
-                
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="w-full py-3 px-6 rounded-lg border border-white/30 text-white hover:bg-white/10 transition-colors"
-                >
-                  Current Plan
-                </button>
-              </div>
-              
-              <div className="mt-8 space-y-3">
-                {freeFeatures.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <span className="text-xl">{feature.icon}</span>
-                    <div className="flex-1">
-                      <p className="text-white font-medium text-sm">{feature.title}</p>
-                      <p className="text-white/60 text-xs">{feature.description}</p>
-                    </div>
-                    {feature.available && (
-                      <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
+          {/* Current Credits */}
+          <GlassCard className="max-w-md mx-auto p-6 mb-12 text-center border-fuchsia-500/30">
+            <p className="text-white/60 mb-2">Your Current Balance</p>
+            <div className="flex items-center justify-center gap-3">
+              <Coins className="w-8 h-8 text-fuchsia-400" />
+              <span className="text-4xl font-bold text-white">{loading ? '...' : credits}</span>
+              <span className="text-white/60">credits</span>
+            </div>
+          </GlassCard>
 
-            {/* Pro Plan - Most Popular */}
-            <GlassCard className="p-8 relative bg-black/40 backdrop-blur-xl border border-fuchsia-500/30 shadow-[0_0_25px_rgba(217,70,239,0.15)] hover:border-fuchsia-500/50 hover:shadow-[0_0_30px_rgba(217,70,239,0.3)] transition-all">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-[0_0_10px_rgba(217,70,239,0.5)] text-white px-4 py-1 rounded-full text-sm font-bold tracking-wide">
-                  MOST POPULAR
-                </span>
-              </div>
-              
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
-                <p className="text-white/60 mb-6">Complete astrological experience</p>
-                <div className="mb-4">
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => setSelectedPlan('monthly')}
-                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                        selectedPlan === 'monthly'
-                          ? 'bg-fuchsia-500/20 text-fuchsia-400'
-                          : 'text-white/60 hover:text-white'
-                      }`}
-                    >
-                      Monthly
-                    </button>
-                    <button
-                      onClick={() => setSelectedPlan('yearly')}
-                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                        selectedPlan === 'yearly'
-                          ? 'bg-fuchsia-500/20 text-fuchsia-400'
-                          : 'text-white/60 hover:text-white'
-                      }`}
-                    >
-                      Yearly
-                    </button>
+          {/* Credit Packs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mb-16">
+            {creditPacks.map((pack) => (
+              <GlassCard
+                key={pack.id}
+                className={`p-8 relative ${pack.popular ? 'border-fuchsia-500/50 shadow-[0_0_30px_rgba(168,85,247,0.3)]' : 'border-white/10'}`}
+              >
+                {pack.popular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-fuchsia-500 to-violet-500 rounded-full text-white text-sm font-semibold">
+                    Most Popular
                   </div>
-                </div>
-                <div className="text-4xl font-bold text-white mb-2">
-                  ₹{selectedPlan === 'monthly' ? monthlyPrice : yearlyPrice}
-                  <span className="text-lg text-white/60">/{selectedPlan === 'monthly' ? 'month' : 'year'}</span>
-                </div>
-                {selectedPlan === 'yearly' && (
-                  <p className="text-fuchsia-400 text-sm mb-4">Save {monthlySavings}% annually</p>
                 )}
-                
-                <button
-                  onClick={() => handleSubscribe(selectedPlan)}
-                  disabled={isProcessing}
-                  className="w-full py-3 px-6 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] text-white font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isProcessing ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <LoadingSpinner size="sm" />
-                      Processing...
-                    </span>
-                  ) : (
-                    'Upgrade to Pro'
-                  )}
-                </button>
-              </div>
-              
-              <div className="mt-8 space-y-3">
-                {proFeatures.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <span className="text-xl">{feature.icon}</span>
-                    <div className="flex-1">
-                      <p className="text-white font-medium text-sm">{feature.title}</p>
-                      <p className="text-white/60 text-xs">{feature.description}</p>
-                    </div>
-                    <svg className="w-5 h-5 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+                {pack.savings && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-white text-sm font-semibold">
+                    Save {pack.savings}
                   </div>
-                ))}
-              </div>
-            </GlassCard>
+                )}
 
-            {/* Enterprise Plan */}
-            <GlassCard className="p-8 relative bg-black/40 border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] opacity-75 hover:opacity-100 transition-opacity">
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-white mb-2">Enterprise</h3>
-                <p className="text-white/60 mb-6">For professional astrologers</p>
-                <div className="text-4xl font-bold text-white mb-8">
-                  Custom<span className="text-lg text-white/60"></span>
-                </div>
-                
-                <button
-                  onClick={() => navigate('/contact')}
-                  className="w-full py-3 px-6 rounded-lg border border-white/30 text-white hover:bg-white/10 transition-colors"
-                >
-                  Contact Sales
-                </button>
-              </div>
-              
-              <div className="mt-8 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5 text-purple-400 shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-white font-medium text-sm">Team Management</p>
-                    <p className="text-white/60 text-xs">Manage multiple astrologers</p>
+                <div className="text-center">
+                  <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${pack.color} rounded-full mb-4 text-white`}>
+                    {pack.icon}
                   </div>
-                  <svg className="w-5 h-5 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Wrench className="w-5 h-5 text-purple-400 shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-white font-medium text-sm">White Label</p>
-                    <p className="text-white/60 text-xs">Custom branding options</p>
+
+                  <h3 className="text-2xl font-bold text-white mb-2">{pack.name}</h3>
+
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Coins className="w-5 h-5 text-fuchsia-400" />
+                    <span className="text-3xl font-bold text-fuchsia-400">{pack.credits}</span>
+                    <span className="text-white/60">credits</span>
                   </div>
-                  <svg className="w-5 h-5 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div className="flex items-center gap-3">
-                  <BarChart2 className="w-5 h-5 text-purple-400 shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-white font-medium text-sm">Advanced Analytics</p>
-                    <p className="text-white/60 text-xs">Detailed usage insights</p>
+
+                  <div className="text-4xl font-bold text-white mb-6">
+                    &#8377;{pack.price}
                   </div>
-                  <svg className="w-5 h-5 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+
+                  <button
+                    onClick={() => handleBuyCredits(pack.id as 'pro' | 'ultra')}
+                    disabled={isProcessing}
+                    className={`w-full py-3 px-6 rounded-lg bg-gradient-to-r ${pack.color} hover:opacity-90 text-white font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <LoadingSpinner size="sm" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Star className="w-5 h-5" />
+                        Buy Now
+                      </>
+                    )}
+                  </button>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Lock className="w-5 h-5 text-purple-400 shrink-0" />
-                  <div className="flex-1">
-                    <p className="text-white font-medium text-sm">API Access</p>
-                    <p className="text-white/60 text-xs">Full API integration</p>
-                  </div>
-                  <svg className="w-5 h-5 text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-              </div>
-            </GlassCard>
+              </GlassCard>
+            ))}
           </div>
 
-          {/* Testimonials
-          <GlassCard className="p-8 mb-16">
-            <h2 className="text-2xl font-bold text-white text-center mb-8">What Our Users Say</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-2xl text-white">👤</span>
+          {/* What You Get */}
+          <GlassCard className="max-w-2xl mx-auto p-8">
+            <h3 className="text-2xl font-bold text-white mb-6 text-center">
+              What Can You Do With Credits?
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {readingTypes.map((reading) => (
+                <div key={reading.name} className="text-center p-4 bg-white/5 rounded-lg">
+                  <div className="text-fuchsia-400 mb-2 flex justify-center">{reading.icon}</div>
+                  <p className="text-white font-medium">{reading.name}</p>
+                  <p className="text-fuchsia-400 font-bold">{reading.cost} credit</p>
                 </div>
-                <p className="text-white/80 italic mb-3">
-                  "The unlimited chat feature has transformed my spiritual journey. I can ask anything, anytime!"
-                </p>
-                <p className="text-yellow-400 font-medium">- Priya Sharma</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-2xl text-white">👤</span>
-                </div>
-                <p className="text-white/80 italic mb-3">
-                  "The advanced birth chart analysis is incredibly detailed. Much better than other astrology apps."
-                </p>
-                <p className="text-yellow-400 font-medium">- Rahul Verma</p>
-              </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-2xl text-white">👤</span>
-                </div>
-                <p className="text-white/80 italic mb-3">
-                  "Priority support is amazing. They helped me understand my dasha periods in detail."
-                </p>
-                <p className="text-yellow-400 font-medium">- Anjali Patel</p>
-              </div>
+              ))}
             </div>
-          </GlassCard> */}
-
-          {/* FAQ */}
-          <GlassCard className="p-8 bg-black/40 border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-            <h2 className="text-2xl font-bold text-white text-center mb-8">Frequently Asked Questions</h2>
-            <div className="space-y-6 max-w-3xl mx-auto">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-2">What payment methods do you accept?</h3>
-                <p className="text-white/70">We accept all major credit cards, debit cards, UPI, and popular digital wallets like PayTM and Google Pay.</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-2">Can I cancel my subscription anytime?</h3>
-                <p className="text-white/70">Yes, you can cancel your Pro subscription at any time. Your access will continue until the end of your billing period.</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-2">Is there a free trial for Pro?</h3>
-                <p className="text-white/70">Yes! New users get a 7-day free trial of Pro features with full access to all premium functionality.</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-2">What makes your AI astrologer special?</h3>
-                <p className="text-white/70">Our AI combines authentic Vedic astrology principles with modern technology, providing accurate insights based on your actual birth chart and current planetary positions.</p>
-              </div>
-            </div>
+            <p className="text-center text-white/60 mt-6 text-sm">
+              Each AI-powered reading provides detailed insights personalized to your profile
+            </p>
           </GlassCard>
         </div>
       </div>

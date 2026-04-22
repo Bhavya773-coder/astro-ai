@@ -4,7 +4,7 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 Starting AstroAI Backend with Ollama...');
+console.log('🚀 Starting AstroAi4u Backend with Ollama...');
 
 // Function to check if Ollama is running
 function checkOllama() {
@@ -65,7 +65,7 @@ function startOllama() {
 
 // Function to start the backend
 function startBackend() {
-  console.log('🌟 Starting AstroAI Backend...');
+  console.log('🌟 Starting AstroAi4u Backend...');
   
   const backendProcess = spawn('node', ['server.js'], {
     stdio: 'inherit',
@@ -104,7 +104,7 @@ async function main() {
     // Start the backend
     startBackend();
 
-    console.log('🎉 AstroAI Backend is starting up!');
+    console.log('🎉 AstroAi4u Backend is starting up!');
     console.log('📱 Frontend should be available at: http://localhost:3000');
     console.log('🔌 Backend API available at: http://localhost:5001');
     console.log('🔮 Ollama API available at: http://localhost:11434');

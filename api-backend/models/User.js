@@ -17,7 +17,20 @@ const UserSchema = new mongoose.Schema(
       enum: ['active', 'inactive', 'cancelled'],
       default: 'inactive'
     },
+    subscription_expires_at: { type: Date },
+    subscription_plan_type: { type: String, enum: ['monthly', 'yearly'] },
+    razorpay_payment_id: { type: String },
+    processed_payments: [{ type: String }], // Track processed payment IDs to prevent double crediting
     is_believer: { type: Boolean, default: true },
+    credits: {
+      type: Number,
+      default: 50,
+      min: 0
+    },
+    total_credits_purchased: {
+      type: Number,
+      default: 0
+    },
     created_at: { type: Date, required: true, default: Date.now },
     updated_at: { type: Date }
   },

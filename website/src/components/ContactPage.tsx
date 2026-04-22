@@ -94,7 +94,7 @@ const ContactPage: React.FC = () => {
                 <Mail className="w-6 h-6 text-violet-400 mt-1" />
                 <div>
                   <h3 className="text-lg font-bold text-white">Email Us</h3>
-                  <p className="text-white/60">cosmic@astroai.com</p>
+                  <p className="text-white/60">cosmic@astroai4u.com</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-6 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/20">

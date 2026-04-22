@@ -121,13 +121,13 @@ const FeatureTour: React.FC<FeatureTourProps> = ({ isOpen, onClose }) => {
   };
 
   const handleGetStarted = () => {
-    localStorage.setItem('astroai-feature-tour-seen', 'true');
+    localStorage.setItem('astroai4u-feature-tour-seen', 'true');
     onClose();
     navigate('/dashboard');
   };
 
   const handleSkip = () => {
-    localStorage.setItem('astroai-feature-tour-seen', 'true');
+    localStorage.setItem('astroai4u-feature-tour-seen', 'true');
     onClose();
   };
 

@@ -53,7 +53,8 @@ const googleAuth = async (req, res, next) => {
         subscription_plan: 'free',
         subscription_status: 'inactive',
         google_id: id,
-        avatar: picture
+        avatar: picture,
+        credits: 50
       });
       console.log('[Google Auth] New user created successfully');
     } else {

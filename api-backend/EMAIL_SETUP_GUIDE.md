@@ -1,11 +1,11 @@
 ---
-description: Production-ready email automation setup for AstroAI (SMTP + SPF/DKIM/DMARC + VPS + Queue)
+description: Production-ready email automation setup for AstroAi4u (SMTP + SPF/DKIM/DMARC + VPS + Queue)
 ---
 
-# AstroAI Email Automation System (Production Setup)
+# AstroAi4u Email Automation System (Production Setup)
 
 ## 1) Overview
-This backend sends emails from a professional domain mailbox (example: `support@astroai.com`) using **SMTP + Nodemailer**.
+This backend sends emails from a professional domain mailbox (example: `support@astroai4u.com`) using **SMTP + Nodemailer**.
 It supports:
 - HTML templates with `{{variables}}` (Handlebars)
 - Bulk sending
@@ -35,7 +35,7 @@ Name/Host:
 - `_dmarc`
 
 Value example:
-- `v=DMARC1; p=none; rua=mailto:dmarc@astroai.com; ruf=mailto:dmarc@astroai.com; fo=1; adkim=s; aspf=s;`
+- `v=DMARC1; p=none; rua=mailto:dmarc@astroai4u.com; ruf=mailto:dmarc@astroai4u.com; fo=1; adkim=s; aspf=s;`
 
 When stable, move to `p=quarantine` then `p=reject`.
 
@@ -74,8 +74,8 @@ You will run **two processes**:
 - Email worker: `node workers/emailWorker.js`
 
 Example with pm2:
-- `pm2 start server.js --name astroai-api`
-- `pm2 start workers/emailWorker.js --name astroai-email-worker`
+- `pm2 start server.js --name astroai4u-api`
+- `pm2 start workers/emailWorker.js --name astroai4u-email-worker`
 
 ## 6) Templates
 Templates are stored in:
@@ -97,7 +97,7 @@ Password reset uses:
 - `FRONTEND_BASE_URL` and token query param
 
 ## 9) Deliverability tips
-- Use a dedicated sending mailbox (e.g., `support@astroai.com`).
+- Use a dedicated sending mailbox (e.g., `support@astroai4u.com`).
 - Warm up sending volume gradually.
 - Keep rate limits conservative (`EMAIL_RATE_LIMIT_*`).
 - Ensure SPF/DKIM/DMARC are correct.

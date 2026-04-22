@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const { connectDB } = require('./config/db');
 const { app } = require('./app');
+const { initScheduler } = require('./services/scheduler');
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
 
@@ -17,6 +18,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 const start = async () => {
   await connectDB(process.env.MONGODB_URI);
+  initScheduler();
 
   app.listen(PORT, () => {
     console.log(`API listening on port ${PORT}`);

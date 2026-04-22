@@ -1,5 +1,5 @@
 @echo off
-echo 🚀 Starting AstroAI Backend with Ollama...
+echo 🚀 Starting AstroAi4u Backend with Ollama...
 echo.
 
 REM Check if Ollama is running
@@ -14,7 +14,7 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo 🌟 Starting AstroAI Backend...
+echo 🌟 Starting AstroAi4u Backend...
 npm run dev
 
 pause

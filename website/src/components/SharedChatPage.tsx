@@ -116,7 +116,7 @@ const SharedChatPage: React.FC = () => {
             onClick={() => navigate('/ai-chat')}
             className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-colors"
           >
-            Go to AstroAI Chat
+            Go to AstroAi4u Chat
           </button>
         </div>
       </CosmicBackground>
@@ -137,7 +137,7 @@ const SharedChatPage: React.FC = () => {
                   {chat?.title || 'Shared Chat'}
                 </h1>
                 <p className="text-xs text-white/40">
-                  Shared by AstroAI User • {chat?.created_at && formatDate(chat.created_at)}
+                  Shared by AstroAi4u User • {chat?.created_at && formatDate(chat.created_at)}
                 </p>
               </div>
             </div>
@@ -247,7 +247,7 @@ const SharedChatPage: React.FC = () => {
                 onClick={() => navigate('/ai-chat')}
                 className="text-violet-400 hover:underline"
               >
-                Start chatting with AstroAI
+                Start chatting with AstroAi4u
               </button>
             </p>
           </div>

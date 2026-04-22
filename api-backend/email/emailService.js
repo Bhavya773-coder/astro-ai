@@ -5,7 +5,7 @@ const { logger } = require('./logger');
 const getFrom = () => {
   const from = process.env.EMAIL_FROM;
   if (!from) {
-    throw new Error('EMAIL_FROM is required (e.g., "AstroAI Support <support@astroai.com>")');
+    throw new Error('EMAIL_FROM is required (e.g., "AstroAi4u Support <support@astroai4u.com>")');
   }
   return from;
 };

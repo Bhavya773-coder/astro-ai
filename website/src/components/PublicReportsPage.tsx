@@ -61,9 +61,9 @@ const PublicReportsPage: React.FC = () => {
         <header className="relative z-10 border-b border-white/10 bg-black/20 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="/favicon.png" alt="AstroAI" className="w-10 h-10 rounded-lg" />
+              <img src="/favicon.png" alt="AstroAi4u" className="w-10 h-10 rounded-lg" />
               <span className="text-xl font-bold font-display bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
-                AstroAI
+                AstroAi4u
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -282,8 +282,8 @@ const PublicReportsPage: React.FC = () => {
         <footer className="relative z-10 border-t border-white/10 py-8 px-4">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <img src="/favicon.png" alt="AstroAI" className="w-8 h-8 rounded-lg" />
-              <span className="font-bold">AstroAI</span>
+              <img src="/favicon.png" alt="AstroAi4u" className="w-8 h-8 rounded-lg" />
+              <span className="font-bold">AstroAi4u</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-white/60">
               <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
@@ -291,7 +291,7 @@ const PublicReportsPage: React.FC = () => {
               <a href="/support" className="hover:text-white transition-colors">Support</a>
             </div>
             <p className="text-sm text-white/40">
-              © 2024 AstroAI. All rights reserved.
+              © 2024 AstroAi4u. All rights reserved.
             </p>
           </div>
         </footer>

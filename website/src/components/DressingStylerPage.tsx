@@ -4,510 +4,513 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
-import { apiFetch } from '../api/client';
+import { apiFetch, getCredits, generateStyleLook, updateStyleInteraction, shareStyleLook } from '../api/client';
 import {
   Shirt,
   Sparkles,
   Palette,
-  Scissors,
-  Clover,
-  Star,
-  Moon,
-  Zap,
   Clock,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardCheck,
   Settings2,
   X,
   CheckCircle2,
-  ArrowRight
+  Zap,
+  ChevronDown,
+  ChevronUp,
+  Target,
+  Flame,
+  IceCream,
+  Coffee,
+  Briefcase,
+  Utensils,
+  PartyPopper,
+  Smile,
+  ShieldCheck,
+  MousePointer2,
+  Share2,
+  MessageSquare,
+  Trophy,
+  Star,
+  Check
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
-interface DressingSuggestion {
+interface StyleResult {
   headline: string;
-  overview: string;
-  color_palette: string;
-  lucky_item: string;
+  outfit_description: string;
+  colors: string[];
+  color_names: string[];
+  image_base64: string | null;
   astrological_reason: string;
   mood_energy: string;
-  date?: string;
-  created_at?: string;
+  date: string;
+  interactive_state?: {
+    selected_context: string;
+    selected_modifier: string;
+    vibe_selection: string | null;
+    outfit_score: {
+      style: number;
+      confidence: number;
+      attention: number;
+    };
+  };
 }
 
 const DressingStylerPage: React.FC = () => {
   const navigate = useNavigate();
-  const [suggestion, setSuggestion] = useState<DressingSuggestion | null>(null);
+  const [styleResult, setStyleResult] = useState<StyleResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string>('');
   const [hasGeneratedToday, setHasGeneratedToday] = useState(false);
   const [countdown, setCountdown] = useState<string>('');
   const [questionInput, setQuestionInput] = useState('');
+  const [credits, setCredits] = useState<number | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Survey State
-  const [showSurvey, setShowSurvey] = useState(false);
-  const [surveyStep, setSurveyStep] = useState(1);
-  const [surveyData, setSurveyData] = useState({
-    work_setting: '',
-    style_vibe: '',
-    fit_preference: '',
-    accessory_level: '',
-    avoid_colors: ''
-  });
-  const [isSavingSurvey, setIsSavingSurvey] = useState(false);
-
-  const totalSlides = 4;
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  // Touch handlers for swipe
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = (onNext: () => void, onPrev: () => void) => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      onNext();
-    }
-    if (isRightSwipe) {
-      onPrev();
-    }
-  };
-
-  const handleNext = () => {
-    if (currentSlide < totalSlides - 1) {
-      setCurrentSlide(prev => prev + 1);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentSlide > 0) {
-      setCurrentSlide(prev => prev - 1);
-    }
-  };
-
-  const createDashboardChatAndNavigate = async (message: string) => {
-    try {
-      const res = await apiFetch('/api/ai-chat/list');
-      let dashboardChatNumber = 1;
-
-      if (res?.success && Array.isArray(res?.data)) {
-        const dashboardChats = res.data.filter((chat: any) =>
-          chat.title?.startsWith('Dashboard Chat')
-        );
-        dashboardChatNumber = dashboardChats.length + 1;
-      }
-
-      const createRes = await apiFetch('/api/ai-chat/create', {
-        method: 'POST',
-        body: JSON.stringify({ title: `Dashboard Chat ${dashboardChatNumber}` })
-      });
-
-      if (createRes?.success && createRes?.data) {
-        const newChat = createRes.data;
-        navigate(`/ai-chat?chatId=${newChat._id}`, {
-          state: { initialMessage: message }
-        });
-      } else {
-        navigate('/ai-chat', { state: { initialMessage: message } });
-      }
-    } catch (err) {
-      console.error('Failed to create dashboard chat:', err);
-      navigate('/ai-chat', { state: { initialMessage: message } });
-    }
-  };
-
-  const handleAskQuestion = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!questionInput.trim()) return;
-    await createDashboardChatAndNavigate(questionInput.trim());
-  };
+  // Interaction State
+  const [selectedModifier, setSelectedModifier] = useState('Standard');
+  const [selectedContext, setSelectedContext] = useState('Casual');
+  const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
+  const [outfitScore, setOutfitScore] = useState({ style: 85, confidence: 90, attention: 75 });
+  const [activePart, setActivePart] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
-    const checkTodaySuggestion = async () => {
-      try {
-        const response = await apiFetch('/api/dressing-styler/today');
-        if (response?.success && response.data) {
-          setSuggestion(response.data);
-          setHasGeneratedToday(true);
-        }
-      } catch (error) {
-        console.error('Error checking today suggestion:', error);
-      }
+    const init = async () => {
+      await fetchCredits();
+      await checkTodaySuggestion();
     };
-
-    checkTodaySuggestion();
+    init();
   }, []);
 
-  useEffect(() => {
-    if (!hasGeneratedToday) return;
-
-    const updateCountdown = () => {
-      const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-
-      const diff = tomorrow.getTime() - now.getTime();
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setCountdown(`${hours}h ${minutes}m ${seconds}s`);
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, [hasGeneratedToday]);
-
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    setError('');
-
+  const fetchCredits = async () => {
     try {
-      const response = await apiFetch('/api/dressing-styler/generate', {
-        method: 'POST'
-      });
+      const res = await getCredits();
+      if (res?.success) setCredits(res.credits);
+    } catch (e) { }
+  };
 
-      if (response?.success) {
-        setSuggestion(response.data);
+  const checkTodaySuggestion = async () => {
+    try {
+      const response = await apiFetch('/api/dressing-styler/today');
+      if (response?.success && response.data) {
+        const data = response.data;
+        setStyleResult(data);
         setHasGeneratedToday(true);
-        setCurrentSlide(0);
-      } else {
-        if (response?.message?.includes('Profile not found')) {
-          setError('Please complete your profile first to get personalized styling suggestions.');
-        } else {
-          setError(response?.message || 'Failed to generate suggestion');
+        if (data.interactive_state) {
+           setSelectedModifier(data.interactive_state.selected_modifier);
+           setSelectedContext(data.interactive_state.selected_context);
+           setSelectedVibe(data.interactive_state.vibe_selection);
+           setOutfitScore(data.interactive_state.outfit_score);
         }
       }
-    } catch (error: any) {
-      console.error('Error generating dressing suggestion:', error);
-      setError(error?.message || 'Failed to generate dressing suggestion. Please try again.');
+    } catch (error) {
+      console.error('Error checking today suggestion:', error);
+    }
+  };
+
+  const handleInteraction = async (type: 'modifier' | 'context' | 'vibe' | 'score', value: any) => {
+    // Optimistic Update
+    if (type === 'modifier') setSelectedModifier(value);
+    if (type === 'context') setSelectedContext(value);
+    if (type === 'vibe') setSelectedVibe(value);
+    if (type === 'score') setOutfitScore(value);
+
+    // Backend sync
+    try {
+      await updateStyleInteraction({
+        selected_modifier: type === 'modifier' ? value : undefined,
+        selected_context: type === 'context' ? value : undefined,
+        vibe_selection: type === 'vibe' ? value : undefined,
+        outfit_score: type === 'score' ? value : undefined,
+      });
+    } catch (e) {
+      console.error('Failed to sync interaction:', e);
+    }
+  };
+
+  const handleGenerate = async (force = false) => {
+    setIsGenerating(true);
+    setError('');
+    setImageLoaded(false);
+
+    try {
+      const response = await generateStyleLook(force);
+      if (response?.success) {
+        setStyleResult(response.data);
+        setCredits(response.credits_remaining);
+        setHasGeneratedToday(true);
+        toast.success(force ? 'Completely New Look Generated! (5 credits)' : 'Today\'s Look Revealed!');
+      } else {
+        setError(response?.message || 'Failed to generate');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate');
+      toast.error(err.message || 'Failed to generate');
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleSaveSurvey = async () => {
-    setIsSavingSurvey(true);
+  const handleShare = async () => {
+    if (!styleResult) return;
+    setIsSharing(true);
     try {
-      const response = await apiFetch('/api/profile/style-preferences', {
-        method: 'POST',
-        body: JSON.stringify(surveyData)
+      console.log('[handleShare] Starting share process...');
+      // Get user profile for name
+      let userName = 'Anonymous';
+      try {
+        const profileRes = await apiFetch('/api/profile');
+        userName = profileRes?.data?.full_name || 'Anonymous';
+      } catch (pErr) {
+        console.warn('[handleShare] Profile fetch failed, using default name', pErr);
+      }
+
+      console.log('[handleShare] Requesting share link from API...');
+      const res = await shareStyleLook({
+        user_name: userName,
+        style_data: {
+          headline: styleResult.headline,
+          outfit_description: styleResult.outfit_description,
+          colors: styleResult.colors,
+          color_names: styleResult.color_names,
+          astrological_reason: styleResult.astrological_reason,
+          selected_context: selectedContext,
+          selected_modifier: selectedModifier,
+          image_base64: styleResult.image_base64
+        }
       });
 
-      if (response?.success) {
-        toast.success('Cosmic style profile updated!');
-        setShowSurvey(false);
-        // Refresh suggestion to use new data
-        handleGenerate();
+      console.log('[handleShare] API Response:', res);
+
+      if (res?.success && res?.data?.shareUrl) {
+         let finalUrl = res.data.shareUrl;
+         // Handle localhost override for testing
+         if (window.location.hostname === 'localhost') {
+           finalUrl = finalUrl.replace(/https?:\/\/[^/]+/, 'http://localhost:3000');
+         }
+         
+         try {
+           await navigator.clipboard.writeText(finalUrl);
+           toast.success('Link copied! Share your look with the world ✨');
+         } catch (clipErr) {
+           console.error('[handleShare] Clipboard failed:', clipErr);
+           toast.success(`Share Link: ${finalUrl}`, { duration: 6000 });
+           toast('Link generated but could not copy automatically. Please copy manually.', { icon: '📋' });
+         }
       } else {
-        toast.error('Failed to save preferences');
+         const errorMsg = res?.message || 'Failed to generate share link';
+         toast.error(errorMsg);
       }
-    } catch (error) {
-      console.error('Error saving survey:', error);
-      toast.error('Connection error');
+    } catch (err: any) {
+      console.error('[handleShare] Error sharing style:', err);
+      const errorMessage = err?.message || 'Check your connection and try again';
+      toast.error(`Failed to share: ${errorMessage}`);
     } finally {
-      setIsSavingSurvey(false);
+      setIsSharing(false);
     }
   };
 
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  useEffect(() => {
+    if (!hasGeneratedToday) return;
+    const interval = setInterval(() => {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const diff = tomorrow.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      setCountdown(`${hours}h ${minutes}m ${seconds}s`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [hasGeneratedToday]);
 
-  // Prepare slide data for consistent rendering
-  const dressingSlides = suggestion ? [
-    {
-      title: 'Cosmic Vibe',
-      subtitle: 'Today\'s Style Essence',
-      description: suggestion.overview,
-      points: [
-        'Zodiac-aligned energy',
-        'Daily vibration booster',
-        'Intuitive expression'
-      ],
-      icon: <Sparkles className="w-6 h-6" />,
-      color: 'violet',
-      bgColor: 'bg-violet-600/20',
-      borderColor: 'border-violet-500/30',
-      textColor: 'text-violet-300'
-    },
-    {
-      title: 'Power Palette',
-      subtitle: 'Color Alignment',
-      description: suggestion.color_palette,
-      points: [
-        'Strategic color shielding',
-        'Aura-compatible shades',
-        'Magnetic attraction colors'
-      ],
-      icon: <Palette className="w-6 h-6" />,
-      color: 'cyan',
-      bgColor: 'bg-cyan-600/20',
-      borderColor: 'border-cyan-500/30',
-      textColor: 'text-cyan-300'
-    },
-    {
-      title: 'Cosmic Alignment',
-      subtitle: 'Astrological Basis',
-      description: suggestion.astrological_reason,
-      points: [
-        'Sun sign influence',
-        'Current planetary transits',
-        'Lunar cycle synchronization'
-      ],
-      icon: <Star className="w-6 h-6" />,
-      color: 'fuchsia',
-      bgColor: 'bg-fuchsia-600/20',
-      borderColor: 'border-fuchsia-500/30',
-      textColor: 'text-fuchsia-300'
-    },
-    {
-      title: 'Daily Luck',
-      subtitle: 'Luck & Energy',
-      description: `Maximize your fortune today with specific items and mood alignment.`,
-      points: [
-        `Lucky Item: ${suggestion.lucky_item}`,
-        `Energy Mood: ${suggestion.mood_energy}`,
-        'Personal luck factor active'
-      ],
-      icon: <Clover className="w-6 h-6" />,
-      color: 'amber',
-      bgColor: 'bg-amber-600/20',
-      borderColor: 'border-amber-500/30',
-      textColor: 'text-amber-300'
-    }
-  ] : [];
-
-  const styleVibes = ['Minimalist', 'Bold & Vibrant', 'Classic / Professional', 'Bohemian', 'Avant-Garde', 'Streetwear'];
-  const workSettings = ['Corporate Office', 'Creative Space', 'Home Office', 'Special Event', 'Formal Banquet', 'Casual Outing'];
+  const StyleSkeleton = () => (
+    <div className="mt-8 space-y-8 animate-pulse lg:max-w-xl lg:mx-auto">
+      <div className="h-8 bg-white/5 rounded-2xl w-3/4 mx-auto" />
+      <div className="aspect-[3/4] bg-white/5 rounded-3xl" />
+    </div>
+  );
 
   return (
     <CosmicBackground>
       <div className="flex min-h-screen overflow-hidden">
         <Sidebar />
 
-        <div className="flex-1 lg:ml-64 transition-all duration-300 h-screen flex flex-col" id="main-content">
-          {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 lg:py-16">
-              {/* Personalized Badge */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 backdrop-blur-md mb-4 animate-fade-in group">
-                <Sparkles className="w-3.5 h-3.5 text-fuchsia-400 group-hover:scale-125 transition-transform" />
-                <span className="text-[10px] font-bold text-fuchsia-300 uppercase tracking-widest">Personalized Alignment</span>
+        <div className="flex-1 lg:ml-64 flex flex-col h-screen overflow-hidden">
+          <div className="flex-1 overflow-y-auto scrollbar-none pb-24">
+            <div className="max-w-2xl mx-auto px-4 pt-8 pb-12 space-y-8">
+              
+              {/* 1. HEADER */}
+              <div className="text-center space-y-2">
+                <div className="flex items-center justify-center gap-2">
+                  <GradientText className="text-3xl font-bold tracking-tight">StyleForecaster</GradientText>
+                  <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-white/20 font-mono mt-1">v1.2</span>
+                </div>
+                {styleResult ? (
+                  <p className="text-white/40 text-[10px] uppercase tracking-[0.2em] font-bold">
+                    {selectedModifier} Look for {styleResult.date} • Refresh in {countdown}
+                  </p>
+                ) : (
+                  <p className="text-white/40 text-sm">Your daily cosmic outfit awaits.</p>
+                )}
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold font-display">StyleForecaster</h1>
-              <p className="mt-2 text-white/75 max-w-2xl">
-                Get daily cosmic style guidance based on your personal zodiac alignment and current planetary energies.
-              </p>
+              {isGenerating ? <StyleSkeleton /> : styleResult ? (
+                <div className="space-y-8 animate-fade-in-up">
+                  
+                  {/* 2. MAIN IMAGE (STATIC) */}
+                  <div className="relative group">
+                    <GlassCard className="p-0 overflow-hidden border-violet-500/30 shadow-[0_0_50px_rgba(168,85,247,0.15)] relative">
+                      <div className="aspect-[3/4] relative">
+                         {!imageLoaded && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-white/5">
+                               <LoadingSpinner size="lg" />
+                            </div>
+                         )}
+                         <img 
+                           src={`data:image/png;base64,${styleResult.image_base64}`} 
+                           alt="Your look"
+                           onLoad={() => setImageLoaded(true)}
+                           className={`w-full h-full object-cover transition-all duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                         />
+                         
+                         {/* CLICKABLE OVERLAYS */}
+                         <div className="absolute inset-0 z-10">
+                            {/* Part Overlays */}
+                            <button 
+                              onClick={() => setActivePart('top')}
+                              className="absolute top-[20%] left-[25%] w-[50%] h-[30%] group/part"
+                            >
+                               <div className="absolute inset-0 bg-white/0 group-hover/part:bg-white/5 transition-colors rounded-full blur-xl" />
+                               {activePart === 'top' && (
+                                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-white text-black text-[10px] font-bold rounded-full shadow-lg z-20">
+                                   Top: Structured
+                                 </motion.div>
+                               )}
+                            </button>
+                            <button 
+                              onClick={() => setActivePart('bottom')}
+                              className="absolute top-[50%] left-[25%] w-[50%] h-[35%] group/part"
+                            >
+                               <div className="absolute inset-0 bg-white/0 group-hover/part:bg-white/5 transition-colors rounded-full blur-xl" />
+                               {activePart === 'bottom' && (
+                                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-white text-black text-[10px] font-bold rounded-full shadow-lg z-20">
+                                   Bottom: Relaxed
+                                 </motion.div>
+                               )}
+                            </button>
+                         </div>
 
-              {/* Date & Refresh Badge Section */}
-              {hasGeneratedToday && (
-                <div className="flex flex-wrap items-center gap-3 mt-8 mb-4">
-                  <div className="px-4 py-1.5 bg-violet-600/10 border border-violet-500/20 rounded-full text-[10px] sm:text-xs font-bold text-violet-300 uppercase tracking-widest">
-                    {today}
-                  </div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/40 border border-violet-500/20 rounded-full text-[9px] sm:text-xs text-violet-300 backdrop-blur-md">
-                    <Clock className="w-3 h-3" />
-                    <span className="font-medium tracking-wide">Next Refresh: {countdown}</span>
-                  </div>
-                </div>
-              )}
-
-
-
-              {/* Main Content Area - Slide based like Numerology */}
-              {suggestion && (
-                <div className="mt-8 mb-12 space-y-8 animate-fade-in-up lg:max-w-2xl lg:mx-auto">
-
-                  {/* Success Header Area */}
-                  <div className="text-center mb-6">
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
-                      "{suggestion.headline}"
-                    </h2>
-                    <p className="text-white/60 max-w-3xl mx-auto text-base sm:text-lg">
-                      Your daily style alignment is ready. Scroll through your personal cosmic styling blueprint below.
-                    </p>
-                  </div>
-
-                  <GlassCard 
-                    className="py-6 px-4 sm:py-8 sm:px-10 relative overflow-hidden" 
-                    glow="purple"
-                    onTouchStart={onTouchStart}
-                    onTouchMove={onTouchMove}
-                    onTouchEnd={() => onTouchEnd(handleNext, handlePrev)}
-                  >
-                    {/* Progress indicator */}
-                    <div className="flex gap-2 mb-6">
-                      {dressingSlides.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentSlide(index)}
-                          className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${index <= currentSlide ? 'bg-gradient-to-r from-fuchsia-500 to-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]' : 'bg-white/20'
-                            }`}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Active Slide Content */}
-                    <div className="text-center">
-                      {/* Big Icon Box */}
-                      <div className={`inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br ${dressingSlides[currentSlide]?.bgColor} mb-4 shadow-2xl border ${dressingSlides[currentSlide]?.borderColor} transform hover:scale-105 transition-transform duration-500`}>
-                        <div className={`${dressingSlides[currentSlide]?.textColor} scale-150`}>
-                          {dressingSlides[currentSlide]?.icon}
-                        </div>
+                         {/* TAG OVERLAYS */}
+                         <div className="absolute top-4 left-4 flex flex-col gap-2 z-20">
+                            <span className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold text-white tracking-widest uppercase">Structured</span>
+                            <span className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold text-white/70 tracking-widest uppercase">Muted</span>
+                         </div>
                       </div>
+                    </GlassCard>
+                  </div>
 
-                      {/* Header Area */}
-                      <div className="flex items-center justify-center gap-3 mb-1">
-                        <h2 className={`text-2xl sm:text-3xl font-bold ${dressingSlides[currentSlide]?.textColor} font-display uppercase tracking-wider`}>
-                          {dressingSlides[currentSlide]?.title}
-                        </h2>
-                      </div>
-                      <p className="text-white/50 text-xs sm:text-xs font-bold uppercase tracking-[0.3em] mb-4">
-                        {dressingSlides[currentSlide]?.subtitle}
-                      </p>
-
-                      {/* Main Description */}
-                      <p className="text-white/90 text-sm sm:text-base max-w-2xl mx-auto mb-6 leading-relaxed font-medium">
-                        {dressingSlides[currentSlide]?.description}
-                      </p>
-
-                      {/* Points Box - key for mobile visibility */}
-                      <div className="bg-black/60 backdrop-blur-md rounded-2xl p-4 sm:p-5 mb-6 text-left max-w-md mx-auto border border-white/5 shadow-inner">
-                        <ul className="space-y-3">
-                          {dressingSlides[currentSlide]?.points.map((point, idx) => (
-                            <li key={idx} className="flex items-start gap-3 text-white/80 text-sm sm:text-base">
-                              <span className={`mt-2 w-2 h-2 rounded-full flex-shrink-0 animate-pulse ${dressingSlides[currentSlide]?.textColor.replace('text-', 'bg-')}`}></span>
-                              <span className="leading-tight">{point}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Slide Counter Indicator */}
-                      <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-4">
-                        Blueprint Part {currentSlide + 1} of {totalSlides}
-                      </p>
-                    </div>
-
-                    {/* Navigation Row */}
-                    <div className="flex items-center justify-between gap-4 mt-2">
-                      <button
-                        onClick={handlePrev}
-                        disabled={currentSlide === 0}
-                        className={`p-3 sm:p-4 rounded-full transition-all duration-300 ${currentSlide === 0
-                          ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                          : 'bg-white/10 text-white hover:bg-white/20 hover:scale-110 active:scale-95'
-                          } border border-white/10`}
-                      >
-                        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-                      </button>
-
-                      <div className="flex gap-2 sm:gap-3">
-                        {dressingSlides.map((_, index) => (
+                  {/* 3. QUICK STYLE MODIFIERS */}
+                  <div className="space-y-4">
+                    <p className="text-center text-white/40 text-[10px] uppercase tracking-widest font-bold">Adjust This Look</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { id: 'Bolder', icon: Flame, color: 'text-orange-400' },
+                        { id: 'Minimal', icon: IceCream, color: 'text-blue-400' },
+                        { id: 'Sharper', icon: Target, color: 'text-fuchsia-400' },
+                        { id: 'Relaxed', icon: Coffee, color: 'text-emerald-400' },
+                      ].map(mod => {
+                        const Icon = mod.icon;
+                        const isActive = selectedModifier === mod.id;
+                        return (
                           <button
-                            key={index}
-                            onClick={() => setCurrentSlide(index)}
-                            className={`h-2.5 rounded-full transition-all duration-500 ${index === currentSlide ? 'bg-fuchsia-500 w-8 shadow-[0_0_15px_rgba(217,70,239,0.5)]' : 'bg-white/20 hover:bg-white/40 w-2.5'
-                              }`}
-                            aria-label={`Go to section ${index + 1}`}
-                          />
-                        ))}
-                      </div>
-
-                      <button
-                        onClick={handleNext}
-                        disabled={currentSlide === totalSlides - 1}
-                        className={`p-3 sm:p-4 rounded-full transition-all duration-300 ${currentSlide === totalSlides - 1
-                          ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                          : 'bg-white/10 text-white hover:bg-white/20 hover:scale-110 active:scale-95'
-                          } border border-white/10`}
+                            key={mod.id}
+                            onClick={() => handleInteraction('modifier', mod.id)}
+                            className={`p-3 rounded-2xl border flex flex-col items-center gap-2 transition-all ${isActive ? 'bg-white/10 border-white/30 shadow-lg' : 'bg-black/40 border-white/5 hover:border-white/10'}`}
+                          >
+                            <Icon className={`w-5 h-5 ${isActive ? mod.color : 'text-white/30'}`} />
+                            <span className={`text-[10px] font-bold uppercase tracking-widest ${isActive ? 'text-white' : 'text-white/40'}`}>{mod.id}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <AnimatePresence mode="wait">
+                      <motion.p 
+                        key={selectedModifier}
+                        initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-center text-xs text-white/60 italic"
                       >
-                        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-                      </button>
+                        {selectedModifier === 'Bolder' && "Emphasizing contrast and statement accessories..."}
+                        {selectedModifier === 'Minimal' && "Stripping down to essentials and tonal harmony..."}
+                        {selectedModifier === 'Sharper' && "Refining lines and fit for a professional edge..."}
+                        {selectedModifier === 'Relaxed' && "Softening textures and loosening the silhouette..."}
+                        {selectedModifier === 'Standard' && "Balanced alignment for today's forecast."}
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
+
+                  {/* 4. CONTEXT SWITCH */}
+                  <GlassCard className="p-6 space-y-4">
+                     <p className="text-center text-white/40 text-[10px] uppercase tracking-widest font-bold">Where are you going?</p>
+                     <div className="flex justify-center gap-4 flex-wrap">
+                        {[
+                          { id: 'Office', icon: Briefcase },
+                          { id: 'Dinner', icon: Utensils },
+                          { id: 'Casual', icon: Smile },
+                          { id: 'Event', icon: PartyPopper },
+                        ].map(ctx => {
+                          const Icon = ctx.icon;
+                          const isActive = selectedContext === ctx.id;
+                          return (
+                            <button
+                              key={ctx.id}
+                              onClick={() => handleInteraction('context', ctx.id)}
+                              className={`flex items-center gap-3 px-4 py-2 rounded-full border transition-all ${isActive ? 'bg-fuchsia-600 border-fuchsia-500 text-white scale-105 shadow-xl' : 'bg-white/5 border-white/5 text-white/50 hover:bg-white/10'}`}
+                            >
+                               <Icon className="w-4 h-4" />
+                               <span className="text-xs font-bold uppercase tracking-widest">{ctx.id}</span>
+                            </button>
+                          );
+                        })}
+                     </div>
+                     <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <p className="text-xs text-white/70 leading-relaxed text-center">
+                           <span className="font-bold text-fuchsia-400">Pro Tip for {selectedContext}:</span> {
+                             selectedContext === 'Office' ? 'Add the blazer for authority; keep the colors muted.' :
+                             selectedContext === 'Dinner' ? 'Untuck the shirt and add a leather accessory for flair.' :
+                             selectedContext === 'Casual' ? 'Roll up the sleeves and pair with your favorite white sneakers.' :
+                             'Make it a statement—emphasize the geometric lines.'
+                           }
+                        </p>
+                     </div>
+                  </GlassCard>
+
+                  {/* 5. THIS vs THAT */}
+                  <div className="space-y-4">
+                     <p className="text-center text-white/40 text-[10px] uppercase tracking-widest font-bold">Choose Your Vibe</p>
+                     <div className="grid grid-cols-2 gap-4">
+                        <button 
+                          onClick={() => handleInteraction('vibe', 'optionA')}
+                          className={`p-6 rounded-3xl border transition-all space-y-3 ${selectedVibe === 'optionA' ? 'bg-violet-600/20 border-violet-500 shadow-xl scale-105' : 'bg-black/40 border-white/5 opacity-60 hover:opacity-100 hover:border-white/10'}`}
+                        >
+                           <div className="text-center space-y-2">
+                              <span className="text-lg font-bold">Formal</span>
+                              <p className="text-[10px] text-white/50 uppercase leading-none">Clean • Tucked • Classic</p>
+                           </div>
+                        </button>
+                        <button 
+                          onClick={() => handleInteraction('vibe', 'optionB')}
+                          className={`p-6 rounded-3xl border transition-all space-y-3 ${selectedVibe === 'optionB' ? 'bg-fuchsia-600/20 border-fuchsia-500 shadow-xl scale-105' : 'bg-black/40 border-white/5 opacity-60 hover:opacity-100 hover:border-white/10'}`}
+                        >
+                           <div className="text-center space-y-2">
+                              <span className="text-lg font-bold">Fluid</span>
+                              <p className="text-[10px] text-white/50 uppercase leading-none">Loose • Textured • Easy</p>
+                           </div>
+                        </button>
+                     </div>
+                  </div>
+
+                  {/* 6. COLOR INTERACTION */}
+                  <GlassCard className="p-6 space-y-6">
+                    <p className="text-center text-white/40 text-[10px] uppercase tracking-widest font-bold">Color Palette</p>
+                    <div className="flex justify-center gap-6">
+                      {styleResult.colors.map((color, i) => (
+                        <button 
+                          key={i}
+                          className="group relative flex flex-col items-center gap-2"
+                        >
+                           <div 
+                             className="w-12 h-12 rounded-full border-4 border-white/10 shadow-lg group-hover:scale-125 transition-all duration-300"
+                             style={{ backgroundColor: color, boxShadow: `0 0 20px ${color}40` }}
+                           />
+                           <span className="text-[10px] text-white/40 font-medium group-hover:text-white transition-colors">{styleResult.color_names[i]}</span>
+                        </button>
+                      ))}
                     </div>
                   </GlassCard>
 
-                  {/* Secondary Action Buttons */}
-                  <div className="flex flex-col sm:flex-row justify-center items-center gap-4 lg:gap-6 pt-6">
-                    <button
-                      onClick={() => {
-                        setSurveyStep(1);
-                        setShowSurvey(true);
-                      }}
-                      className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-fuchsia-600/20 to-violet-600/20 hover:from-fuchsia-600/30 hover:to-violet-600/30 border border-fuchsia-500/30 rounded-2xl flex items-center justify-center gap-3 text-sm font-bold transition-all group shadow-[0_0_20px_rgba(168,85,247,0.2)]"
-                    >
-                      <Settings2 className="w-5 h-5 text-fuchsia-400 group-hover:rotate-90 transition-transform duration-500" />
-                      <span>Refine My Style Profile</span>
-                    </button>
-
-                    <button
-                      onClick={() => navigate('/dashboard')}
-                      className="text-white/40 hover:text-white transition-colors text-sm font-medium"
-                    >
-                      Back to Dashboard
-                    </button>
+                  {/* 9. WHY THIS LOOK WORKS (FOREVER OPEN) */}
+                  <div className="px-2">
+                    <div className="w-full py-4 border-y border-white/5 flex items-center justify-between">
+                      <span className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-bold uppercase underline">Why This Look Works</span>
+                    </div>
+                    <div className="overflow-hidden space-y-4 pt-4">
+                      <div className="grid grid-cols-1 gap-3">
+                         <p className="text-xs text-white/60 border-l-2 border-fuchsia-500/30 pl-4 py-1 italic">
+                            {styleResult.astrological_reason}
+                         </p>
+                         <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40">
+                               <Sparkles className="w-3 h-3" /> Synthesis
+                            </div>
+                            <p className="text-sm text-white/80 leading-relaxed font-serif">
+                               {styleResult.outfit_description}
+                            </p>
+                         </div>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* 10. PRIMARY CTA STRUCTURE */}
+                  <div className="space-y-6 pt-12 text-center">
+                     <p className="text-white/20 text-[10px] uppercase tracking-widest font-bold">Premium Actions</p>
+                     
+                     <button
+                        onClick={() => handleGenerate(true)}
+                        disabled={isGenerating || (credits !== null && credits < 5)}
+                        className="w-full py-5 bg-gradient-to-r from-fuchsia-600 to-violet-600 text-white shadow-2xl hover:shadow-fuchsia-500/20 rounded-3xl transition-all active:scale-95 flex items-center justify-center gap-3 font-bold text-lg"
+                      >
+                        {isGenerating ? <LoadingSpinner size="sm" /> : <><Sparkles className="w-6 h-6" /> <span>Completely New Look</span></>}
+                        <span className="bg-black/20 px-3 py-1 rounded-full text-xs ml-2">5 CR</span>
+                      </button>
+
+                      {/* 11. SOCIAL LOOP */}
+                      <div className="flex justify-center gap-4">
+                         <button 
+                            onClick={handleShare}
+                            disabled={isSharing}
+                            className="flex items-center gap-2 px-6 py-3 bg-white/5 rounded-2xl text-[10px] font-bold uppercase hover:bg-white/10 transition-all font-bold disabled:opacity-50"
+                          >
+                             {isSharing ? <LoadingSpinner size="sm" /> : <><Share2 className="w-4 h-4" /> Share</>}
+                         </button>
+                      </div>
+                  </div>
+
                 </div>
-              )}
-
-              {/* No Data / Initial CTA Area */}
-              {!suggestion && !isGenerating && !hasGeneratedToday && (
-                <div className="text-center py-16 animate-fade-in">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-fuchsia-400/20 rounded-full mb-8 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
-                    <Shirt className="w-9 h-9 text-fuchsia-400" />
-                  </div>
-                  <h2 className="text-3xl font-bold text-white mb-4">Reveal Your Cosmic Look</h2>
-                  <p className="text-white/60 mb-10 max-w-lg mx-auto text-lg leading-relaxed">
-                    Synthesize your sun sign, planetary transits, and personal style profile into the perfect daily ensemble.
-                  </p>
-                  <button
-                    onClick={handleGenerate}
-                    disabled={isGenerating}
-                    className="bg-gradient-to-r from-fuchsia-600 to-violet-600 text-white shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:shadow-[0_0_35px_rgba(168,85,247,0.8)] font-bold py-4 px-10 rounded-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-3 mx-auto"
+              ) : (
+                /* INITIAL STATE */
+                <div className="text-center py-20 space-y-8 animate-fade-in">
+                   <div className="w-24 h-24 bg-gradient-to-br from-fuchsia-600/20 to-violet-600/20 rounded-full mx-auto flex items-center justify-center border border-white/10 shadow-2xl">
+                      <Shirt className="w-10 h-10 text-fuchsia-400" />
+                   </div>
+                   <div className="space-y-3">
+                      <h2 className="text-2xl font-bold">Discover Your Daily Synergy</h2>
+                      <p className="text-white/40 text-sm max-w-sm mx-auto leading-relaxed">
+                         Synthesize your sun sign, transits, and personal preferences into a daily ensemble.
+                      </p>
+                   </div>
+                   <button
+                    onClick={() => handleGenerate(false)}
+                    disabled={isGenerating || (credits !== null && credits < 5)}
+                    className="px-12 py-5 bg-gradient-to-r from-fuchsia-600 to-violet-600 text-white shadow-2xl rounded-3xl font-bold text-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 mx-auto"
                   >
-                    {isGenerating ? (
-                      <>
-                        <LoadingSpinner size="sm" />
-                        <span>Aligning Cosmic Vibe...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-5 h-5" />
-                        <span>Generate Style Reading</span>
-                      </>
-                    )}
+                    {isGenerating ? <LoadingSpinner size="sm" /> : <><Sparkles className="w-6 h-6" /> <span>Reveal Today's Style</span></>}
                   </button>
+                  <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Uses 5 credits per Daily Reflection</p>
                 </div>
               )}
-
             </div>
           </div>
 
-          {/* FLOATING CHAT INPUT - ChatGPT Style */}
+          {/* 12. CHAT INPUT (Numerology Style) */}
           <form
-            onSubmit={handleAskQuestion}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (questionInput.trim()) navigate(`/ai-chat`, { state: { initialMessage: `Regarding my ${selectedModifier} outfit for ${selectedContext}: ${questionInput.trim()}` } });
+            }}
             className="w-full px-4 py-6 md:py-8"
           >
             <div className="max-w-3xl mx-auto relative flex items-end">
@@ -518,7 +521,7 @@ const DressingStylerPage: React.FC = () => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     if (questionInput.trim()) {
-                      handleAskQuestion(e as any);
+                      navigate(`/ai-chat`, { state: { initialMessage: `Regarding my ${selectedModifier} outfit for ${selectedContext}: ${questionInput.trim()}` } });
                     }
                   }
                 }}
@@ -536,181 +539,8 @@ const DressingStylerPage: React.FC = () => {
                 </svg>
               </button>
             </div>
-            <p className="text-center text-white/30 text-xs mt-2">AstroAI can make mistakes. Consider checking important information.</p>
+            <p className="text-center text-white/30 text-xs mt-2">AstroAi4u can make mistakes. Consider checking important information.</p>
           </form>
-
-          {/* STYLE REFINE MODAL (SURVEY) - Centered Popup */}
-          {showSurvey && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-              <div className="relative w-full max-w-lg bg-[#0a0a0c] border border-white/10 rounded-[2rem] p-6 sm:p-8 md:p-10 shadow-[0_0_60px_rgba(168,85,247,0.25)] max-h-[90vh] overflow-y-auto scrollbar-none">
-                <button
-                  onClick={() => setShowSurvey(false)}
-                  className="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-all"
-                >
-                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
-
-                <div className="space-y-4 sm:space-y-6 lg:space-y-8">
-                  {/* Step Header */}
-                  <div className="text-center pt-2 sm:pt-0">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-fuchsia-500/10 rounded-full text-[10px] font-bold text-fuchsia-400 uppercase tracking-widest mb-2 sm:mb-3">
-                      Step {surveyStep} of 5
-                    </div>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold font-display">Deep Style Profile</h2>
-                  </div>
-
-                  {/* Step Content */}
-                  <div className="min-h-[200px] sm:min-h-[240px] md:min-h-[280px] flex flex-col justify-center animate-fade-in-up">
-
-                    {surveyStep === 1 && (
-                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                        <label className="block text-sm sm:text-base md:text-lg font-semibold text-center mb-3 sm:mb-4 md:mb-6">What is your primary setting today?</label>
-                        <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:gap-3">
-                          {workSettings.map(setting => (
-                            <button
-                              key={setting}
-                              onClick={() => {
-                                setSurveyData({ ...surveyData, work_setting: setting });
-                                setSurveyStep(2);
-                              }}
-                              className={`p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl border text-xs sm:text-sm transition-all ${surveyData.work_setting === setting
-                                ? 'bg-fuchsia-600 border-fuchsia-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
-                                : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
-                                }`}
-                            >
-                              {setting}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {surveyStep === 2 && (
-                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                        <label className="block text-sm sm:text-base md:text-lg font-semibold text-center mb-3 sm:mb-4 md:mb-6">Choose your preferred style aesthetic</label>
-                        <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:gap-3">
-                          {styleVibes.map(vibe => (
-                            <button
-                              key={vibe}
-                              onClick={() => {
-                                setSurveyData({ ...surveyData, style_vibe: vibe });
-                                setSurveyStep(3);
-                              }}
-                              className={`p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl border text-xs sm:text-sm transition-all ${surveyData.style_vibe === vibe
-                                ? 'bg-violet-600 border-violet-500 text-white shadow-[0_0_15px_rgba(139,92,246,0.4)]'
-                                : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
-                                }`}
-                            >
-                              {vibe}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {surveyStep === 3 && (
-                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                        <label className="block text-sm sm:text-base md:text-lg font-semibold text-center mb-3 sm:mb-4 md:mb-6">How should your clothes fit today?</label>
-                        <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:gap-3">
-                          {['Oversized', 'Relaxed', 'Tailored', 'Slim Fit'].map(fit => (
-                            <button
-                              key={fit}
-                              onClick={() => {
-                                setSurveyData({ ...surveyData, fit_preference: fit });
-                                setSurveyStep(4);
-                              }}
-                              className={`p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl border text-xs sm:text-sm transition-all ${surveyData.fit_preference === fit
-                                ? 'bg-fuchsia-600 border-fuchsia-500 text-white'
-                                : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
-                                }`}
-                            >
-                              {fit}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {surveyStep === 4 && (
-                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                        <label className="block text-sm sm:text-base md:text-lg font-semibold text-center mb-3 sm:mb-4 md:mb-6">Level of accessorizing?</label>
-                        <div className="grid grid-cols-1 gap-2 sm:gap-2.5 md:gap-3">
-                          {[
-                            { id: 'None', desc: 'Keep it pure and simple' },
-                            { id: 'Subtle', desc: 'Minimalist accents' },
-                            { id: 'Statement', desc: 'Bold, expressive pieces' }
-                          ].map(item => (
-                            <button
-                              key={item.id}
-                              onClick={() => {
-                                setSurveyData({ ...surveyData, accessory_level: item.id });
-                                setSurveyStep(5);
-                              }}
-                              className={`p-2.5 sm:p-3 md:p-4 rounded-lg sm:rounded-xl md:rounded-2xl border text-left transition-all flex justify-between items-center ${surveyData.accessory_level === item.id
-                                ? 'bg-violet-600 border-violet-500 text-white'
-                                : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
-                                }`}
-                            >
-                              <div>
-                                <div className="font-bold text-xs sm:text-sm md:text-base">{item.id}</div>
-                                <div className="text-[10px] sm:text-xs opacity-60">{item.desc}</div>
-                              </div>
-                              <ChevronRight className="w-4 h-4" />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {surveyStep === 5 && (
-                      <div className="space-y-3 sm:space-y-4 md:space-y-6">
-                        <label className="block text-sm sm:text-base md:text-lg font-semibold text-center mb-2 sm:mb-3 md:mb-4">Any colors or patterns to avoid?</label>
-                        <textarea
-                          autoFocus
-                          value={surveyData.avoid_colors}
-                          onChange={(e) => setSurveyData({ ...surveyData, avoid_colors: e.target.value })}
-                          placeholder="e.g. Neon colors, animal prints, All black..."
-                          className="w-full bg-white/5 border border-white/10 rounded-lg sm:rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 text-white placeholder-white/20 focus:outline-none focus:border-fuchsia-500/50 min-h-[80px] sm:min-h-[100px] md:min-h-[120px] text-xs sm:text-sm md:text-base"
-                        />
-                        <button
-                          onClick={handleSaveSurvey}
-                          disabled={isSavingSurvey}
-                          className="w-full bg-gradient-to-r from-fuchsia-600 to-violet-600 py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-                        >
-                          {isSavingSurvey ? <LoadingSpinner size="sm" /> : <><CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" /> <span>Sync Cosmic Style</span></>}
-                        </button>
-                      </div>
-                    )}
-
-                  </div>
-
-                  {/* Navigation Footer - Responsive spacing */}
-                  {surveyStep < 5 && (
-                    <div className="flex justify-between items-center pt-2 sm:pt-3 md:pt-4">
-                      {surveyStep > 1 ? (
-                        <button onClick={() => setSurveyStep(prev => prev - 1)} className="text-white/40 hover:text-white transition-colors flex items-center gap-1 text-[10px] sm:text-xs md:text-sm font-medium">
-                          <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Back
-                        </button>
-                      ) : <div />}
-
-                      <div className="flex gap-0.5 sm:gap-1">
-                        {[1, 2, 3, 4, 5].map(i => (
-                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === surveyStep ? 'bg-fuchsia-500 shadow-[0_0_8px_rgba(232,121,249,0.8)]' : 'bg-white/10'}`} />
-                        ))}
-                      </div>
-
-                      <button
-                        onClick={() => setSurveyStep(prev => prev + 1)}
-                        className={`text-fuchsia-400 hover:text-fuchsia-300 transition-colors flex items-center gap-1 text-[10px] sm:text-xs md:text-sm font-bold ${!surveyData[Object.keys(surveyData)[surveyStep - 1] as keyof typeof surveyData] ? 'opacity-30 pointer-events-none' : ''}`}
-                      >
-                        Skip <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
 
         </div>
       </div>

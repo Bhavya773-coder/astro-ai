@@ -17,10 +17,18 @@ const shareLimiter = rateLimit({
 // Protected routes (require authentication)
 router.post('/share/horoscope', requireAuth, shareLimiter, sharedInsightController.shareHoroscope);
 router.post('/share/numerology', requireAuth, shareLimiter, sharedInsightController.shareNumerology);
+router.post('/share/face-reading', requireAuth, shareLimiter, sharedInsightController.shareFaceReading);
+router.post('/share/coffee-reading', requireAuth, shareLimiter, sharedInsightController.shareCoffeeReading);
+router.post('/share/palm-reading', requireAuth, shareLimiter, sharedInsightController.sharePalmReading);
+router.post('/share/style', requireAuth, shareLimiter, sharedInsightController.shareStyle);
 router.delete('/share/:shareId', requireAuth, sharedInsightController.deleteSharedInsight);
 
 // Public routes (no authentication required)
 router.get('/shared-horoscope/:shareId', sharedInsightController.getSharedHoroscope);
 router.get('/shared-numerology/:shareId', sharedInsightController.getSharedNumerology);
+router.get('/shared-face-reading/:shareId', sharedInsightController.getSharedFaceReading);
+router.get('/shared-coffee-reading/:shareId', sharedInsightController.getSharedCoffeeReading);
+router.get('/shared-palm-reading/:shareId', sharedInsightController.getSharedPalmReading);
+router.get('/shared-style/:shareId', sharedInsightController.getSharedStyle);
 
 module.exports = router;

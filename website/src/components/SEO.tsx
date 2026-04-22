@@ -12,9 +12,9 @@ interface SEOProps {
 }
 
 const defaultSEO = {
-  title: 'Astro AI | AI Astrology & Personalized Oracle | Astroai4u',
-  description: 'Astro AI - Your Personal AI Astrologer & My Oracle. Get AI-powered astrology readings, daily horoscopes, personalized tarot, numerology insights, birth charts & face reading.',
-  keywords: 'Astro AI, Astroai4u, AI Astrology, Personalized AI, My Oracle, Astrology Using AI',
+  title: 'AstroAi4u | AI Astrology & Personalized Oracle',
+  description: 'AstroAi4u - Your Personal AI Astrologer & My Oracle. Get AI-powered astrology readings, daily horoscopes, personalized tarot, numerology insights, birth charts & face reading.',
+  keywords: 'AstroAi4u, AI Astrology, Personalized AI, My Oracle, Astrology Using AI',
   ogImage: 'https://astroai4u.com/og-image.jpg',
 };
 
@@ -52,7 +52,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="og:description" content={finalOgDescription} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:type" content="website" />
-      <meta property="og:site_name" content="Astro AI" />
+      <meta property="og:site_name" content="AstroAi4u" />
       {canonical && <meta property="og:url" content={canonical} />}
       
       {/* Twitter */}
@@ -67,43 +67,43 @@ export const SEO: React.FC<SEOProps> = ({
 // Pre-configured SEO presets for common pages
 export const SEOPresets = {
   home: {
-    title: 'Astro AI | AI Astrology & Personalized Oracle | Astroai4u',
-    description: 'Astro AI - Your Personal AI Astrologer & My Oracle. Get AI-powered astrology readings, daily horoscopes, personalized tarot, numerology insights, birth charts & face reading.',
-    keywords: 'Astro AI, Astroai4u, AI Astrology, Personalized AI, My Oracle, Astrology Using AI',
+    title: 'AstroAi4u | AI Astrology & Personalized Oracle',
+    description: 'AstroAi4u - Your Personal AI Astrologer & My Oracle. Get AI-powered astrology readings, daily horoscopes, personalized tarot, numerology insights, birth charts & face reading.',
+    keywords: 'AstroAi4u, AI Astrology, Personalized AI, My Oracle, Astrology Using AI',
   },
   aiChat: {
-    title: 'AI Chat | Astro AI - Your Personal AI Astrologer',
+    title: 'AI Chat | AstroAi4u - Your Personal AI Astrologer',
     description: 'Chat with your personal AI astrologer. Get instant astrological guidance, horoscope readings, and cosmic insights powered by AI.',
     keywords: 'AI Chat Astrology, AI Astrologer Chat, Personal AI Oracle, Chat with Astrologer AI',
   },
   birthChart: {
-    title: 'Free Birth Chart Analysis | AI-Powered | Astro AI',
+    title: 'Free Birth Chart Analysis | AI-Powered | AstroAi4u',
     description: 'Get your personalized AI-powered birth chart analysis. Discover your cosmic blueprint with detailed astrological interpretations.',
     keywords: 'Free Birth Chart, AI Birth Chart Analysis, Natal Chart Online, Vedic Birth Chart',
   },
   numerology: {
-    title: 'AI Numerology Calculator | Personalized Insights | Astro AI',
+    title: 'AI Numerology Calculator | Personalized Insights | AstroAi4u',
     description: 'Discover your life path number and personal numerology with AI. Get accurate numerology readings and predictions.',
     keywords: 'Numerology Calculator, Life Path Number, AI Numerology, Personal Numbers',
   },
   styleForecaster: {
-    title: 'StyleForecaster | AI Fashion & Style Guide | Astro AI',
+    title: 'StyleForecaster | AI Fashion & Style Guide | AstroAi4u',
     description: 'Get AI-powered daily style and fashion recommendations based on your astrological profile. Dress in harmony with cosmic energies.',
     keywords: 'AI Style Guide, Fashion Astrology, Daily Style Tips, Cosmic Fashion',
   },
   reports: {
-    title: 'Astrology Reports | Compatibility & Forecasts | Astro AI',
+    title: 'Astrology Reports | Compatibility & Forecasts | AstroAi4u',
     description: 'Generate comprehensive astrology reports including compatibility analysis, yearly forecasts, and personalized recommendations.',
     keywords: 'Astrology Reports, Compatibility Analysis, Yearly Forecast, AI Astrology Report',
   },
   login: {
-    title: 'Login | Astro AI - Your Personal AI Astrologer',
-    description: 'Sign in to Astro AI to access your personalized astrological insights, daily horoscopes, and AI-powered guidance.',
+    title: 'Login | AstroAi4u - Your Personal AI Astrologer',
+    description: 'Sign in to AstroAi4u to access your personalized astrological insights, daily horoscopes, and AI-powered guidance.',
     noIndex: true,
   },
   signup: {
-    title: 'Sign Up | Astro AI - Your Personal AI Astrologer',
-    description: 'Create your Astro AI account to unlock personalized astrology readings, daily horoscopes, and AI-powered cosmic guidance.',
+    title: 'Sign Up | AstroAi4u - Your Personal AI Astrologer',
+    description: 'Create your AstroAi4u account to unlock personalized astrology readings, daily horoscopes, and AI-powered cosmic guidance.',
     noIndex: true,
   },
 };

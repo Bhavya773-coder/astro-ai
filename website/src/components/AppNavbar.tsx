@@ -30,10 +30,10 @@ const AppNavbar: React.FC = () => {
             <Link to="/dashboard" className="flex items-center space-x-3">
               <img
                 src="/favicon.png"
-                alt="AstroAI"
+                alt="AstroAi4u"
                 className="w-8 h-8 rounded-lg"
               />
-              <span className="text-xl font-bold text-white">AstroAI</span>
+              <span className="text-xl font-bold text-white">AstroAi4u</span>
             </Link>
           </div>
 

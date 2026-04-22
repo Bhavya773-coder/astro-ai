@@ -29,6 +29,13 @@ const dressingStylerRoutes = require('./routes/dressingStyler.routes');
 const sharedInsightRoutes = require('./routes/sharedInsight.routes');
 const feedbackRoutes = require('./routes/feedback.routes');
 const sharedChatResponseRoutes = require('./routes/sharedChatResponse.routes');
+const palmReadingRoutes = require('./routes/palmReading.routes');
+const coffeeReadingRoutes = require('./routes/coffeeReading.routes');
+const faceReadingRoutes = require('./routes/faceReading.routes');
+const paymentRoutes = require('./routes/payment.routes');
+const readingHistoryRoutes = require('./routes/readingHistory.routes');
+const creditsRoutes = require('./routes/credits.routes');
+const pushRoutes = require('./routes/push.routes');
 
 const app = express();
 
@@ -61,6 +68,15 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));  // Handle ALL preflight requests explicitly
+
+// Webhook route needs raw body for signature verification (BEFORE express.json)
+app.use('/api/payment/webhook', express.raw({ type: 'application/json' }));
+
+// Increased body limits for image reading routes (BEFORE route handlers)
+app.use('/api/palm-reading', express.json({ limit: '10mb' }));
+app.use('/api/coffee-reading', express.json({ limit: '10mb' }));
+app.use('/api/face-reading', express.json({ limit: '10mb' }));
+app.use('/api/share/style', express.json({ limit: '10mb' }));
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -105,6 +121,13 @@ app.use('/api/dressing-styler', dressingStylerRoutes);
 app.use('/api', sharedInsightRoutes);
 app.use('/api', feedbackRoutes);
 app.use('/api', sharedChatResponseRoutes);
+app.use('/api/palm-reading', palmReadingRoutes);
+app.use('/api/coffee-reading', coffeeReadingRoutes);
+app.use('/api/face-reading', faceReadingRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api/reading-history', readingHistoryRoutes);
+app.use('/api/credits', creditsRoutes);
+app.use('/api/push', pushRoutes);
 
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../website/build')));

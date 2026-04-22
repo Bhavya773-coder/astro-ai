@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import AutoResizeTextarea from './AutoResizeTextarea';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import * as d3 from 'd3';
 import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
@@ -407,6 +408,7 @@ interface ZodiacSign {
 }
 
 const BirthChartPage: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [birthChartData, setBirthChartData] = useState<BirthChartResponse['data'] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -821,14 +823,14 @@ const BirthChartPage: React.FC = () => {
   }
 
   // User doesn't have birth chart data - show educational content
-  if (!birthChartData) {
+  if (user && !birthChartData) {
     return (
       <div className="flex min-h-screen overflow-hidden bg-black text-white">
         <Sidebar />
         <div className="flex-1 lg:ml-64 transition-all duration-300 h-screen flex flex-col" id="main-content">
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 lg:py-16">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 lg:py-16">
               {/* Header */}
               <div className="text-center mb-16">
                 <h1 className="text-4xl md:text-5xl font-bold font-display mb-6">
@@ -958,7 +960,7 @@ const BirthChartPage: React.FC = () => {
         <div className="flex-1 lg:ml-64 transition-all duration-300 h-screen flex flex-col" id="main-content">
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 lg:py-16">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 lg:py-16">
               {/* Header */}
               <div className="text-center mb-12">
                 <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
@@ -1324,7 +1326,7 @@ const BirthChartPage: React.FC = () => {
                     }
                   }
                 }}
-                placeholder="Ask AstroAI about your birth chart..."
+                placeholder="Ask AstroAi4u about your birth chart..."
                 maxRows={6}
                 className="w-full bg-purple-900/95 hover:bg-purple-900 focus:bg-purple-900 backdrop-blur-xl border-2 border-white/70 hover:border-white focus:border-white rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-lg text-white placeholder-white/90 focus:outline-none focus:ring-4 focus:ring-purple-400/60 transition-all shadow-xl shadow-purple-500/20"
               />
@@ -1338,7 +1340,7 @@ const BirthChartPage: React.FC = () => {
                 </svg>
               </button>
             </div>
-            <p className="text-center text-white/30 text-xs mt-2">AstroAI can make mistakes. Consider checking important information.</p>
+            <p className="text-center text-white/30 text-xs mt-2">AstroAi4u can make mistakes. Consider checking important information.</p>
           </form>
         </div>
       </div>
@@ -1347,3 +1349,4 @@ const BirthChartPage: React.FC = () => {
 };
 
 export default BirthChartPage;
+

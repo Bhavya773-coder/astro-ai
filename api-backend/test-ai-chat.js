@@ -22,7 +22,7 @@ async function testAIService() {
   console.log('\n2. Testing AI completion...');
   const messages = [
     { role: 'system', content: 'You are a helpful assistant.' },
-    { role: 'user', content: 'Say "Hello from AstroAI" and nothing else.' }
+    { role: 'user', content: 'Say "Hello from AstroAi4u" and nothing else.' }
   ];
   
   try {
@@ -133,7 +133,7 @@ async function testChatMemory() {
 
 async function runTests() {
   console.log('╔════════════════════════════════════════════════╗');
-  console.log('║       AstroAI Chat System Test Suite          ║');
+  console.log('║       AstroAi4u Chat System Test Suite         ║');
   console.log('╚════════════════════════════════════════════════╝');
   
   try {

@@ -37,14 +37,14 @@ const TermsPage: React.FC = () => {
                 Agreement to Terms
               </h2>
               <p className="text-white/60 text-sm sm:text-base leading-relaxed">
-                By accessing or using the AstroAI platform, you agree to be bound by these Terms of Service. If you do not agree to all of the terms and conditions, you may not use our services.
+                By accessing or using the AstroAi4u platform, you agree to be bound by these Terms of Service. If you do not agree to all of the terms and conditions, you may not use our services.
               </p>
             </section>
 
             <section className="space-y-6">
               <h3 className="text-xl font-bold text-white border-l-4 border-violet-500 pl-4">1. Acceptance of Services</h3>
               <p className="text-white/65 leading-relaxed">
-                AstroAI provides AI-generated astrological interpretations, numerology charts, and style recommendations for informational and entertainment purposes only. We do not provide financial, legal, or medical advice.
+                AstroAi4u provides AI-generated astrological interpretations, numerology charts, and style recommendations for informational and entertainment purposes only. We do not provide financial, legal, or medical advice.
               </p>
 
               <h3 className="text-xl font-bold text-white border-l-4 border-fuchsia-500 pl-4">2. User Conduct</h3>
@@ -54,7 +54,7 @@ const TermsPage: React.FC = () => {
 
               <h3 className="text-xl font-bold text-white border-l-4 border-cyan-500 pl-4">3. Premium Subscriptions</h3>
               <p className="text-white/65 leading-relaxed">
-                Certain features of AstroAI may requires a premium subscription. All fees are non-refundable unless stated otherwise.
+                Certain features of AstroAi4u may requires a premium subscription. All fees are non-refundable unless stated otherwise.
               </p>
             </section>
 

@@ -22,7 +22,7 @@ export const getBaseUrl = () => {
   return process.env.REACT_APP_API_BASE_URL || '';
 };
 
-const TOKEN_KEY = 'astroai_token';
+const TOKEN_KEY = 'astroai4u_token';
 
 export type LoginResponse = {
   token: string;
@@ -40,9 +40,9 @@ export const apiFetch = async (path: string, init?: RequestInit, retries = 2): P
 
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  // Timeout controller — 20s for mobile networks
+  // Timeout controller — 70s for AI image analysis (backend timeout is 60s)
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000);
+  const timeoutId = setTimeout(() => controller.abort(), 70000);
 
   try {
     const res = await fetch(url, {
@@ -152,3 +152,77 @@ export const updateUser = (id: string, data: any) => {
 export const deleteUser = (id: string) => {
   return apiFetch(`/api/users/${id}`, { method: 'DELETE' });
 };
+
+// Image Reading APIs
+export const getPalmReading = (imageBase64: string, mimeType: string, forceRegenerate = false) =>
+  apiFetch('/api/palm-reading', { method: 'POST', body: JSON.stringify({ imageBase64, mimeType, forceRegenerate }) });
+
+export const getCoffeeReading = (imageBase64: string, mimeType: string, forceRegenerate = false) =>
+  apiFetch('/api/coffee-reading', { method: 'POST', body: JSON.stringify({ imageBase64, mimeType, forceRegenerate }) });
+
+export const getFaceReading = (imageBase64: string, mimeType: string, forceRegenerate = false) =>
+  apiFetch('/api/face-reading', { method: 'POST', body: JSON.stringify({ imageBase64, mimeType, forceRegenerate }) });
+
+// Share APIs
+export const shareFaceReading = (userName: string, faceReadingData: any, imageUrl?: string) =>
+  apiFetch('/api/share/face-reading', { method: 'POST', body: JSON.stringify({ user_name: userName, face_reading_data: faceReadingData, image_url: imageUrl }) });
+
+export const shareCoffeeReading = (userName: string, coffeeReadingData: any, imageUrl?: string) =>
+  apiFetch('/api/share/coffee-reading', { method: 'POST', body: JSON.stringify({ user_name: userName, coffee_reading_data: coffeeReadingData, image_url: imageUrl }) });
+
+export const sharePalmReading = (userName: string, palmReadingData: any, imageUrl?: string) =>
+  apiFetch('/api/share/palm-reading', { method: 'POST', body: JSON.stringify({ user_name: userName, palm_reading_data: palmReadingData, image_url: imageUrl }) });
+
+// Reading History API
+export const getReadingHistory = (type: 'palm' | 'coffee' | 'face') =>
+  apiFetch(`/api/reading-history/${type}`);
+
+// Payment APIs
+export const createPaymentOrder = (plan: 'pro' | 'ultra') =>
+  apiFetch('/api/payment/create-order', { method: 'POST', body: JSON.stringify({ plan }) });
+
+export const verifyPayment = (data: {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+  plan: string;
+}) => apiFetch('/api/payment/verify', { method: 'POST', body: JSON.stringify(data) });
+
+export const getPaymentStatus = () =>
+  apiFetch('/api/payment/status', { method: 'GET' });
+
+// Credits API
+export const getCredits = () =>
+  apiFetch('/api/credits', { method: 'GET' });
+
+// Dressing Styler API
+export const generateStyleLook = (force = false) =>
+  apiFetch('/api/dressing-styler/generate', { 
+    method: 'POST', 
+    body: JSON.stringify({ force }) 
+  });
+
+export const updateStyleInteraction = (data: {
+  selected_context?: string;
+  selected_modifier?: string;
+  vibe_selection?: string;
+  outfit_score?: any;
+}) => apiFetch('/api/dressing-styler/interact', { 
+  method: 'POST', 
+  body: JSON.stringify(data) 
+});
+
+export const shareStyleLook = (data: {
+  user_name: string;
+  style_data: any;
+}) => apiFetch('/api/share/style', { 
+  method: 'POST', 
+  body: JSON.stringify(data) 
+});
+
+// Horoscope & Prediction
+export const getHoroscope = (zodiac: string) =>
+  apiFetch('/api/horoscope', { method: 'POST', body: JSON.stringify({ zodiac }) });
+
+export const getDailyDecisionData = (zodiac: string) =>
+  apiFetch('/api/horoscope/daily-decision-engine', { method: 'POST', body: JSON.stringify({ zodiac }) });

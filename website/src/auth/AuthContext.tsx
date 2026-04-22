@@ -17,8 +17,8 @@ type AuthState = {
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
-const TOKEN_KEY = 'astroai_token';
-const USER_KEY = 'astroai_user';
+const TOKEN_KEY = 'astroai4u_token';
+const USER_KEY = 'astroai4u_user';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);

@@ -53,10 +53,10 @@ const SettingsPage: React.FC = () => {
   const [autoSave, setAutoSave] = useState(true);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('astroai-theme') as Theme;
-    const savedFontSize = localStorage.getItem('astroai-fontsize') as 'small' | 'medium' | 'large';
-    const savedNotifications = localStorage.getItem('astroai-notifications');
-    const savedAutoSave = localStorage.getItem('astroai-autosave');
+    const savedTheme = localStorage.getItem('astroai4u-theme') as Theme;
+    const savedFontSize = localStorage.getItem('astroai4u-fontsize') as 'small' | 'medium' | 'large';
+    const savedNotifications = localStorage.getItem('astroai4u-notifications');
+    const savedAutoSave = localStorage.getItem('astroai4u-autosave');
 
     if (savedTheme && themes[savedTheme]) setCurrentTheme(savedTheme);
     if (savedFontSize) setFontSize(savedFontSize);
@@ -66,26 +66,26 @@ const SettingsPage: React.FC = () => {
 
   const handleThemeChange = (theme: Theme) => {
     setCurrentTheme(theme);
-    localStorage.setItem('astroai-theme', theme);
+    localStorage.setItem('astroai4u-theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
   };
 
   const handleFontSizeChange = (size: 'small' | 'medium' | 'large') => {
     setFontSize(size);
-    localStorage.setItem('astroai-fontsize', size);
+    localStorage.setItem('astroai4u-fontsize', size);
     document.documentElement.setAttribute('data-fontsize', size);
   };
 
   const handleNotificationToggle = () => {
     const newValue = !notifications;
     setNotifications(newValue);
-    localStorage.setItem('astroai-notifications', String(newValue));
+    localStorage.setItem('astroai4u-notifications', String(newValue));
   };
 
   const handleAutoSaveToggle = () => {
     const newValue = !autoSave;
     setAutoSave(newValue);
-    localStorage.setItem('astroai-autosave', String(newValue));
+    localStorage.setItem('astroai4u-autosave', String(newValue));
   };
 
   const clearAllData = () => {

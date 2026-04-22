@@ -34,7 +34,7 @@ type AppDataState = {
 
 const AppDataContext = createContext<AppDataState | undefined>(undefined);
 
-const STORAGE_KEY = 'astroai_app_cache_v1';
+const STORAGE_KEY = 'astroai4u_app_cache_v1';
 const TODAY_KEY = () => new Date().toDateString();
 
 type CacheShape = {

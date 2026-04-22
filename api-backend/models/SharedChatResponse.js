@@ -4,8 +4,7 @@ const crypto = require('crypto');
 const sharedChatResponseSchema = new mongoose.Schema({
   share_id: {
     type: String,
-    unique: true,
-    index: true
+    unique: true
   },
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -46,8 +45,7 @@ sharedChatResponseSchema.pre('save', function(next) {
   next();
 });
 
-// Index for querying by share_id
-sharedChatResponseSchema.index({ share_id: 1 });
+// Index for querying by user_id and recreation order
 sharedChatResponseSchema.index({ user_id: 1, created_at: -1 });
 
 module.exports = mongoose.model('SharedChatResponse', sharedChatResponseSchema);

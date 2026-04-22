@@ -157,18 +157,18 @@ const HomePage: React.FC = () => {
     mainEntity: [
       {
         '@type': 'Question',
-        name: 'How does AstroAI generate my readings?',
+        name: 'How does AstroAi4u generate my readings?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'AstroAI uses advanced algorithms and traditional astrological calculations combined with AI-powered insights to generate personalized readings based on your birth chart and numerology data.'
+          text: 'AstroAi4u uses advanced algorithms and traditional astrological calculations combined with AI-powered insights to generate personalized readings based on your birth chart and numerology data.'
         }
       },
       {
         '@type': 'Question',
-        name: 'Is AstroAI free to use?',
+        name: 'Is AstroAi4u free to use?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes! AstroAI offers free daily horoscopes, basic numerology insights, and AI chat features. Premium plans unlock advanced birth chart analysis, compatibility reports, and detailed yearly forecasts.'
+          text: 'Yes! AstroAi4u offers free daily horoscopes, basic numerology insights, and AI chat features. Premium plans unlock advanced birth chart analysis, compatibility reports, and detailed yearly forecasts.'
         }
       },
       {
@@ -200,20 +200,20 @@ const HomePage: React.FC = () => {
 
   const faqs = [
     {
-      question: "How does AstroAI generate my readings?",
-      answer: "AstroAI uses advanced algorithms and traditional astrological calculations combined with AI-powered insights to generate personalized readings based on your birth chart and numerology data."
+      question: "How does AstroAi4u generate my readings?",
+      answer: "AstroAi4u uses advanced algorithms and traditional astrological calculations combined with AI-powered insights to generate personalized readings based on your birth chart and numerology data."
     },
     {
-      question: "How accurate are AstroAI's readings?",
+      question: "How accurate are AstroAi4u's readings?",
       answer: "Our readings are based on established astrological principles and numerology systems. While we strive for accuracy, astrology is interpretive and should be used as guidance for self-reflection."
     },
     {
-      question: "What kind of questions can I ask AstroAI?",
+      question: "What kind of questions can I ask AstroAi4u?",
       answer: "You can ask about career guidance, relationships, personal growth, life purpose, compatibility with others, and timing for important decisions."
     },
     {
-      question: "Is AstroAI free to use?",
-      answer: "AstroAI offers both free and premium features. Basic birth chart analysis and daily insights are free, while advanced reports and personalized consultations require a subscription."
+      question: "Is AstroAi4u free to use?",
+      answer: "AstroAi4u offers both free and premium features. Basic birth chart analysis and daily insights are free, while advanced reports and personalized consultations require a subscription."
     },
     {
       question: "Are my questions and data private?",
@@ -229,7 +229,7 @@ const HomePage: React.FC = () => {
     {
       name: "Sarah M.",
       role: "Marketing Professional",
-      content: "AstroAI helped me understand my life path number and make a successful career change. The insights were incredibly accurate!",
+      content: "AstroAi4u helped me understand my life path number and make a successful career change. The insights were incredibly accurate!",
       rating: 5
     },
     {
@@ -241,7 +241,7 @@ const HomePage: React.FC = () => {
     {
       name: "Emily R.",
       role: "Yoga Instructor",
-      content: "I use AstroAI daily for guidance. The birth chart analysis revealed aspects of myself I never knew existed.",
+      content: "I use AstroAi4u daily for guidance. The birth chart analysis revealed aspects of myself I never knew existed.",
       rating: 5
     }
   ];
@@ -249,9 +249,9 @@ const HomePage: React.FC = () => {
   return (
     <CosmicBackground>
       <SEO
-        title="Astro AI | AI Astrology & Personalized Oracle | Astroai4u"
-        description="Astro AI - Your Personal AI Astrologer & My Oracle. Get AI-powered astrology readings, daily horoscopes, personalized tarot, numerology insights, birth charts & face reading."
-        keywords="Astro AI, Astroai4u, AI Astrology, Personalized AI, My Oracle, Astrology Using AI"
+        title="AstroAi4u | AI Astrology & Personalized Oracle"
+        description="AstroAi4u - Your Personal AI Astrologer & My Oracle. Get AI-powered astrology readings, daily horoscopes, personalized tarot, numerology insights, birth charts & face reading."
+        keywords="AstroAi4u, AI Astrology, Personalized AI, My Oracle, Astrology Using AI"
         canonical="https://astroai4u.com/"
         ogImage="https://astroai4u.com/og-image.jpg"
       />
@@ -312,10 +312,10 @@ const HomePage: React.FC = () => {
         <header className="relative z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <img src="/favicon.png" alt="AstroAI" className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-lg" />
+              <img src="/favicon.png" alt="AstroAi4u" className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-lg" />
               <div className="px-3 sm:px-4 py-2 sm:py-2 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
                 <div className="text-lg sm:text-xl font-bold font-display bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]">
-                  AstroAI
+                  AstroAi4u
                 </div>
                 <div className="text-xs sm:text-sm text-white/70 block sm:hidden">AI-Powered Intelligence</div>
               </div>
@@ -631,7 +631,7 @@ const HomePage: React.FC = () => {
             <h2 className="text-4xl font-bold font-display bg-gradient-to-r from-white via-fuchsia-300 to-violet-400 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
               Frequently Asked Questions
             </h2>
-            <p className="mt-4 text-xl text-violet-300 font-medium">Everything you need to know about AstroAI</p>
+            <p className="mt-4 text-xl text-violet-300 font-medium">Everything you need to know about AstroAi4u</p>
           </div>
 
           <div className="space-y-4">
@@ -664,9 +664,9 @@ const HomePage: React.FC = () => {
             {/* Company */}
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <img src="/favicon.png" alt="AstroAI" className="w-9 h-9 rounded-full object-cover shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+                <img src="/favicon.png" alt="AstroAi4u" className="w-9 h-9 rounded-full object-cover shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
                 <h3 className="text-xl font-bold font-display bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
-                  AstroAI
+                  AstroAi4u
                 </h3>
               </div>
               <p className="text-white/60 leading-relaxed text-sm">
@@ -725,7 +725,7 @@ const HomePage: React.FC = () => {
           <div className="border-t border-white/10 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-white/75 text-sm">
-                © 2026 AstroAI. All rights reserved.
+                © 2026 AstroAi4u. All rights reserved.
               </p>
               <div className="flex gap-6 mt-4 md:mt-0">
                 <button onClick={() => navigate('/privacy')} className="text-white/70 hover:text-amber-300 text-sm transition-colors">Privacy</button>

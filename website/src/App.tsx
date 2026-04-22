@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './auth/AuthContext';
 import HomePage from './components/HomePage';
@@ -21,6 +21,10 @@ import BirthChartPage from './components/BirthChartPage';
 import ReportsPage from './components/ReportsPage';
 import ProSubscriptionPage from './components/ProSubscriptionPage';
 import SubscriptionSuccessPage from './components/SubscriptionSuccessPage';
+import PalmReadingPage from './components/PalmReadingPage';
+import CoffeeReadingPage from './components/CoffeeReadingPage';
+import FaceReadingPage from './components/FaceReadingPage';
+import PreviousReadingsPage from './components/PreviousReadingsPage';
 import SignUpPage from './components/SignUpPage';
 import ProtectedRoute from './auth/ProtectedRoute';
 import GPTChatPage from './components/GPTChatPage';
@@ -31,34 +35,16 @@ import SharedChatPage from './components/SharedChatPage';
 import SharedHoroscopePage from './components/SharedHoroscopePage';
 import SharedNumerologyPage from './components/SharedNumerologyPage';
 import SharedChatResponsePage from './components/SharedChatResponsePage';
+import SharedPalmReadingPage from './components/SharedPalmReadingPage';
+import SharedCoffeeReadingPage from './components/SharedCoffeeReadingPage';
+import SharedFaceReadingPage from './components/SharedFaceReadingPage';
+import SharedStylePage from './components/SharedStylePage';
 import PublicHoroscopePage from './components/PublicHoroscopePage';
 import PublicBirthChartPage from './components/PublicBirthChartPage';
 import PublicNumerologyPage from './components/PublicNumerologyPage';
 import PublicAIChatPage from './components/PublicAIChatPage';
 import PublicReportsPage from './components/PublicReportsPage';
-import FeedbackButton from './components/FeedbackButton';
 import { AppDataProvider } from './state/AppDataContext';
-
-// Pages where feedback button should be visible
-const FEEDBACK_ENABLED_PATHS = [
-  '/dashboard',
-  '/numerology',
-  '/onboarding',
-  '/style-forecaster',
-  '/ai-chat',
-  '/reports',
-  '/birth-chart'
-];
-
-// Component to conditionally render feedback button
-const ConditionalFeedbackButton: React.FC = () => {
-  const location = useLocation();
-  const shouldShowFeedback = FEEDBACK_ENABLED_PATHS.some(path => 
-    location.pathname === path || location.pathname.startsWith(path + '/')
-  );
-  
-  return shouldShowFeedback ? <FeedbackButton /> : null;
-};
 
 // Wrapper component to handle authenticated redirect for homepage
 const HomePageWrapper: React.FC = () => {
@@ -189,6 +175,10 @@ function App() {
             <Route path="/shared-horoscope/:shareId" element={<SharedHoroscopePage />} />
             <Route path="/shared-numerology/:shareId" element={<SharedNumerologyPage />} />
             <Route path="/shared-response/:shareId" element={<SharedChatResponsePage />} />
+            <Route path="/shared-palm-reading/:shareId" element={<SharedPalmReadingPage />} />
+            <Route path="/shared-coffee-reading/:shareId" element={<SharedCoffeeReadingPage />} />
+            <Route path="/shared-face-reading/:shareId" element={<SharedFaceReadingPage />} />
+            <Route path="/shared-style/:shareId" element={<SharedStylePage />} />
             
             {/* Public landing pages for SEO */}
             <Route path="/horoscope" element={<PublicHoroscopePage />} />
@@ -204,6 +194,38 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DressingStylerPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/palm-reading"
+              element={
+                <ProtectedRoute>
+                  <PalmReadingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/coffee-reading"
+              element={
+                <ProtectedRoute>
+                  <CoffeeReadingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/face-reading"
+              element={
+                <ProtectedRoute>
+                  <FaceReadingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/previous-readings"
+              element={
+                <ProtectedRoute>
+                  <PreviousReadingsPage />
                 </ProtectedRoute>
               }
             />
@@ -241,7 +263,6 @@ function App() {
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <ConditionalFeedbackButton />
         </AppDataProvider>
       </div>
     </Router>

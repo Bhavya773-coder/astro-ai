@@ -10,7 +10,7 @@ const HelpCenterPage: React.FC = () => {
   const faqs = [
     {
       question: "How accurate are the AI's interpretations?",
-      answer: "AstroAI combines centuries-old astrological calculations with sophisticated planetary algorithms. While it provides deep symbolic guidance, we recommend you use it as an interactive tool for self-reflection and personal insight."
+      answer: "AstroAi4u combines centuries-old astrological calculations with sophisticated planetary algorithms. While it provides deep symbolic guidance, we recommend you use it as an interactive tool for self-reflection and personal insight."
     },
     {
       question: "Can I change my birth details later?",

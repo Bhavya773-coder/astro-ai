@@ -133,7 +133,7 @@ const OnboardingStep3: React.FC = () => {
             </div>
             
             <h1 className="font-display text-2xl font-bold text-white mb-2">
-              {progress < 100 ? 'Generating Your Insights' : 'Complete!'}
+              {progress < 100 ? 'Mapping Your Cosmic Path...' : 'Complete!'}
             </h1>
             
             <p className="text-white/60 mb-6">

@@ -92,7 +92,6 @@ const GPTChatPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [profileSummary, setProfileSummary] = useState<ProfileSummary | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
@@ -296,7 +295,6 @@ const GPTChatPage: React.FC = () => {
         setChats(prev => [newChat, ...prev]);
         setCurrentChat(newChat);
         setMessages([]);
-        setSidebarOpen(false);
         // Update URL with new chat ID
         navigate(`/ai-chat?chatId=${newChat._id}`, { replace: true });
         // Notify Sidebar to refresh chat list
@@ -333,7 +331,6 @@ const GPTChatPage: React.FC = () => {
 
   const selectChat = (chat: Chat) => {
     setCurrentChat(chat);
-    setSidebarOpen(false);
     setEditingChatId(null);
     setEditTitle('');
     // Update URL with selected chat ID
@@ -669,17 +666,7 @@ const GPTChatPage: React.FC = () => {
           <div className="flex flex-col h-full">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10 bg-slate-950/50 backdrop-blur-sm">
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-lg hover:bg-white/10 text-white/70 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              
-              {/* Chat Title with inline editing */}
+              {/* Chat Title with inline editing - Sidebar mobile button is at top-left */}
               <div className="flex items-center gap-2">
                 {editingChatId === currentChat?._id ? (
                   <input
@@ -695,7 +682,7 @@ const GPTChatPage: React.FC = () => {
                 ) : (
                   <>
                     <h1 className="text-lg font-semibold text-white">
-                      {currentChat?.title || 'AstroAI Chat'}
+                      {currentChat?.title || 'AstroAi4u Chat'}
                     </h1>
                     {currentChat && (
                       <button
@@ -1018,7 +1005,7 @@ const GPTChatPage: React.FC = () => {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Ask AstroAI any cosmic question..."
+                    placeholder="Ask AstroAi4u any cosmic question..."
                     maxRows={6}
                     className="w-full bg-purple-900/95 hover:bg-purple-900 focus:bg-purple-900 backdrop-blur-xl border-2 border-white/70 hover:border-white focus:border-white rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-lg text-white placeholder-white/90 focus:outline-none focus:ring-4 focus:ring-purple-400/60 transition-all shadow-xl shadow-purple-500/20"
                   />
@@ -1032,7 +1019,7 @@ const GPTChatPage: React.FC = () => {
                     </svg>
                   </button>
                 </div>
-                <p className="text-center text-white/30 text-xs mt-2">AstroAI can make mistakes. Consider checking important information.</p>
+                <p className="text-center text-white/30 text-xs mt-2">AstroAi4u can make mistakes. Consider checking important information.</p>
               </form>
             </div>
           </div>

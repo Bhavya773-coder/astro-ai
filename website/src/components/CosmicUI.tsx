@@ -4,7 +4,7 @@ interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   hover?: boolean;
-  glow?: 'pink' | 'cyan' | 'gold' | 'purple' | 'none';
+  glow?: 'pink' | 'cyan' | 'gold' | 'purple' | 'amber' | 'blue' | 'none';
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({ 
@@ -19,6 +19,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     cyan: 'hover:shadow-[0_0_35px_rgba(76,201,240,0.45)]',
     gold: 'hover:shadow-[0_0_35px_rgba(255,215,0,0.45)]',
     purple: 'hover:shadow-[0_0_35px_rgba(168,85,247,0.45)]',
+    amber: 'hover:shadow-[0_0_35px_rgba(245,158,11,0.45)]',
+    blue: 'hover:shadow-[0_0_35px_rgba(59,130,246,0.45)]',
     none: '',
   };
 
@@ -30,7 +32,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
         bg-black/40
         backdrop-blur-xl
         transition-all duration-300
-        ${hover ? `hover:border-${glow === 'none' ? 'fuchsia-500' : glow}-500/50 ${glowStyles[glow]} hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]` : ''}
+        ${hover ? `hover:border-${glow === 'none' ? 'fuchsia-500' : (glow === 'amber' ? 'amber' : (glow === 'blue' ? 'blue' : glow))}-500/50 ${glowStyles[glow]} hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]` : ''}
         ${className}
       `}
       {...props}
@@ -196,13 +198,28 @@ export const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: s
   );
 };
 
-export const GradientText: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
+export const GradientText: React.FC<{ 
+  children: React.ReactNode; 
+  className?: string;
+  color?: 'fuchsia' | 'violet' | 'amber' | 'blue' | 'cyan' | 'gold' | 'purple';
+}> = ({ 
   children, 
-  className = '' 
+  className = '',
+  color = 'fuchsia'
 }) => {
+  const colorGradients = {
+    fuchsia: 'from-fuchsia-400 to-violet-400',
+    violet: 'from-violet-400 to-fuchsia-400',
+    amber: 'from-amber-400 to-orange-400',
+    blue: 'from-blue-400 to-cyan-400',
+    cyan: 'from-cyan-400 to-blue-400',
+    gold: 'from-yellow-300 to-amber-500',
+    purple: 'from-purple-400 to-indigo-400',
+  };
+
   return (
     <span 
-      className={`bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-violet-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] ${className}`}
+      className={`bg-clip-text text-transparent bg-gradient-to-r ${colorGradients[color]} drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] ${className}`}
     >
       {children}
     </span>
@@ -245,5 +262,26 @@ export const Badge: React.FC<{ children: React.ReactNode; variant?: 'pink' | 'cy
     `}>
       {children}
     </span>
+  );
+};
+
+export const Skeleton: React.FC<{
+  className?: string;
+  variant?: 'rect' | 'text' | 'circle';
+}> = ({ className = '', variant = 'rect' }) => {
+  const variantClasses = {
+    rect: 'rounded-lg',
+    text: 'rounded h-4 w-full',
+    circle: 'rounded-full',
+  };
+
+  return (
+    <div
+      className={`
+        animate-pulse bg-white/5 border border-white/5
+        ${variantClasses[variant]}
+        ${className}
+      `}
+    />
   );
 };

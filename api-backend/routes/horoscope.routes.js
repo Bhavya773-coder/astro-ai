@@ -27,5 +27,9 @@ router.use(requireAuth);
  * @response { success: boolean, data: { zodiac, date, horoscope, luckyElement } }
  */
 router.post('/', horoscopeLimiter, horoscopeController.generateHoroscope);
+router.post('/daily-action', horoscopeLimiter, horoscopeController.generateDailyFocusAction);
+router.post('/personalized-prediction', horoscopeLimiter, horoscopeController.generatePersonalizedPrediction);
+router.post('/daily-decision-engine', horoscopeLimiter, horoscopeController.generateDailyDecisionData);
+router.post('/feedback', horoscopeController.submitFeedback);
 
 module.exports = router;

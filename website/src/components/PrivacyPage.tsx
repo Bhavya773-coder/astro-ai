@@ -36,7 +36,7 @@ const PrivacyPage: React.FC = () => {
                 Your Privacy at the Center
               </h2>
               <p className="text-white/70 leading-relaxed mb-6">
-                At AstroAI, we believe your personal data—especially your birth details and life insights—is sacred. Our platform is built on a foundation of "Privacy by Design." We do not sell your personal information to third parties.
+                At AstroAi4u, we believe your personal data—especially your birth details and life insights—is sacred. Our platform is built on a foundation of "Privacy by Design." We do not sell your personal information to third parties.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-center gap-4 p-4 border border-fuchsia-500/20 bg-fuchsia-500/5 rounded-xl">

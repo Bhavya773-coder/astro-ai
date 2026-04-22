@@ -16,6 +16,7 @@
     "autoprefixer": "^10.4.27",
     "axios": "^1.13.6",
     "d3": "^7.9.0",
+    "firebase": "^12.12.1",
     "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
@@ -44,7 +45,10 @@
     "eject": "react-scripts eject"
   },
   "reactSnap": {
-    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox"
+    ],
     "renderAfterDocumentEvent": "render-event",
     "publicPath": "/",
     "crawl": true,

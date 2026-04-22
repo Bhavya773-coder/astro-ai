@@ -27,7 +27,7 @@ const sendOtpEmail = async ({ to, otp, ttlMinutes }) => {
 
   const payload = {
     to,
-    subject: 'Your AstroAI password reset code',
+    subject: 'Your AstroAi4u password reset code',
     template: 'otp_reset',
     variables: {
       username,
@@ -69,7 +69,8 @@ const register = async (req, res, next) => {
     role: 'user',
     subscription_plan: 'free',
     subscription_status: 'inactive',
-    is_believer: is_believer !== undefined ? Boolean(is_believer) : true
+    is_believer: is_believer !== undefined ? Boolean(is_believer) : true,
+    credits: 50
   });
 
   const token = signToken(user);

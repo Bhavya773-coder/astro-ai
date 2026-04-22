@@ -305,7 +305,7 @@ const OnboardingFlow: React.FC = () => {
                 <Telescope className="w-10 h-10 text-violet-300" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">{progress < 100 ? 'Writing Your Destiny...' : 'Success!'}</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">{progress < 100 ? 'Consulting the Stars...' : 'Success!'}</h1>
             <p className="text-white/60 text-sm mb-6">{loadingStep}</p>
             <div className="w-full bg-white/5 rounded-full h-2 mb-4">
               <div
@@ -334,10 +334,10 @@ const OnboardingFlow: React.FC = () => {
       <div className="h-20 flex items-center justify-between px-6 border-b border-white/5 bg-black/40 backdrop-blur-md z-10 shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500 to-violet-600 flex items-center justify-center overflow-hidden">
-            <img src="/favicon.png" alt="AstroAI" className="w-full h-full object-cover" />
+            <img src="/favicon.png" alt="AstroAi4u" className="w-full h-full object-cover" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white tracking-wide">AstroAI Onboarding</h1>
+            <h1 className="text-lg font-bold text-white tracking-wide">AstroAi4u Onboarding</h1>
             <p className="text-[10px] text-fuchsia-400 font-bold uppercase tracking-widest">Digital Consciousness 1.0</p>
           </div>
         </div>

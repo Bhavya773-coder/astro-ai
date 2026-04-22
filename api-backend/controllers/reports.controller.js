@@ -14,7 +14,7 @@ async function geocodePlace(place) {
       limit: 1
     },
     headers: {
-      'User-Agent': 'AstroAI-Kundli/1.0 (backend)'
+      'User-Agent': 'AstroAi4u-Kundli/1.0 (backend)'
     }
   });
 

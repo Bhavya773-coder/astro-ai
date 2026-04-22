@@ -139,7 +139,7 @@ const ReportsPage: React.FC = () => {
         <div className="flex-1 lg:ml-64 transition-all duration-300 h-screen flex flex-col" id="main-content">
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8 lg:py-16">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 lg:py-16">
               <h1 className="text-3xl md:text-4xl font-bold font-display">Reports</h1>
               <p className="mt-2 text-white/75 max-w-2xl">
                 Generate compatibility reports and review your saved analyses.
@@ -398,7 +398,7 @@ const ReportsPage: React.FC = () => {
                     }
                   }
                 }}
-                placeholder="Ask AstroAI about your reports..."
+                placeholder="Ask AstroAi4u about your reports..."
                 maxRows={6}
                 className="w-full bg-purple-900/95 hover:bg-purple-900 focus:bg-purple-900 backdrop-blur-xl border-2 border-white/70 hover:border-white focus:border-white rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-lg text-white placeholder-white/90 focus:outline-none focus:ring-4 focus:ring-purple-400/60 transition-all shadow-xl shadow-purple-500/20"
               />
@@ -412,7 +412,7 @@ const ReportsPage: React.FC = () => {
                 </svg>
               </button>
             </div>
-            <p className="text-center text-white/30 text-xs mt-2">AstroAI can make mistakes. Consider checking important information.</p>
+            <p className="text-center text-white/30 text-xs mt-2">AstroAi4u can make mistakes. Consider checking important information.</p>
           </form>
         </div>
       </div>

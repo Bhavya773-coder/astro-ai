@@ -20,7 +20,7 @@ router.post('/generate', dressingStylerController.generateSuggestion);
 // Get today's suggestion (if exists)
 router.get('/today', dressingStylerController.getTodaySuggestion);
 
-// Get suggestion history
-router.get('/history', dressingStylerController.getHistory);
+// Register an interaction (context, vibe, etc)
+router.post('/interact', dressingStylerController.updateInteraction);
 
 module.exports = router;

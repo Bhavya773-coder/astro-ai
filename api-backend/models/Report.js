@@ -9,7 +9,7 @@ const reportSchema = new mongoose.Schema({
   report_type: {
     type: String,
     required: true,
-    enum: ['birth_chart', 'horoscope', 'numerology', 'compatibility', 'insights']
+    enum: ['birth_chart', 'horoscope', 'numerology', 'compatibility', 'insights', 'palm_reading', 'coffee_reading', 'face_reading']
   },
   content: {
     type: mongoose.Schema.Types.Mixed, // Can store any type of data
