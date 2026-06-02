@@ -535,7 +535,13 @@ MONEY_LUCK: [time]`
       const aiResponse = await aiService.generateCompletion(messages, { temperature: 0.95 });
       let parsedData;
       try {
-        parsedData = JSON.parse(aiResponse.replace(/```json|```/g, '').trim());
+        let cleanedText = aiResponse.trim();
+        const firstBrace = cleanedText.indexOf('{');
+        const lastBrace = cleanedText.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1) {
+          cleanedText = cleanedText.substring(firstBrace, lastBrace + 1);
+        }
+        parsedData = JSON.parse(cleanedText);
       } catch (e) {
         console.error('JSON Parse error, trying fallback', e);
         throw new Error('AI output was not valid JSON');
@@ -551,8 +557,83 @@ MONEY_LUCK: [time]`
 
       res.json({ success: true, data: parsedData });
     } catch (error) {
-      console.error('[DecisionEngine] Error:', error);
-      res.status(500).json({ success: false, message: 'Failed to generate decision data' });
+      console.error('[DecisionEngine] Error generating data, serving cosmic fallback:', error);
+      
+      const fallbackData = {
+        hook: `A silent shift in the stars demands absolute clarity in your choices today, ${zodiac || 'Cosmic'}.`,
+        signals: {
+          focus: "High",
+          emotion: "Stable"
+        },
+        quadrants: {
+          work: {
+            moves: { 
+              optionA: "Initiate the conversation on the pending project.", 
+              optionB: "Quietly refine your plan before presenting." 
+            },
+            actions: { 
+              do: ["Double-check all email drafts", "Acknowledge a colleague's input"], 
+              avoid: ["Signing long-term contracts", "Overcommitting to extra shifts"] 
+            },
+            timing: { powerWindow: "10:00 AM - 12:30 PM", cautionWindow: "After 4:00 PM" },
+            predictions: ["A meeting will yield unexpected clarity", "A minor technical delay will resolve itself"],
+            insight: `Mercury aligns with your ${zodiac || 'Cosmic'} house of communication, urging you to choose your words with absolute precision today.`
+          },
+          love: {
+            moves: { 
+              optionA: "Share a deep, unspoken feeling with your partner.", 
+              optionB: "Create comfortable space for them to open up first." 
+            },
+            actions: { 
+              do: ["Listen without offering immediate solutions", "Plan a quiet evening in"], 
+              avoid: ["Bringing up old, resolved arguments", "Making assumptions about their silence"] 
+            },
+            timing: { powerWindow: "6:00 PM - 8:30 PM", cautionWindow: "Late night" },
+            predictions: ["A shared laugh will dissolve recent tension", "A small gesture of appreciation will go a long way"],
+            insight: `Venus shines softly on ${zodiac || 'Cosmic'} relationships, favoring deep listening and warm, small gestures of affection.`
+          },
+          mind: {
+            moves: { 
+              optionA: "Dedicate 30 minutes to complete mindfulness/meditation.", 
+              optionB: "Journal your scattered thoughts to clear mental space." 
+            },
+            actions: { 
+              do: ["Take short walking breaks", "Hydrate consistently throughout the day"], 
+              avoid: ["Consuming news right before sleeping", "Engaging in stressful online debates"] 
+            },
+            timing: { powerWindow: "7:00 AM - 8:30 AM", cautionWindow: "After 9:00 PM" },
+            predictions: ["A sudden moment of clarity will solve a persistent worry", "You will feel a noticeable release of physical tension"],
+            insight: "The moon enters a reflective phase, encouraging you to prioritize mental rest and reset your internal compass."
+          },
+          money: {
+            moves: { 
+              optionA: "Review your weekly subscription list for hidden leaks.", 
+              optionB: "Allocate a fixed sum to your long-term savings goal." 
+            },
+            actions: { 
+              do: ["Log every small expense", "Compare prices before any purchase"], 
+              avoid: ["Impulsive online retail shopping", "Lending money without clear terms"] 
+            },
+            timing: { powerWindow: "1:00 PM - 3:00 PM", cautionWindow: "Evening hours" },
+            predictions: ["You will identify a small, unnecessary recurring cost", "An insightful idea for a side saving method will strike you"],
+            insight: "Saturn provides stable grounding in your financial house, reminding you that small, consistent savings build long-term security."
+          }
+        }
+      };
+
+      // Save the fallback data for today so we don't query LLM repeatedly and spike load
+      try {
+        await DailyDecision.create({
+          user_id,
+          date: today,
+          zodiac,
+          data: fallbackData
+        });
+      } catch (saveError) {
+        console.error('[DecisionEngine] Failed to save fallback data to DB:', saveError);
+      }
+
+      res.json({ success: true, data: fallbackData });
     }
   }
 }
