@@ -41,15 +41,32 @@ const DailyDecisionEngine: React.FC<DailyDecisionEngineProps> = ({ zodiac, strea
   const [showInsight, setShowInsight] = useState(true);
 
   useEffect(() => {
-    if (zodiac) fetchData();
+    if (zodiac) {
+      const today = new Date().toISOString().split('T')[0];
+      const cacheKey = `astroai_daily_decision_${zodiac.toLowerCase()}_${today}`;
+      const cachedData = localStorage.getItem(cacheKey);
+
+      if (cachedData) {
+        try {
+          setData(JSON.parse(cachedData));
+          setLoading(false);
+          return;
+        } catch (e) {
+          localStorage.removeItem(cacheKey);
+        }
+      }
+
+      fetchData(cacheKey);
+    }
   }, [zodiac]);
 
-  const fetchData = async () => {
+  const fetchData = async (cacheKey: string) => {
     setLoading(true);
     try {
       const res = await getDailyDecisionData(zodiac);
-      if (res.success) {
+      if (res.success && res.data) {
         setData(res.data);
+        localStorage.setItem(cacheKey, JSON.stringify(res.data));
       }
     } catch (err) {
       console.error('Failed to fetch decision data:', err);
