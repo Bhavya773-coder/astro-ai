@@ -2,10 +2,16 @@ const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const User = require('../models/User');
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+let razorpay;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+  });
+} else {
+  console.warn('[Payment] Warning: Razorpay credentials are not configured. Payment routes will not function.');
+}
+
 
 // Credit Packages
 const CREDIT_PACKAGES = {

@@ -1,4 +1,8 @@
 require('dotenv').config();
+const dns = require('dns');
+
+// Configure custom public DNS servers to avoid querySrv ECONNREFUSED errors
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const { connectDB } = require('./config/db');
 const { app } = require('./app');

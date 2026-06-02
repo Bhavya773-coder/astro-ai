@@ -19,8 +19,8 @@ import MainPage from './components/MainPage';
 import NumerologyPage from './components/NumerologyPage';
 import BirthChartPage from './components/BirthChartPage';
 import ReportsPage from './components/ReportsPage';
-import ProSubscriptionPage from './components/ProSubscriptionPage';
-import SubscriptionSuccessPage from './components/SubscriptionSuccessPage';
+// import ProSubscriptionPage from './components/ProSubscriptionPage';
+// import SubscriptionSuccessPage from './components/SubscriptionSuccessPage';
 import PalmReadingPage from './components/PalmReadingPage';
 import CoffeeReadingPage from './components/CoffeeReadingPage';
 import FaceReadingPage from './components/FaceReadingPage';
@@ -232,17 +232,13 @@ function App() {
             <Route
               path="/pro"
               element={
-                <ProtectedRoute>
-                  <ProSubscriptionPage />
-                </ProtectedRoute>
+                <Navigate to="/dashboard" replace />
               }
             />
             <Route
               path="/subscription-success"
               element={
-                <ProtectedRoute>
-                  <SubscriptionSuccessPage />
-                </ProtectedRoute>
+                <Navigate to="/dashboard" replace />
               }
             />
             <Route

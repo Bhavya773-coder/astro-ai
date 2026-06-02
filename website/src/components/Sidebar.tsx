@@ -479,8 +479,8 @@ const Sidebar: React.FC = () => {
               </div>
             </div>
 
-            {/* Buy Credits Button */}
-            <button
+            {/* Buy Credits Button - Temporarily hidden as payments are disabled */}
+            {/* <button
               onClick={() => {
                 navigate('/pro');
                 setIsMobileMenuOpen(false);
@@ -489,7 +489,7 @@ const Sidebar: React.FC = () => {
             >
               <Coins className="w-4 h-4" />
               <span>Buy Credits</span>
-            </button>
+            </button> */}
 
             {/* User Info */}
             <div className="flex items-center justify-between mb-4">
