@@ -4,20 +4,29 @@ import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, CosmicButton } from './CosmicUI';
 import { ChevronLeft, MessageSquare, Mail, MapPin, Send, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { submitContactForm } from '../api/client';
 
 const ContactPage: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isSending, setIsSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSending(true);
-    setTimeout(() => {
-      toast.success('Your cosmic message has been sent. Our astronomers will be in touch shortly.');
+    try {
+      const res = await submitContactForm(formData.name, formData.email, formData.message);
+      if (res?.success) {
+        toast.success(res.message || 'Your cosmic message has been sent. Our astronomers will be in touch shortly.');
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        toast.error(res?.message || 'Failed to send message');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send message. Please try again later.');
+    } finally {
       setIsSending(false);
-      setFormData({ name: '', email: '', message: '' });
-    }, 1500);
+    }
   };
 
   return (
@@ -94,18 +103,21 @@ const ContactPage: React.FC = () => {
                 <Mail className="w-6 h-6 text-violet-400 mt-1" />
                 <div>
                   <h3 className="text-lg font-bold text-white">Email Us</h3>
-                  <p className="text-white/60">cosmic@astroai4u.com</p>
+                  <p className="text-white/60">info@astroai4u.com</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-6 bg-fuchsia-500/10 rounded-2xl border border-fuchsia-500/20">
                 <MapPin className="w-6 h-6 text-fuchsia-400 mt-1" />
                 <div>
-                  <h3 className="text-lg font-bold text-white">总部 (Headquarters)</h3>
-                  <p className="text-white/60">Celestial Way, Galaxy One,<br />Digital Universe 10101</p>
+                  <h3 className="text-lg font-bold text-white">Headquarters</h3>
+                  <p className="text-white/60">5th Floor, City Point, Opposite Town Hall, Gujarat 361006</p>
                 </div>
               </div>
               <div className="p-6 text-center italic text-white/40 text-sm">
                 "Wherever you are in the digital cosmos, we are just a message away."
+                <div className="mt-4 text-[10px] uppercase tracking-widest font-bold opacity-50">
+                  AstroAi4u — Made under Arcadian Works
+                </div>
               </div>
             </div>
           </GlassCard>

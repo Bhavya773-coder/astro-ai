@@ -69,6 +69,7 @@ const PrivacyPage: React.FC = () => {
             </section>
 
             <div className="text-center italic text-white/30 text-sm py-8 border-t border-white/10">
+              AstroAi4u — Made under Arcadian Works<br />
               Last Updated: April 11, 2026<br />
               "Your information is stored in the cloud, protected by the stars."
             </div>

@@ -9,24 +9,24 @@ const PublicReportsPage: React.FC = () => {
 
   const faqs = [
     {
-      question: 'What types of astrology reports are available?',
-      answer: 'We offer comprehensive reports including: Compatibility Analysis (relationship insights), Birth Chart Analysis (complete natal chart interpretation), Yearly Forecast (12-month predictions), Career Guidance Report, Love & Relationship Report, and Personal Growth Analysis. Each report is AI-generated based on your unique astrological data.'
+      question: 'What is a Kundli and what types are available?',
+      answer: 'A Kundli is a Vedic birth chart mapping the planetary alignments at the exact moment of your birth. We offer comprehensive Kundli readings and compatibility analysis (Kundli Matching), birth chart interpretations, yearly forecast guides, career direction, and personal development guides. Each analysis is AI-generated based on your birth coordinates.'
     },
     {
-      question: 'How accurate are AI-generated astrology reports?',
-      answer: 'Our AI reports combine traditional astrological calculations with modern data analysis. They consider planetary positions, aspects, transits, and your birth chart to provide insights. While astrology is for entertainment and self-reflection purposes, users report high satisfaction with the relevance and accuracy of personalized insights.'
+      question: 'How accurate are AI-generated Kundlis and astrological reports?',
+      answer: 'Our AI calculations combine traditional Vedic and Western astrological math with advanced language models. They consider exact degrees, aspects, house placements, and transits to provide self-reflection insights. Users report highly relevant and accurate readings that align with their life journeys.'
     },
     {
-      question: 'What information do I need to generate a report?',
-      answer: 'Most reports require your birth date, birth time, and birth location. For compatibility reports, you\'ll need this information for both people. The more accurate your birth time, the more precise your report will be, especially for timing-related predictions.'
+      question: 'What information do I need to calculate a Kundli?',
+      answer: 'To calculate a precise Kundli, you need your birth date, birth time (down to the minute, if possible), and birth city. For Kundli Matching (compatibility), you will need these birth details for both individuals.'
     },
     {
-      question: 'Can I download or share my reports?',
-      answer: 'Yes! All reports can be viewed online, downloaded as PDF files for offline reading, and shared via unique links. You can also print them or save them to your device for future reference. Shared links let friends view your insights without accessing your account.'
+      question: 'Can I download or share my Kundli analysis?',
+      answer: 'Yes! All Kundli charts and astrological readings can be viewed online, downloaded as PDF files, or shared via secure unique links with friends or family.'
     },
     {
-      question: 'How often should I generate new reports?',
-      answer: 'Birth chart analysis is timeless since it\'s based on your natal chart. However, forecast reports are time-sensitive - yearly forecasts are best regenerated annually, monthly forecasts monthly, and transit reports whenever you want current cosmic insights for specific decisions.'
+      question: 'How often should I generate new Kundlis or transits?',
+      answer: 'Your natal Kundli birth chart is lifetime-valid because it maps your birth moment. However, transit forecast charts are time-sensitive - yearly forecasts are calculated annually, and monthly transits monthly to keep track of planetary movements.'
     }
   ];
 
@@ -46,9 +46,9 @@ const PublicReportsPage: React.FC = () => {
   return (
     <CosmicBackground>
       <SEO
-        title="Free Astrology Reports | Compatibility & Forecasts | Astro AI"
-        description="Generate free AI-powered astrology reports. Get compatibility analysis, yearly forecasts, birth chart insights, and personalized astrological reports."
-        keywords="Free Astrology Reports, Compatibility Report, Birth Chart Report, Yearly Forecast, AI Astrology Report"
+        title="Free Kundli Online | Compatibility & Astrology Forecasts | AstroAi4u"
+        description="Generate free AI-powered Kundli and compatibility reports. Get detailed birth chart matching, yearly forecasts, and personalized Vedic astrological insights."
+        keywords="Free Kundli Online, Kundli Matching, Vedic Horoscope, Natal Chart, AstroAi4u"
         canonical="https://astroai4u.com/reports-info"
       />
       
@@ -88,19 +88,19 @@ const PublicReportsPage: React.FC = () => {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 mb-6">
               <FileText className="w-4 h-4 text-violet-400" />
-              <span className="text-sm font-medium text-violet-300">AI-Powered Reports</span>
+              <span className="text-sm font-medium text-violet-300">AI-Powered Kundli</span>
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold font-display mb-6">
               Your Personal{' '}
               <span className="bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
-                Astrology Reports
+                Online Kundli
               </span>
             </h1>
             
             <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
-              Generate comprehensive astrology reports powered by artificial intelligence. 
-              Discover compatibility, yearly forecasts, birth chart analysis, and more.
+              Generate comprehensive Kundli and compatibility matching powered by artificial intelligence. 
+              Discover Vedic forecasts, natal chart analysis, and more.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -109,28 +109,28 @@ const PublicReportsPage: React.FC = () => {
                 className="px-8 py-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-bold rounded-full shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:shadow-[0_0_30px_rgba(217,70,239,0.7)] hover:scale-105 transition-all flex items-center justify-center gap-2"
               >
                 <Sparkles className="w-5 h-5" />
-                Generate Free Report
+                Generate Free Kundli
               </button>
             </div>
           </div>
         </section>
 
-        {/* Report Types */}
+        {/* Kundli Types */}
         <section className="relative z-10 py-16 px-4 border-t border-white/10">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Available Report Types</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">Available Kundli Analysis</h2>
             
             <div className="grid md:grid-cols-2 gap-6">
               {[
                 {
                   icon: <Heart className="w-6 h-6 text-rose-400" />,
-                  title: 'Compatibility Analysis',
+                  title: 'Kundli Matching & Compatibility',
                   description: 'Discover relationship dynamics, strengths, challenges, and long-term potential with partners, friends, or colleagues.',
                   features: ['Synastry Analysis', 'Composite Chart', 'Relationship Timing']
                 },
                 {
                   icon: <Star className="w-6 h-6 text-violet-400" />,
-                  title: 'Birth Chart Analysis',
+                  title: 'Vedic Birth Chart (Kundli)',
                   description: 'Complete interpretation of your natal chart including planetary placements, aspects, houses, and life themes.',
                   features: ['Planetary Positions', 'House Analysis', 'Aspect Interpretations']
                 },
@@ -178,7 +178,7 @@ const PublicReportsPage: React.FC = () => {
                 {
                   step: '01',
                   title: 'Enter Your Details',
-                  description: 'Provide your birth date, time, and location. The more accurate, the better your report.'
+                  description: 'Provide your birth date, time, and location. The more accurate, the better your Kundli.'
                 },
                 {
                   step: '02',
@@ -187,7 +187,7 @@ const PublicReportsPage: React.FC = () => {
                 },
                 {
                   step: '03',
-                  title: 'Get Your Report',
+                  title: 'Get Your Kundli',
                   description: 'Receive a comprehensive PDF report with personalized insights you can read anytime.'
                 }
               ].map((item, index) => (
@@ -204,18 +204,18 @@ const PublicReportsPage: React.FC = () => {
         {/* Content Section */}
         <section className="relative z-10 py-16 px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold mb-8">The Power of Astrological Reports</h2>
+            <h2 className="text-3xl font-bold mb-8">The Power of AI Kundli Charts</h2>
             
             <div className="prose prose-invert max-w-none">
               <p className="text-white/70 text-lg leading-relaxed mb-6">
-                Astrology reports have guided people for centuries, providing insights into relationships, 
-                career timing, personal growth, and life purpose. At Astro AI, we've transformed this ancient 
+                Kundli charts have guided seekers for centuries, providing insights into relationships, 
+                career timing, personal growth, and life purpose. At AstroAi4u, we've transformed this ancient 
                 practice by combining it with cutting-edge artificial intelligence to deliver personalized 
-                reports that are both comprehensive and easy to understand.
+                interpretations that are both comprehensive and easy to understand.
               </p>
               
               <p className="text-white/70 text-lg leading-relaxed mb-6">
-                Our compatibility reports go beyond simple sun sign matching. They analyze the complete 
+                Our compatibility Kundlis go beyond simple sun sign matching. They analyze the complete 
                 astrological charts of both individuals, examining planetary aspects, house overlays, 
                 and elemental compatibility. You'll understand not just whether you're compatible, but 
                 exactly how your energies interact - where you naturally connect, where you might clash, 
@@ -223,7 +223,7 @@ const PublicReportsPage: React.FC = () => {
               </p>
 
               <p className="text-white/70 text-lg leading-relaxed mb-6">
-                Yearly forecast reports provide a roadmap for the months ahead. Our AI analyzes upcoming 
+                Yearly forecast Kundlis provide a roadmap for the months ahead. Our AI analyzes upcoming 
                 planetary transits and their impact on your specific birth chart. You'll know when 
                 opportunities are likely to arise, when to be cautious, and how to make the most of 
                 cosmic energies throughout the year. This isn't about predicting fixed events - it's 
@@ -231,12 +231,35 @@ const PublicReportsPage: React.FC = () => {
               </p>
 
               <p className="text-white/70 text-lg leading-relaxed">
-                Every report is generated instantly and delivered as a beautifully formatted PDF 
+                Every Kundli is generated instantly and delivered as a beautifully formatted PDF 
                 that you can read, share, or print. Whether you're seeking clarity about a relationship, 
                 planning career moves, or simply curious about your cosmic blueprint, our AI-powered 
-                reports provide the insights you need to navigate life with greater awareness and 
+                system provides the insights you need to navigate life with greater awareness and 
                 confidence. The stars have wisdom to share - let us help you understand their message.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* AEO Q&A Section */}
+        <section className="relative z-10 py-16 px-4 border-t border-white/10">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
+              Vedic Kundli & Astrology Q&A
+            </h2>
+            <div className="space-y-8 text-white/85">
+              <article className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-3 text-white">What is a Kundli and how is it used in astrology?</h3>
+                <p className="leading-relaxed">
+                  A Kundli (also known as a Janam Kundli or birth chart) is an astrological map of the cosmos at the exact time and location of an individual's birth. Used widely in Vedic astrology, it diagrams the positioning of the Sun, Moon, and planets across the 12 houses to outline personality traits, career paths, relationship compatibility, and future life events.
+                </p>
+              </article>
+              <article className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-3 text-white">How does AstroAi4u provide Kundli matching?</h3>
+                <p className="leading-relaxed">
+                  AstroAi4u performs digital Kundli matching by cross-analyzing the birth charts of two individuals. The system evaluates key planetary aspects, emotional alignment (Moon signs), and overall compatibility metrics in real-time, providing immediate guidance to help partners understand how their celestial energies interact.
+                </p>
+              </article>
             </div>
           </div>
         </section>
@@ -264,10 +287,10 @@ const PublicReportsPage: React.FC = () => {
         <section className="relative z-10 py-20 px-4">
           <div className="max-w-4xl mx-auto text-center bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 rounded-3xl p-12 border border-white/10">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Generate Your First Report Today
+              Generate Your First Kundli Today
             </h2>
             <p className="text-white/70 mb-8 text-lg">
-              Join thousands who have discovered cosmic insights through personalized astrology reports.
+              Join thousands who have discovered cosmic insights through personalized Kundli charts.
             </p>
             <button
               onClick={() => navigate('/signup')}

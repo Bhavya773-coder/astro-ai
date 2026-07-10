@@ -59,6 +59,7 @@ const TermsPage: React.FC = () => {
             </section>
 
             <div className="text-center italic text-white/30 text-sm py-8 border-t border-white/10">
+              AstroAi4u — Made under Arcadian Works<br />
               "To walk among the stars, we must first follow the laws of the Earth."<br />
               Last Updated: April 11, 2026
             </div>

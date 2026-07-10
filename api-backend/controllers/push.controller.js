@@ -7,7 +7,7 @@ class PushController {
   saveToken = async (req, res) => {
     try {
       const { token, device_type } = req.body;
-      const userId = req.user.userId;
+      const userId = req.user ? req.user.userId : null;
 
       if (!token) {
         return res.status(400).json({ success: false, message: 'Token is required' });

@@ -1,3 +1,55 @@
+# robots.txt for AstroAi4u
+
+# 1. AI Crawlers (AEO Optimization)
+User-agent: GPTBot
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /admin-dashboard
+Disallow: /onboarding
+Disallow: /subscription-success
+Disallow: /verify-otp
+Disallow: /new-password
+Disallow: /reset-password
+Disallow: /auth/
+Allow: /
+
+User-agent: ClaudeBot
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /admin-dashboard
+Disallow: /onboarding
+Disallow: /subscription-success
+Disallow: /verify-otp
+Disallow: /new-password
+Disallow: /reset-password
+Disallow: /auth/
+Allow: /
+
+User-agent: Google-Extended
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /admin-dashboard
+Disallow: /onboarding
+Disallow: /subscription-success
+Disallow: /verify-otp
+Disallow: /new-password
+Disallow: /reset-password
+Disallow: /auth/
+Allow: /
+
+User-agent: PerplexityBot
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /admin-dashboard
+Disallow: /onboarding
+Disallow: /subscription-success
+Disallow: /verify-otp
+Disallow: /new-password
+Disallow: /reset-password
+Disallow: /auth/
+Allow: /
+
+# 2. General Search Engine Crawlers
 User-agent: *
 Disallow: /dashboard
 Disallow: /settings

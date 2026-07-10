@@ -46,9 +46,9 @@ const PublicBirthChartPage: React.FC = () => {
   return (
     <CosmicBackground>
       <SEO
-        title="Free Birth Chart Analysis | AI-Powered Natal Chart | Astro AI"
+        title="Free Birth Chart Analysis | AI-Powered Natal Chart | AstroAi4u"
         description="Get your free AI-powered birth chart analysis. Discover your cosmic blueprint, sun sign, moon sign, rising sign, and personalized astrological insights."
-        keywords="Free Birth Chart, Natal Chart Analysis, AI Astrology Birth Chart, Vedic Birth Chart, Sun Moon Rising Signs"
+        keywords="Free Birth Chart, Natal Chart Analysis, AI Astrology Birth Chart, Vedic Birth Chart, Sun Moon Rising Signs, AstroAi4u"
         canonical="https://astroai4u.com/birth-chart-info"
       />
       
@@ -203,7 +203,7 @@ const PublicBirthChartPage: React.FC = () => {
               </p>
 
               <p className="text-white/70 text-lg leading-relaxed mb-6">
-                At Astro AI, we combine this ancient wisdom with modern artificial intelligence. Our system analyzes 
+                At AstroAi4u, we combine this ancient wisdom with modern artificial intelligence. Our system analyzes 
                 thousands of astrological patterns and their real-world correlations to provide insights that are both 
                 deeply personal and remarkably accurate. Whether you're exploring your career path, seeking relationship 
                 guidance, or understanding your spiritual journey, your birth chart offers a roadmap to self-discovery.
@@ -216,6 +216,29 @@ const PublicBirthChartPage: React.FC = () => {
                 to the world. Our AI-powered analysis goes deeper, examining all planetary placements to give you 
                 comprehensive insights into your strengths, challenges, and opportunities.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* AEO Q&A Section */}
+        <section className="relative z-10 py-16 px-4 border-t border-white/10">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
+              Birth Chart & Kundli AI Q&A
+            </h2>
+            <div className="space-y-8 text-white/85">
+              <article className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-3 text-white">How does AstroAi4u compute a free birth chart online?</h3>
+                <p className="leading-relaxed">
+                  AstroAi4u calculates your free birth chart or Kundli using coordinates (longitude/latitude) and accurate astronomical tables (ephemeris data) mapping the exact celestial positions at your birth time. These precise planetary placements are then synthesized by our AI engine to compile personalized interpretations of your zodiac signs, houses, and aspects.
+                </p>
+              </article>
+              <article className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-3 text-white">What are the Sun, Moon, and Rising signs in an AI birth chart?</h3>
+                <p className="leading-relaxed">
+                  Known as the "Big Three," the Sun sign represents your core identity, the Moon sign maps your emotional landscape, and the Rising sign (ascendant) determines your outer personality. An AI birth chart analysis on AstroAi4u details these placements and their house positions to present a unified view of your astrological signature.
+                </p>
+              </article>
             </div>
           </div>
         </section>

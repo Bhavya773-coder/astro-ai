@@ -24,8 +24,10 @@ import SubscriptionSuccessPage from './components/SubscriptionSuccessPage';
 import PalmReadingPage from './components/PalmReadingPage';
 import CoffeeReadingPage from './components/CoffeeReadingPage';
 import FaceReadingPage from './components/FaceReadingPage';
+import TarotReadingPage from './components/TarotReadingPage';
 import PreviousReadingsPage from './components/PreviousReadingsPage';
 import SignUpPage from './components/SignUpPage';
+import SignupOtpPage from './components/SignupOtpPage';
 import ProtectedRoute from './auth/ProtectedRoute';
 import GPTChatPage from './components/GPTChatPage';
 import DressingStylerPage from './components/DressingStylerPage';
@@ -45,6 +47,8 @@ import PublicNumerologyPage from './components/PublicNumerologyPage';
 import PublicAIChatPage from './components/PublicAIChatPage';
 import PublicReportsPage from './components/PublicReportsPage';
 import { AppDataProvider } from './state/AppDataContext';
+import NotificationPrompt from './components/NotificationPrompt';
+import PageTitleManager from './components/PageTitleManager';
 
 // Wrapper component to handle authenticated redirect for homepage
 const HomePageWrapper: React.FC = () => {
@@ -104,6 +108,8 @@ function App() {
           }}
         />
         <AppDataProvider>
+          <PageTitleManager />
+          <NotificationPrompt />
           <Routes>
             <Route path="/" element={<HomePageWrapper />} />
 
@@ -114,6 +120,7 @@ function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
             <Route path="/signup" element={<AuthPageWrapper><SignUpPage /></AuthPageWrapper>} />
+            <Route path="/signup-otp" element={<AuthPageWrapper><SignupOtpPage /></AuthPageWrapper>} />
             <Route
               path="/onboarding/*"
               element={
@@ -218,6 +225,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <FaceReadingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tarot-reading"
+              element={
+                <ProtectedRoute>
+                  <TarotReadingPage />
                 </ProtectedRoute>
               }
             />

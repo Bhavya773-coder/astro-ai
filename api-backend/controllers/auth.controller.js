@@ -16,9 +16,9 @@ const generateSixDigitOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-const sendOtpEmail = async ({ to, otp, ttlMinutes }) => {
+const sendOtpEmail = async ({ to, otp, ttlMinutes, subject, text }) => {
   if (!hasSmtpConfig()) {
-    console.log(`[password-reset] OTP for ${to}: ${otp}`);
+    console.log(`[auth] OTP for ${to}: ${otp}`);
     return;
   }
 
@@ -27,15 +27,15 @@ const sendOtpEmail = async ({ to, otp, ttlMinutes }) => {
 
   const payload = {
     to,
-    subject: 'Your AstroAi4u password reset code',
+    subject: subject || 'Your AstroAi4u code',
     template: 'otp_reset',
     variables: {
       username,
       otp,
-      ttlMinutes,
+      ttlMinutes: ttlMinutes || 30,
       year
     },
-    text: `Your password reset code is: ${otp}`,
+    text: text || `Your code is: ${otp}`,
     replyTo: process.env.EMAIL_REPLY_TO
   };
 
@@ -55,29 +55,126 @@ const register = async (req, res, next) => {
     return next(new Error('email and password are required'));
   }
 
-  const existing = await User.findOne({ email: String(email).toLowerCase() });
-  if (existing) {
+  const normalizedEmail = String(email).toLowerCase();
+  let user = await User.findOne({ email: normalizedEmail });
+
+  if (user && user.is_verified) {
     res.status(409);
     return next(new Error('Email already in use'));
   }
 
   const password_hash = await bcrypt.hash(String(password), 10);
+  const otp = generateSixDigitOtp();
+  // 25 seconds expiry as requested
+  const expiresAt = new Date(Date.now() + 25 * 1000);
 
-  const user = await User.create({
-    email: String(email).toLowerCase(),
-    password_hash,
-    role: 'user',
-    subscription_plan: 'free',
-    subscription_status: 'inactive',
-    is_believer: is_believer !== undefined ? Boolean(is_believer) : true,
-    credits: 50
+  if (!user) {
+    user = await User.create({
+      email: normalizedEmail,
+      password_hash,
+      role: 'user',
+      subscription_plan: 'free',
+      subscription_status: 'inactive',
+      is_believer: is_believer !== undefined ? Boolean(is_believer) : true,
+      credits: 50,
+      is_verified: false,
+      verification_otp: otp,
+      verification_otp_expires_at: expiresAt
+    });
+  } else {
+    user.password_hash = password_hash;
+    user.is_believer = is_believer !== undefined ? Boolean(is_believer) : true;
+    user.verification_otp = otp;
+    user.verification_otp_expires_at = expiresAt;
+    await user.save();
+  }
+
+  await sendOtpEmail({ 
+    to: user.email, 
+    otp, 
+    ttlMinutes: 0.42, 
+    subject: 'Your AstroAi4u verification code',
+    text: `Your verification code is: ${otp}. It expires in 25 seconds.`
   });
 
-  const token = signToken(user);
+  const hasEmail = hasSmtpConfig();
+  const isDev = process.env.NODE_ENV === 'development';
 
-  res.status(201).json({
+  res.status(200).json({
+    success: true,
+    message: 'OTP sent',
+    otp: (isDev && !hasEmail) ? otp : undefined
+  });
+};
+
+const verifySignupOtp = async (req, res, next) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    res.status(400);
+    return next(new Error('email and otp are required'));
+  }
+
+  const normalizedEmail = String(email).toLowerCase();
+  const user = await User.findOne({ email: normalizedEmail });
+
+  if (!user) {
+    res.status(404);
+    return next(new Error('User not found'));
+  }
+
+  if (user.verification_otp !== otp || user.verification_otp_expires_at < new Date()) {
+    res.status(400);
+    return next(new Error('Invalid or expired OTP'));
+  }
+
+  user.is_verified = true;
+  user.verification_otp = undefined;
+  user.verification_otp_expires_at = undefined;
+  await user.save();
+
+  const token = signToken(user);
+  res.json({
     token,
-    user: { id: user._id, email: user.email, role: user.role }
+    user: { id: user._id, email: user.email, role: user.role, is_believer: user.is_believer }
+  });
+};
+
+const resendSignupOtp = async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) {
+    res.status(400);
+    return next(new Error('email is required'));
+  }
+
+  const normalizedEmail = String(email).toLowerCase();
+  const user = await User.findOne({ email: normalizedEmail });
+
+  if (!user || user.is_verified) {
+    res.status(400);
+    return next(new Error('User not found or already verified'));
+  }
+
+  const otp = generateSixDigitOtp();
+  const expiresAt = new Date(Date.now() + 25 * 1000);
+
+  user.verification_otp = otp;
+  user.verification_otp_expires_at = expiresAt;
+  await user.save();
+
+  await sendOtpEmail({ 
+    to: user.email, 
+    otp, 
+    ttlMinutes: 0.42, 
+    subject: 'Your new verification code',
+    text: `Your new verification code is: ${otp}. It expires in 25 seconds.`
+  });
+
+  const hasEmail = hasSmtpConfig();
+  const isDev = process.env.NODE_ENV === 'development';
+
+  res.json({
+    success: true,
+    otp: (isDev && !hasEmail) ? otp : undefined
   });
 };
 
@@ -118,7 +215,7 @@ const login = async (req, res, next) => {
 
   res.json({
     token,
-    user: { id: user._id, email: user.email, role: user.role }
+    user: { id: user._id, email: user.email, role: user.role, is_believer: user.is_believer }
   });
 };
 
@@ -233,4 +330,4 @@ const resetPasswordWithOtp = async (req, res, next) => {
   return res.json({ ok: true });
 };
 
-module.exports = { register, login, me, requestOtp, verifyOtp, resetPasswordWithOtp };
+module.exports = { register, verifySignupOtp, resendSignupOtp, login, me, requestOtp, verifyOtp, resetPasswordWithOtp };

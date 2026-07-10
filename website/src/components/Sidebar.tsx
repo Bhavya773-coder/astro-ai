@@ -177,6 +177,16 @@ const Sidebar: React.FC = () => {
       )
     },
     { 
+      to: '/tarot-reading', 
+      label: 'Tarot Reading', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <rect x="3" y="1" width="14" height="20" rx="2" strokeWidth={2} />
+          <rect x="7" y="3" width="14" height="20" rx="2" strokeWidth={2} />
+        </svg>
+      )
+    },
+    { 
       to: '/previous-readings', 
       label: 'Previous Readings', 
       icon: (
@@ -340,6 +350,7 @@ const Sidebar: React.FC = () => {
                   AstroAi<span className="text-fuchsia-500">4u</span>
                 </span>
                 <span className="text-[8px] text-white/40 uppercase tracking-[0.3em] font-bold mt-1">Cosmic Intelligence</span>
+                <span className="text-[7px] text-fuchsia-500/50 uppercase tracking-[0.1em] font-medium mt-0.5">By Arcadian Works</span>
               </div>
             </Link>
           </div>

@@ -8,6 +8,8 @@ import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, LoadingSpinner, GradientText } from './CosmicUI';
 import toast from 'react-hot-toast';
+import { useAuth } from '../auth/AuthContext';
+import { Sparkles } from 'lucide-react';
 
 interface ChatMessage {
   _id?: string;
@@ -83,6 +85,7 @@ const AIAvatar: React.FC = () => (
 );
 
 const GPTChatPage: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [chats, setChats] = useState<Chat[]>([]);
@@ -667,38 +670,46 @@ const GPTChatPage: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10 bg-slate-950/50 backdrop-blur-sm">
               {/* Chat Title with inline editing - Sidebar mobile button is at top-left */}
-              <div className="flex items-center gap-2">
-                {editingChatId === currentChat?._id ? (
-                  <input
-                    ref={editInputRef}
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    onKeyDown={(e) => handleEditKeyDown(e, currentChat._id)}
-                    onBlur={() => updateChatTitle(currentChat._id, editTitle)}
-                    autoFocus
-                    className="text-lg font-semibold text-white bg-transparent border-b border-fuchsia-500 focus:outline-none px-1"
-                  />
-                ) : (
-                  <>
-                    <h1 className="text-lg font-semibold text-white">
-                      {currentChat?.title || 'AstroAi4u Chat'}
-                    </h1>
-                    {currentChat && (
-                      <button
-                        onClick={() => {
-                          setEditingChatId(currentChat._id);
-                          setEditTitle(currentChat.title || 'New Chat');
-                        }}
-                        className="p-1 rounded hover:text-fuchsia-400 text-white/50 transition-all"
-                        title="Rename chat"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                    )}
-                  </>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  {editingChatId === currentChat?._id ? (
+                    <input
+                      ref={editInputRef}
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      onKeyDown={(e) => handleEditKeyDown(e, currentChat._id)}
+                      onBlur={() => updateChatTitle(currentChat._id, editTitle)}
+                      autoFocus
+                      className="text-lg font-semibold text-white bg-transparent border-b border-fuchsia-500 focus:outline-none px-1"
+                    />
+                  ) : (
+                    <>
+                      <h1 className="text-lg font-semibold text-white">
+                        {currentChat?.title || 'AstroAi4u Chat'}
+                      </h1>
+                      {currentChat && (
+                        <button
+                          onClick={() => {
+                            setEditingChatId(currentChat._id);
+                            setEditTitle(currentChat.title || 'New Chat');
+                          }}
+                          className="p-1 rounded hover:text-fuchsia-400 text-white/50 transition-all"
+                          title="Rename chat"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+                {user?.is_believer && (
+                  <div className="mt-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-400/50 text-[9px] font-bold text-violet-300 flex items-center gap-1.5 animate-pulse w-fit shadow-[0_0_10px_rgba(139,92,246,0.3)]">
+                    <Sparkles className="w-2.5 h-2.5 text-violet-300" />
+                    Based on Vedic Astrology
+                  </div>
                 )}
               </div>
               

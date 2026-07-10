@@ -135,12 +135,14 @@ const DressingStylerPage: React.FC = () => {
     setImageLoaded(false);
 
     try {
-      const response = await generateStyleLook(force);
+      const response = await generateStyleLook(force, selectedModifier, selectedContext, selectedVibe || undefined);
       if (response?.success) {
         setStyleResult(response.data);
         setCredits(response.credits_remaining);
         setHasGeneratedToday(true);
-        toast.success(force ? 'Completely New Look Generated! (5 credits)' : 'Today\'s Look Revealed!');
+        // Dispatch event for Sidebar to update credits in real-time
+        window.dispatchEvent(new CustomEvent('credits-updated', { detail: { credits: response.credits_remaining } }));
+        toast.success(force ? 'Completely New Look Generated!' : 'Today\'s Look Revealed!');
       } else {
         setError(response?.message || 'Failed to generate');
       }
@@ -442,14 +444,11 @@ const DressingStylerPage: React.FC = () => {
                          <p className="text-xs text-white/60 border-l-2 border-fuchsia-500/30 pl-4 py-1 italic">
                             {styleResult.astrological_reason}
                          </p>
-                         <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40">
-                               <Sparkles className="w-3 h-3" /> Synthesis
-                            </div>
-                            <p className="text-sm text-white/80 leading-relaxed font-serif">
-                               {styleResult.outfit_description}
-                            </p>
-                         </div>
+                          <div className="flex flex-col gap-2 pt-2">
+                             <p className="text-sm text-white/80 leading-relaxed font-serif">
+                                {styleResult.outfit_description}
+                             </p>
+                          </div>
                       </div>
                     </div>
                   </div>
@@ -482,24 +481,109 @@ const DressingStylerPage: React.FC = () => {
                 </div>
               ) : (
                 /* INITIAL STATE */
-                <div className="text-center py-20 space-y-8 animate-fade-in">
-                   <div className="w-24 h-24 bg-gradient-to-br from-fuchsia-600/20 to-violet-600/20 rounded-full mx-auto flex items-center justify-center border border-white/10 shadow-2xl">
-                      <Shirt className="w-10 h-10 text-fuchsia-400" />
+                <div className="space-y-12 animate-fade-in">
+                   <div className="text-center space-y-8">
+                      <div className="w-24 h-24 bg-gradient-to-br from-fuchsia-600/20 to-violet-600/20 rounded-full mx-auto flex items-center justify-center border border-white/10 shadow-2xl">
+                         <Shirt className="w-10 h-10 text-fuchsia-400" />
+                      </div>
+                      <div className="space-y-3">
+                         <h2 className="text-2xl font-bold">Discover Your Daily Synergy</h2>
+                         <p className="text-white/40 text-sm max-w-sm mx-auto leading-relaxed">
+                            Customize your preferences and synthesize your personal style into a daily ensemble.
+                         </p>
+                      </div>
                    </div>
-                   <div className="space-y-3">
-                      <h2 className="text-2xl font-bold">Discover Your Daily Synergy</h2>
-                      <p className="text-white/40 text-sm max-w-sm mx-auto leading-relaxed">
-                         Synthesize your sun sign, transits, and personal preferences into a daily ensemble.
-                      </p>
+
+                   {/* STYLE OPTIONS (SHOWN BEFORE GENERATION) */}
+                   <div className="space-y-10">
+                      {/* 3. QUICK STYLE MODIFIERS */}
+                      <div className="space-y-4">
+                        <p className="text-center text-white/40 text-[10px] uppercase tracking-widest font-bold">1. Select Style Modifier</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {[
+                            { id: 'Bolder', icon: Flame, color: 'text-orange-400' },
+                            { id: 'Minimal', icon: IceCream, color: 'text-blue-400' },
+                            { id: 'Sharper', icon: Target, color: 'text-fuchsia-400' },
+                            { id: 'Relaxed', icon: Coffee, color: 'text-emerald-400' },
+                          ].map(mod => {
+                            const Icon = mod.icon;
+                            const isActive = selectedModifier === mod.id;
+                            return (
+                              <button
+                                key={mod.id}
+                                onClick={() => handleInteraction('modifier', mod.id)}
+                                className={`p-3 rounded-2xl border flex flex-col items-center gap-2 transition-all ${isActive ? 'bg-white/10 border-white/30 shadow-lg' : 'bg-black/40 border-white/5 hover:border-white/10'}`}
+                              >
+                                <Icon className={`w-5 h-5 ${isActive ? mod.color : 'text-white/30'}`} />
+                                <span className={`text-[10px] font-bold uppercase tracking-widest ${isActive ? 'text-white' : 'text-white/40'}`}>{mod.id}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* 4. CONTEXT SWITCH */}
+                      <div className="space-y-4">
+                         <p className="text-center text-white/40 text-[10px] uppercase tracking-widest font-bold">2. Where are you going?</p>
+                         <div className="flex justify-center gap-4 flex-wrap">
+                            {[
+                              { id: 'Office', icon: Briefcase },
+                              { id: 'Dinner', icon: Utensils },
+                              { id: 'Casual', icon: Smile },
+                              { id: 'Event', icon: PartyPopper },
+                            ].map(ctx => {
+                              const Icon = ctx.icon;
+                              const isActive = selectedContext === ctx.id;
+                              return (
+                                <button
+                                  key={ctx.id}
+                                  onClick={() => handleInteraction('context', ctx.id)}
+                                  className={`flex items-center gap-3 px-4 py-2 rounded-full border transition-all ${isActive ? 'bg-fuchsia-600 border-fuchsia-500 text-white scale-105 shadow-xl' : 'bg-white/5 border-white/5 text-white/50 hover:bg-white/10'}`}
+                                >
+                                   <Icon className="w-4 h-4" />
+                                   <span className="text-xs font-bold uppercase tracking-widest">{ctx.id}</span>
+                                </button>
+                              );
+                            })}
+                         </div>
+                      </div>
+
+                      {/* 5. THIS vs THAT */}
+                      <div className="space-y-4">
+                         <p className="text-center text-white/40 text-[10px] uppercase tracking-widest font-bold">3. Choose Your Vibe</p>
+                         <div className="grid grid-cols-2 gap-4">
+                            <button 
+                              onClick={() => handleInteraction('vibe', 'optionA')}
+                              className={`p-6 rounded-3xl border transition-all space-y-3 ${selectedVibe === 'optionA' ? 'bg-violet-600/20 border-violet-500 shadow-xl scale-105' : 'bg-black/40 border-white/5 opacity-60 hover:opacity-100 hover:border-white/10'}`}
+                            >
+                               <div className="text-center space-y-2">
+                                  <span className="text-lg font-bold">Formal</span>
+                                  <p className="text-[10px] text-white/50 uppercase leading-none">Clean • Tucked</p>
+                               </div>
+                            </button>
+                            <button 
+                              onClick={() => handleInteraction('vibe', 'optionB')}
+                              className={`p-6 rounded-3xl border transition-all space-y-3 ${selectedVibe === 'optionB' ? 'bg-fuchsia-600/20 border-fuchsia-500 shadow-xl scale-105' : 'bg-black/40 border-white/5 opacity-60 hover:opacity-100 hover:border-white/10'}`}
+                            >
+                               <div className="text-center space-y-2">
+                                  <span className="text-lg font-bold">Fluid</span>
+                                  <p className="text-[10px] text-white/50 uppercase leading-none">Loose • Textured</p>
+                               </div>
+                            </button>
+                         </div>
+                      </div>
                    </div>
-                   <button
-                    onClick={() => handleGenerate(false)}
-                    disabled={isGenerating || (credits !== null && credits < 5)}
-                    className="px-12 py-5 bg-gradient-to-r from-fuchsia-600 to-violet-600 text-white shadow-2xl rounded-3xl font-bold text-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 mx-auto"
-                  >
-                    {isGenerating ? <LoadingSpinner size="sm" /> : <><Sparkles className="w-6 h-6" /> <span>Reveal Today's Style</span></>}
-                  </button>
-                  <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Uses 5 credits per Daily Reflection</p>
+
+                   <div className="pt-8 text-center space-y-4">
+                      <button
+                        onClick={() => handleGenerate(false)}
+                        disabled={isGenerating || (credits !== null && credits < 5)}
+                        className="px-12 py-5 bg-gradient-to-r from-fuchsia-600 to-violet-600 text-white shadow-2xl rounded-3xl font-bold text-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 mx-auto"
+                      >
+                        {isGenerating ? <LoadingSpinner size="sm" /> : <><Sparkles className="w-6 h-6" /> <span>Reveal Today's Style</span></>}
+                      </button>
+                      <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Uses 5 credits per Daily Reflection</p>
+                   </div>
                 </div>
               )}
             </div>

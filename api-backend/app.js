@@ -6,6 +6,8 @@ const rateLimit = require('express-rate-limit');
 
 const { notFound } = require('./middleware/notFound');
 const { errorHandler } = require('./middleware/errorHandler');
+const { optionalAuth } = require('./middleware/auth');
+const { trackVisitor } = require('./middleware/visitorTracker');
 
 const authRoutes = require('./routes/auth.routes');
 const googleAuthRoutes = require('./routes/googleAuth.routes');
@@ -36,6 +38,8 @@ const paymentRoutes = require('./routes/payment.routes');
 const readingHistoryRoutes = require('./routes/readingHistory.routes');
 const creditsRoutes = require('./routes/credits.routes');
 const pushRoutes = require('./routes/push.routes');
+const contactRoutes = require('./routes/contact.routes');
+const tarotReadingRoutes = require('./routes/tarotReading.routes');
 
 const app = express();
 
@@ -99,6 +103,9 @@ const adminEmailLimiter = rateLimit({
   max: Number(process.env.ADMIN_EMAIL_RATE_LIMIT_MAX || 60)
 });
 
+app.use(optionalAuth);
+app.use(trackVisitor);
+
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/auth', authLimiter, googleAuthRoutes);
 app.use('/api/profile', profileRoutes);
@@ -128,6 +135,8 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/reading-history', readingHistoryRoutes);
 app.use('/api/credits', creditsRoutes);
 app.use('/api/push', pushRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/tarot-reading', tarotReadingRoutes);
 
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../website/build')));

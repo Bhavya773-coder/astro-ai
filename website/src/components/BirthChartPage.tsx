@@ -836,8 +836,14 @@ const BirthChartPage: React.FC = () => {
                 <h1 className="text-4xl md:text-5xl font-bold font-display mb-6">
                   Birth Chart
                 </h1>
+                {user?.is_believer && (
+                  <div className="mb-6 px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-400/50 text-[11px] font-bold text-violet-300 inline-flex items-center gap-2 animate-pulse shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                    <Sparkles className="w-3.5 h-3.5 text-violet-300" />
+                    Based on Vedic Astrology
+                  </div>
+                )}
                 <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-                  Discover your cosmic blueprint - a personalized map of the heavens at the moment of your birth.
+                  Discover your cosmic blueprint - a personalized map of the heavens at the moment of your birth based on Vedic principles.
                 </p>
               </div>
 
@@ -966,8 +972,14 @@ const BirthChartPage: React.FC = () => {
                 <h1 className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
                   Your <GradientText>Cosmic</GradientText> Birth Chart
                 </h1>
+                {user?.is_believer && (
+                  <div className="mb-6 px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-400/50 text-[11px] font-bold text-violet-300 inline-flex items-center gap-2 animate-pulse mx-auto w-fit shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                    <Sparkles className="w-3.5 h-3.5 text-violet-300" />
+                    Based on Vedic Astrology
+                  </div>
+                )}
                 <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-                  Your personalized map of the heavens at the moment of your birth
+                  Your personalized map of the heavens at the moment of your birth based on Vedic principles
                 </p>
               </div>
 

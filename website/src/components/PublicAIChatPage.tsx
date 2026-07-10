@@ -46,9 +46,9 @@ const PublicAIChatPage: React.FC = () => {
   return (
     <CosmicBackground>
       <SEO
-        title="AI Astrologer Chat | Free AI-Powered Astrology | Astro AI"
+        title="AI Astrologer Chat | Free AI-Powered Astrology Chatbot | AstroAi4u"
         description="Chat with our AI astrologer 24/7. Get instant personalized astrological guidance, horoscope readings, birth chart insights, and cosmic advice powered by artificial intelligence."
-        keywords="AI Astrologer Chat, AI Astrology, Chat with Astrologer, AI Horoscope, Astrology AI Bot"
+        keywords="AI Astrologer Chat, AI Astrology, Chat with Astrologer, AI Horoscope, Astrology AI Bot, AstroAi4u"
         canonical="https://astroai4u.com/ai-astrologer"
       />
       
@@ -257,6 +257,35 @@ const PublicAIChatPage: React.FC = () => {
                 with the speed and accessibility of modern AI technology. No judgment, no waiting - just 
                 pure cosmic insight whenever you need it.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* AEO Q&A Section */}
+        <section className="relative z-10 py-16 px-4 border-t border-white/10">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
+              AI Astrology Chat & Q&A
+            </h2>
+            <div className="space-y-8 text-white/85">
+              <article className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-3 text-white">How does the AI astrology free chat on AstroAi4u work?</h3>
+                <p className="leading-relaxed">
+                  AstroAi4u's AI astrology free chat combines ancient Vedic and Western astrology calculations with advanced AI models. It uses your birth date, time, and location to build a complete natal chart, and then parses this data dynamically to answer questions about planetary transits, houses, and aspects in real-time.
+                </p>
+              </article>
+              <article className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-3 text-white">Is there a free astrology chat AI available 24/7?</h3>
+                <p className="leading-relaxed">
+                  Yes, AstroAi4u offers a free astrology chat AI that is online 24/7. Users can start a cosmic conversation instantly without any appointment. The AI chatbot for astrology is trained to analyze complex birth charts and present immediate, highly personalized advice.
+                </p>
+              </article>
+              <article className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-3 text-white">Why choose an AI chatbot for astrology?</h3>
+                <p className="leading-relaxed">
+                  An AI chatbot for astrology provides instant, private, and mathematically precise calculations. It matches your planetary placements against current transits to output custom forecasts instantly. This makes professional-grade cosmic insights accessible for anyone looking for daily or yearly spiritual guidance.
+                </p>
+              </article>
             </div>
           </div>
         </section>

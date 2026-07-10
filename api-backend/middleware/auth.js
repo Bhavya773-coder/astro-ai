@@ -27,4 +27,19 @@ const requireAdmin = (req, res, next) => {
   return next();
 };
 
-module.exports = { requireAuth, requireAdmin };
+const optionalAuth = (req, res, next) => {
+  const header = req.headers.authorization || '';
+  const [type, token] = header.split(' ');
+
+  if (type === 'Bearer' && token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+    } catch (err) {
+      // Ignore invalid token in optional auth
+    }
+  }
+  next();
+};
+
+module.exports = { requireAuth, requireAdmin, optionalAuth };

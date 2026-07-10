@@ -96,7 +96,21 @@ export const register = (email: string, password: string, is_believer?: boolean)
   return apiFetch('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify({ email, password, is_believer })
+  });
+};
+
+export const verifySignupOtp = (email: string, otp: string) => {
+  return apiFetch('/api/auth/verify-signup-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email, otp })
   }) as Promise<LoginResponse>;
+};
+
+export const resendSignupOtp = (email: string) => {
+  return apiFetch('/api/auth/resend-signup-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email })
+  });
 };
 
 export const getMe = () => {
@@ -196,10 +210,10 @@ export const getCredits = () =>
   apiFetch('/api/credits', { method: 'GET' });
 
 // Dressing Styler API
-export const generateStyleLook = (force = false) =>
+export const generateStyleLook = (force = false, modifier?: string, context?: string, vibe?: string) =>
   apiFetch('/api/dressing-styler/generate', { 
     method: 'POST', 
-    body: JSON.stringify({ force }) 
+    body: JSON.stringify({ force, modifier, context, vibe }) 
   });
 
 export const updateStyleInteraction = (data: {
@@ -226,3 +240,24 @@ export const getHoroscope = (zodiac: string) =>
 
 export const getDailyDecisionData = (zodiac: string) =>
   apiFetch('/api/horoscope/daily-decision-engine', { method: 'POST', body: JSON.stringify({ zodiac }) });
+
+export const submitContactForm = (name: string, email: string, message: string) =>
+  apiFetch('/api/contact/submit', { 
+    method: 'POST', 
+    body: JSON.stringify({ name, email, message }) 
+  });
+
+// Tarot Reading — AI interpretation (optional, 1 credit)
+export const interpretTarotCard = (cardData: {
+  card_name: string;
+  is_reversed: boolean;
+  meaning_up: string;
+  meaning_rev: string;
+  desc: string;
+  position?: string;
+  all_cards?: { name: string; is_reversed: boolean }[];
+}) =>
+  apiFetch('/api/tarot-reading/interpret', { 
+    method: 'POST', 
+    body: JSON.stringify(cardData) 
+  });

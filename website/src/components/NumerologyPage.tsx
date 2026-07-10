@@ -516,8 +516,14 @@ const NumerologyPage: React.FC = () => {
                 <GradientText className="text-4xl md:text-6xl font-black font-display mb-4">
                   Numerology
                 </GradientText>
+                {user?.is_believer && (
+                  <div className="mb-6 px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-400/50 text-[11px] font-bold text-violet-300 inline-flex items-center gap-2 animate-pulse shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                    <Sparkles className="w-3.5 h-3.5 text-violet-300" />
+                    Based on Vedic Astrology
+                  </div>
+                )}
                 <p className="text-white/60 text-lg max-w-xl border-l-2 border-fuchsia-500/30 pl-6 py-2">
-                  Decoding the cosmic frequencies of your life through the ancient sacred science of numbers.
+                  Decoding the cosmic frequencies of your life through the ancient sacred science of numbers based on Vedic wisdom.
                 </p>
               </div>
 

@@ -16,11 +16,11 @@ const SignUpPage: React.FC = () => {
   const [isBeliever, setIsBeliever] = useState(initialType !== 'non-believer');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [passwordFocus, setPasswordFocus] = useState(false);
+
   const [showTerms, setShowTerms] = useState(false);
 
   const navigate = useNavigate();
-  const { setAuth } = useAuth();
+  useAuth();
 
   // Password validation rules
   const validatePassword = (pwd: string): { isValid: boolean; errors: string[]; strength: 'weak' | 'fair' | 'good' | 'strong' } => {
@@ -58,7 +58,7 @@ const SignUpPage: React.FC = () => {
     }
 
     // Special character requirements
-    if (!/[!@#$%^&*()_+=\-\[\]{}|;:'",.<>?\/]/.test(pwd)) {
+    if (!/[!@#$%^&*()_+=\-[\]{}|;:'",.<>?/]/.test(pwd)) {
       errors.push('Password must contain at least one special character (!@#$%^&*()_+=-[]{}|;:\'",.<>?/)');
     } else {
       strengthScore += 1;
@@ -95,45 +95,7 @@ const SignUpPage: React.FC = () => {
     };
   };
 
-  const getPasswordStrengthColor = (strength: string) => {
-    switch (strength) {
-      case 'weak': return 'text-red-400';
-      case 'fair': return 'text-amber-400';
-      case 'good': return 'text-yellow-400';
-      case 'strong': return 'text-green-400';
-      default: return 'text-gray-400';
-    }
-  };
 
-  // Password strength indicator component
-  const PasswordStrengthIndicator = ({ password }: { password: string }) => {
-    const validation = validatePassword(password);
-    const strengthColor = getPasswordStrengthColor(validation.strength);
-    const strengthPercent = validation.strength === 'weak' ? 25 : validation.strength === 'fair' ? 50 : validation.strength === 'good' ? 75 : 100;
-
-    return (
-      <div className="mt-2">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-xs text-white/60">Password Strength:</span>
-          <span className={`text-xs font-semibold ${strengthColor}`}>
-            {validation.strength.toUpperCase()}
-          </span>
-        </div>
-        <div className="w-full bg-gray-700 rounded-full h-2">
-          <div
-            className={`h-full rounded-full transition-all duration-300 ${strengthColor.replace('text-', 'bg-')}`}
-            style={{ width: `${strengthPercent}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-xs text-white/60 mt-1">
-          <span>Weak</span>
-          <span>Fair</span>
-          <span>Good</span>
-          <span>Strong</span>
-        </div>
-      </div>
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,9 +120,8 @@ const SignUpPage: React.FC = () => {
     setShowTerms(false);
     setIsLoading(true);
     try {
-      const res = await register(email, password, isBeliever);
-      setAuth(res.token, res.user);
-      navigate('/onboarding');
+      await register(email, password, isBeliever);
+      navigate('/signup-otp', { state: { email } });
     } catch (err: any) {
       setError(err?.message || 'Sign up failed');
     } finally {
@@ -381,27 +342,27 @@ const SignUpPage: React.FC = () => {
             <div className="flex-1 overflow-y-auto pr-4 space-y-5 text-white/80 text-sm pb-4">
               <div className="bg-black/60 rounded-lg p-4 border border-violet-500/30">
                 <p className="font-semibold text-white mb-2">Legal Disclaimer & Terms of Service</p>
-                <p>Welcome to Astro AI. By creating an account, you agree to these terms. Please read them carefully.</p>
+                <p>Welcome to AstroAi4u. By creating an account, you agree to these terms. Please read them carefully.</p>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2 text-glow">1. Entertainment Purposes Only</h3>
-                <p className="leading-relaxed">The astrological readings, tarot interpretations, and face-reading analyses provided by Astro AI are designed strictly for entertainment purposes. They do not constitute professional advice. You agree not to use the information provided on this platform as a substitute for professional financial, medical, psychological, or legal advice. If you are facing serious personal, health, or financial challenges, please consult a qualified professional.</p>
+                <p className="leading-relaxed">The astrological readings, tarot interpretations, and face-reading analyses provided by AstroAi4u are designed strictly for entertainment purposes. They do not constitute professional advice. You agree not to use the information provided on this platform as a substitute for professional financial, medical, psychological, or legal advice. If you are facing serious personal, health, or financial challenges, please consult a qualified professional.</p>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2 text-glow">2. Artificial Intelligence Limitations</h3>
-                <p className="leading-relaxed">Astro AI utilizes advanced artificial intelligence models to generate insights based on astrological traditions. However, AI is imperfect and may occasionally hallucinate, provide inconsistent interpretations, or fail to accurately capture complex astrological nuances. We make no guarantees about the accuracy, reliability, or completeness of any reading.</p>
+                <p className="leading-relaxed">AstroAi4u utilizes advanced artificial intelligence models to generate insights based on astrological traditions. However, AI is imperfect and may occasionally hallucinate, provide inconsistent interpretations, or fail to accurately capture complex astrological nuances. We make no guarantees about the accuracy, reliability, or completeness of any reading.</p>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2 text-glow">3. Data Usage and Privacy</h3>
-                <p className="leading-relaxed">To compute precise planetary positions and personalized insights, Astro AI requires personal data including your date of birth, time of birth, and location. By proceeding, you consent to the processing of this data for the purpose of generating your personalized cosmic profile. We value your privacy and implement security measures, but you acknowledge standard internet risks apply.</p>
+                <p className="leading-relaxed">To compute precise planetary positions and personalized insights, AstroAi4u requires personal data including your date of birth, time of birth, and location. By proceeding, you consent to the processing of this data for the purpose of generating your personalized cosmic profile. We value your privacy and implement security measures, but you acknowledge standard internet risks apply.</p>
               </div>
 
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2 text-glow">4. Limitation of Liability</h3>
-                <p className="leading-relaxed">Astro AI, its creators, and affiliates shall not be held liable for any decisions, actions, or life choices you make based on the content provided by our platform. Your life choices and paths are ultimately your own responsibility.</p>
+                <p className="leading-relaxed">AstroAi4u, its creators, and affiliates shall not be held liable for any decisions, actions, or life choices you make based on the content provided by our platform. Your life choices and paths are ultimately your own responsibility.</p>
               </div>
             </div>
 

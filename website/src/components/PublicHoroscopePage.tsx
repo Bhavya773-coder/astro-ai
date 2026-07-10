@@ -46,9 +46,9 @@ const PublicHoroscopePage: React.FC = () => {
   return (
     <CosmicBackground>
       <SEO
-        title="Free Daily Horoscope | AI-Powered Astrology Readings | Astro AI"
+        title="Free Daily Horoscope | AI-Powered Zodiac Readings | AstroAi4u"
         description="Get your free daily horoscope powered by AI. Personalized astrological insights for all zodiac signs. Discover what the stars have in store for you today."
-        keywords="Free Daily Horoscope, AI Horoscope, Zodiac Readings, Astrology Today, Daily Star Sign"
+        keywords="Free Daily Horoscope, AI Horoscope, Zodiac Readings, Astrology Today, Daily Star Sign, AstroAi4u"
         canonical="https://astroai4u.com/horoscope"
       />
       
@@ -185,11 +185,34 @@ const PublicHoroscopePage: React.FC = () => {
               </p>
 
               <p className="text-white/70 text-lg leading-relaxed">
-                Beyond daily predictions, Astro AI helps you understand the deeper patterns at play in your life. 
+                Beyond daily predictions, AstroAi4u helps you understand the deeper patterns at play in your life. 
                 Our system identifies favorable times for important decisions, warns about potential challenges, 
                 and highlights opportunities you might otherwise miss. It's like having a personal astrologer 
                 available 24/7, ready to provide wisdom whenever you need it.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* AEO Q&A Section */}
+        <section className="relative z-10 py-16 px-4 border-t border-white/10">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
+              Daily Horoscope & AI Astrology Q&A
+            </h2>
+            <div className="space-y-8 text-white/85">
+              <article className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-3 text-white">How accurate is the free daily horoscope on AstroAi4u?</h3>
+                <p className="leading-relaxed">
+                  AstroAi4u's free daily horoscope calculations utilize real-time astronomical coordinate tracking of the planets relative to the 12 zodiac signs (Aries, Taurus, Gemini, etc.). Our artificial intelligence models then interpret these complex transit configurations to deliver highly specific, context-aware forecasts for your daily activities.
+                </p>
+              </article>
+              <article className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-3 text-white">Can AI-powered zodiac readings replace traditional astrologers?</h3>
+                <p className="leading-relaxed">
+                  AI-powered zodiac readings provide instant, data-backed transits and mathematical precision that would normally take hours to calculate manually. AstroAi4u serves as an accessible digital guide, synthesizing traditional charts and presenting insights instantly to help with daily self-reflection and decision making.
+                </p>
+              </article>
             </div>
           </div>
         </section>
@@ -220,7 +243,7 @@ const PublicHoroscopePage: React.FC = () => {
               Ready to Discover Your Cosmic Path?
             </h2>
             <p className="text-white/70 mb-8 text-lg">
-              Join thousands of users who trust Astro AI for their daily astrological guidance.
+              Join thousands of users who trust AstroAi4u for their daily astrological guidance.
             </p>
             <button
               onClick={() => navigate('/signup')}

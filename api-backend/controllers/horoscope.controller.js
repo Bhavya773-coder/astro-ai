@@ -542,12 +542,23 @@ MONEY_LUCK: [time]`
       }
 
       // 3. Save for stability
-      await DailyDecision.create({
-        user_id,
-        date: today,
-        zodiac,
-        data: parsedData
-      });
+      try {
+        await DailyDecision.create({
+          user_id,
+          date: today,
+          zodiac,
+          data: parsedData
+        });
+      } catch (dbError) {
+        if (dbError.code === 11000 || (dbError.name === 'MongoServerError' && dbError.message.includes('E11000'))) {
+          console.warn('[DecisionEngine] Duplicate key (concurrent request) error caught. Fetching existing daily decision.');
+          const existingDoc = await DailyDecision.findOne({ user_id, date: today });
+          if (existingDoc) {
+            return res.json({ success: true, data: existingDoc.data });
+          }
+        }
+        throw dbError;
+      }
 
       res.json({ success: true, data: parsedData });
     } catch (error) {

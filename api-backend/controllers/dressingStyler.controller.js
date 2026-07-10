@@ -260,13 +260,13 @@ Respond ONLY with valid JSON:
 
       const enhancedImagePrompt = `A high-end 2x2 fashion collage showing the same person in 4 distinct full-body poses.
 MODEL BLUEPRINT: Strictly replicate this person - ${facialBlueprint}. They are a ${userContext.gender} age ${userContext.age}.
-QUADRANT COLOR ASSIGNMENTS:
+QUADRANT COLOR ASSIGNMENTS (MUST BE 4 SEPARATE PANELS):
 - Panel 1 (Top-Left): Full-body outfit strictly dominant in ${color_names[0]} (${colors[0]}).
 - Panel 2 (Top-Right): Full-body outfit strictly dominant in ${color_names[1]} (${colors[1]}).
 - Panel 3 (Bottom-Left): Full-body outfit strictly dominant in ${color_names[2]} (${colors[2]}).
 - Panel 4 (Bottom-Right): Full-body outfit strictly dominant in ${color_names[3]} (${colors[3]}).
 STYLE: ${outfit_description}. ALL panels are Head-to-Toe Full Body shots.
-LAYOUT: Single image, symmetrical 4-panel grid. [Seed: ${Date.now()}]`;
+LAYOUT: Single image, symmetrical 4-panel grid. ENSURE EXACTLY 4 PANELS, DO NOT MERGE. [Seed: ${Date.now()}]`;
 
       finalImagePrompt = enhancedImagePrompt;
 

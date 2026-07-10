@@ -9,6 +9,7 @@ import ImageUpload from './ImageUpload';
 import PaywallOverlay from './PaywallOverlay';
 import { getFaceReading, getReadingHistory, shareFaceReading, apiFetch } from '../api/client';
 import AutoResizeTextarea from './AutoResizeTextarea';
+import { useAuth } from '../auth/AuthContext';
 
 interface PersonalityScores {
   leadership: number;
@@ -36,6 +37,7 @@ interface FaceReadingResult {
 }
 
 const FaceReadingPage: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [imageBase64, setImageBase64] = useState('');
   const [mimeType, setMimeType] = useState('');
@@ -241,10 +243,21 @@ const FaceReadingPage: React.FC = () => {
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 lg:py-16">
-              <h1 className="text-3xl md:text-4xl font-bold font-display">Face Reading</h1>
-              <p className="mt-2 text-white/75 max-w-2xl">
-                Discover personality traits and destiny insights through the ancient art of physiognomy, interpreted by AI.
-              </p>
+                <div className="flex flex-col items-center mb-12">
+                  <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 flex items-center gap-3 font-display">
+                    <Eye className="w-8 h-8 md:w-12 md:h-12 text-cyan-400" />
+                    Face Reading
+                  </h1>
+                  {user?.is_believer && (
+                    <div className="mb-6 px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-400/50 text-[11px] font-bold text-violet-300 flex items-center gap-2 animate-pulse shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-300" />
+                      Based on Vedic Astrology
+                    </div>
+                  )}
+                  <p className="text-white/60 text-lg max-w-2xl text-center">
+                    Discover personality traits and destiny insights through the ancient art of physiognomy, interpreted by AI based on Vedic principles.
+                  </p>
+                </div>
 
               {/* Privacy Notice */}
               <GlassCard className="p-6 mb-8 mt-8 border-cyan-500/30 bg-cyan-500/5">

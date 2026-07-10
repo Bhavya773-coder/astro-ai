@@ -4,6 +4,7 @@ export type AuthUser = {
   id: string;
   email: string;
   role: 'user' | 'admin';
+  is_believer?: boolean;
 };
 
 type AuthState = {

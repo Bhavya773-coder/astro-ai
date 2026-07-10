@@ -6,7 +6,7 @@ import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText } from './CosmicUI';
 import { useAuth } from '../auth/AuthContext';
 import { apiFetch } from '../api/client';
-import { Shirt, ChevronRight } from 'lucide-react';
+import { Shirt, ChevronRight, Sparkles } from 'lucide-react';
 import {
   DailyDecisionEngine,
   CosmicStreak,
@@ -299,15 +299,23 @@ const MainPage: React.FC = () => {
               <div className="mb-20 animate-fade-in relative">
                 <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-violet-600/10 blur-[100px] pointer-events-none" />
                 <div className="flex justify-center mb-8 relative">
-                  <img src="/favicon.png" alt="Astro AI" className="w-28 h-28 drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]" />
+                  <img src="/favicon.png" alt="AstroAi4u" className="w-28 h-28 drop-shadow-[0_0_15px_rgba(168,85,247,0.3)]" />
                 </div>
                 <div className="flex items-center justify-center gap-3 mb-4">
                   <p className="text-fuchsia-400/80 text-[10px] uppercase tracking-[0.2em] font-medium">{getGreeting()}</p>
                   <CosmicStreak streak={streak} />
                 </div>
-                <h2 className="font-serif text-4xl md:text-5xl font-bold text-white text-center mb-12">
+                <h2 className="font-serif text-4xl md:text-5xl font-bold text-white text-center mb-4">
                   <GradientText>Welcome, {getFirstName()}</GradientText>
                 </h2>
+                {user?.is_believer && (
+                  <div className="flex justify-center mb-12">
+                    <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-400/50 text-[11px] font-bold text-violet-300 flex items-center gap-2 animate-pulse shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-300" />
+                      Based on Vedic Astrology
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* NEW: Daily Decision Engine */}
@@ -388,7 +396,7 @@ const MainPage: React.FC = () => {
                 </svg>
               </button>
             </div>
-            <p className="text-center text-white/30 text-xs mt-2">AstroAI can make mistakes. Consider checking important information.</p>
+            <p className="text-center text-white/30 text-xs mt-2">AstroAi4u can make mistakes. Consider checking important information.</p>
           </form>
         </div>
       </div>

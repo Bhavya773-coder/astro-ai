@@ -51,8 +51,11 @@ const SupportPage: React.FC = () => {
             </section>
 
             <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
-              <p className="text-center italic">
+              <p className="text-center italic mb-2">
                 "The universe is vast, but you are never alone on your journey."
+              </p>
+              <p className="text-center text-[10px] text-white/20 uppercase tracking-widest font-bold">
+                AstroAi4u — Made under Arcadian Works
               </p>
             </div>
           </div>

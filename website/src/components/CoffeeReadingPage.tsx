@@ -9,6 +9,7 @@ import ImageUpload from './ImageUpload';
 import PaywallOverlay from './PaywallOverlay';
 import { getCoffeeReading, getReadingHistory, shareCoffeeReading, apiFetch } from '../api/client';
 import AutoResizeTextarea from './AutoResizeTextarea';
+import { useAuth } from '../auth/AuthContext';
 
 interface CoffeeSymbol {
   symbol: string;
@@ -31,6 +32,7 @@ interface CoffeeReadingResult {
 }
 
 const CoffeeReadingPage: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [imageBase64, setImageBase64] = useState('');
   const [mimeType, setMimeType] = useState('');
@@ -195,10 +197,21 @@ const CoffeeReadingPage: React.FC = () => {
           {/* Scrollable Content Area */}
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 lg:py-16">
-              <h1 className="text-3xl md:text-4xl font-bold font-display">Coffee Reading</h1>
-              <p className="mt-2 text-white/75 max-w-2xl">
-                Unlock the fortune hidden in your coffee cup sediment. An ancient art of tasseography interpreted by AI.
-              </p>
+                <div className="flex flex-col items-center mb-12">
+                  <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 flex items-center gap-3 font-display">
+                    <Coffee className="w-8 h-8 md:w-12 md:h-12 text-amber-400" />
+                    Coffee Reading
+                  </h1>
+                  {user?.is_believer && (
+                    <div className="mb-6 px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-400/50 text-[11px] font-bold text-violet-300 flex items-center gap-2 animate-pulse shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-300" />
+                      Based on Vedic Astrology
+                    </div>
+                  )}
+                  <p className="text-white/60 text-lg max-w-2xl text-center">
+                    Unlock the fortune hidden in your coffee cup sediment. An ancient art of tasseography interpreted by AI based on Vedic principles.
+                  </p>
+                </div>
 
               {/* Ritual Instructions - Accordion */}
               <GlassCard className="p-6 mb-8 mt-8">

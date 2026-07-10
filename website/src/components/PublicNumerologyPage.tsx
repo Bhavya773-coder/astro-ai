@@ -46,9 +46,9 @@ const PublicNumerologyPage: React.FC = () => {
   return (
     <CosmicBackground>
       <SEO
-        title="Free Numerology Calculator | AI-Powered Life Path Reading | Astro AI"
+        title="Free Numerology Calculator | AI Life Path Reading | AstroAi4u"
         description="Discover your Life Path Number with our free AI numerology calculator. Get personalized insights about your destiny, personality, and future based on numerology."
-        keywords="Free Numerology Calculator, Life Path Number, AI Numerology, Numerology Reading, Destiny Number"
+        keywords="Free Numerology Calculator, Life Path Number, AI Numerology, Numerology Reading, Destiny Number, AstroAi4u"
         canonical="https://astroai4u.com/numerology-info"
       />
       
@@ -218,13 +218,30 @@ const PublicNumerologyPage: React.FC = () => {
               </p>
 
               <p className="text-white/70 text-lg leading-relaxed">
-                At Astro AI, we combine traditional numerological wisdom with advanced artificial intelligence to 
+                At AstroAi4u, we combine traditional numerological wisdom with advanced artificial intelligence to 
                 deliver readings that are both deeply personal and remarkably insightful. Our system analyzes multiple 
                 numerological aspects - not just your Life Path, but also your Expression Number (derived from your 
                 name), Soul Urge Number (your heart's desires), and Personality Number (how others see you). This 
                 comprehensive approach gives you a complete picture of your numerological blueprint and helps you 
                 navigate life with greater awareness and purpose.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* AEO Q&A Section */}
+        <section className="relative z-10 py-16 px-4 border-t border-white/10">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
+              AI Numerology Q&A
+            </h2>
+            <div className="space-y-8 text-white/85">
+              <article className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                <h3 className="text-xl font-semibold mb-3 text-white">How does AstroAi4u calculate my Life Path Number?</h3>
+                <p className="leading-relaxed">
+                  AstroAi4u calculates your Life Path Number by adding up all the digits of your full birth date (month, day, and year) and reducing the sum to a single digit (from 1 to 9) or keeping the Master Numbers (11, 22, 33) intact. Our AI engine then provides personalized destiny readings matching your numerical signature.
+                </p>
+              </article>
             </div>
           </div>
         </section>
