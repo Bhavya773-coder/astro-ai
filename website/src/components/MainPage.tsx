@@ -133,7 +133,7 @@ const MainPage: React.FC = () => {
   // Check if user is first-time after insights generated
   useEffect(() => {
     if (insightsGenerated) {
-      const hasSeenTour = localStorage.getItem('astroai-feature-tour-seen');
+      const hasSeenTour = localStorage.getItem('astroai4u-feature-tour-seen');
       if (!hasSeenTour) {
         // Small delay to let the dashboard load first
         const timer = setTimeout(() => {

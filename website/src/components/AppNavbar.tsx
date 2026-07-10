@@ -60,13 +60,13 @@ const AppNavbar: React.FC = () => {
 
           <div className="flex items-center space-x-3">
             {/* Get Pro Button - Hidden on mobile */}
-            <button
+            {/* <button
               onClick={() => navigate('/pro')}
               className="hidden sm:flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold rounded-lg shadow-[0_0_15px_rgba(168,85,247,0.5)] hover:shadow-[0_0_25px_rgba(168,85,247,0.8)] hover:scale-105 transition-all duration-300"
             >
               <Star className="w-3.5 h-3.5" />
               <span>Get Pro</span>
-            </button>
+            </button> */}
             
             {/* Mobile menu button */}
             <button
@@ -133,7 +133,7 @@ const AppNavbar: React.FC = () => {
             >
               Reports
             </Link>
-            <button
+            {/* <button
               onClick={() => {
                 navigate('/pro');
                 setIsMobileMenuOpen(false);
@@ -141,7 +141,7 @@ const AppNavbar: React.FC = () => {
               className="w-full text-left px-3 py-2 rounded-md bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 text-violet-300 hover:from-violet-600/30 hover:to-fuchsia-600/30 border border-violet-500/30 transition-colors flex items-center gap-2 shadow-[0_0_10px_rgba(168,85,247,0.2)]"
             >
               <Star className="w-4 h-4" /> Get Pro
-            </button>
+            </button> */}
           </div>
           
           {/* Mobile user section */}
