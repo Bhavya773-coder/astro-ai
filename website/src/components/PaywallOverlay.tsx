@@ -44,18 +44,18 @@ const PaywallOverlay: React.FC<PaywallOverlayProps> = ({
 
           <div className="space-y-3">
             <button
-              onClick={() => navigate('/support')}
+              onClick={() => navigate('/pro')}
               className="w-full py-3 px-6 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] text-white font-semibold transition-all transform hover:scale-105 flex items-center justify-center gap-2"
             >
               <Sparkles className="w-5 h-5" />
-              Contact Support
+              Buy Credits
             </button>
 
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/pro')}
               className="w-full py-3 px-6 rounded-lg border border-white/30 text-white hover:bg-white/10 transition-colors"
             >
-              Back to Dashboard
+              View Credit Packs
             </button>
           </div>
         </GlassCard>
