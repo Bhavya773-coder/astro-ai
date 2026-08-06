@@ -207,6 +207,23 @@ class AIChatController {
         await chat.save();
       }
 
+      // Deduct 1 credit before generating the AI response (deduct-first, refund-if-negative)
+      const updatedUser = await User.findByIdAndUpdate(
+        userObjectId,
+        { $inc: { credits: -1 } },
+        { new: true }
+      );
+      if (!updatedUser || updatedUser.credits < -0.5) {
+        if (updatedUser) await User.findByIdAndUpdate(userObjectId, { $inc: { credits: 1 } });
+        return res.status(402).json({
+          success: false,
+          message: 'Insufficient credits. Each AI message costs 1 Cosmic Credit.',
+          code: 'INSUFFICIENT_CREDITS',
+          remaining_credits: updatedUser ? updatedUser.credits + 1 : 0
+        });
+      }
+      console.log(`[AIChatController] 1 credit deducted. Remaining: ${updatedUser.credits}`);
+
       // Get user and profile for astrology context
       const [user, profile] = await Promise.all([
         User.findById(userObjectId).lean(),
@@ -231,9 +248,15 @@ class AIChatController {
         user
       );
 
-      // Generate AI response
+      // Generate AI response (refund the credit if the AI call fails)
       console.log('[AIChatController] Calling AI service...');
-      const aiContent = await aiService.generateCompletion(messages);
+      let aiContent;
+      try {
+        aiContent = await aiService.generateCompletion(messages);
+      } catch (aiErr) {
+        await User.findByIdAndUpdate(userObjectId, { $inc: { credits: 1 } }).catch(() => {});
+        throw aiErr;
+      }
 
       console.log('[AIChatController] AI response received, length:', aiContent.length);
 
@@ -252,6 +275,7 @@ class AIChatController {
 
       res.json({
         success: true,
+        remaining_credits: updatedUser.credits,
         data: {
           userMessage,
           aiMessage,
@@ -322,6 +346,22 @@ class AIChatController {
         return res.status(404).json({
           success: false,
           message: 'Chat not found'
+        });
+      }
+
+      // Deduct 1 credit before streaming (while we can still return JSON on failure)
+      const updatedUser = await User.findByIdAndUpdate(
+        userObjectId,
+        { $inc: { credits: -1 } },
+        { new: true }
+      );
+      if (!updatedUser || updatedUser.credits < -0.5) {
+        if (updatedUser) await User.findByIdAndUpdate(userObjectId, { $inc: { credits: 1 } });
+        return res.status(402).json({
+          success: false,
+          message: 'Insufficient credits. Each AI message costs 1 Cosmic Credit.',
+          code: 'INSUFFICIENT_CREDITS',
+          remaining_credits: updatedUser ? updatedUser.credits + 1 : 0
         });
       }
 
@@ -396,7 +436,8 @@ class AIChatController {
             res.write(`data: ${JSON.stringify({
               type: 'complete',
               messageId: messageId.toString(),
-              content: fullResponse
+              content: fullResponse,
+              remaining_credits: updatedUser.credits
             })}\n\n`);
             res.end();
           }).catch(err => {
@@ -410,11 +451,16 @@ class AIChatController {
         }
       };
 
-      // Generate streaming response
-      await aiService.generateCompletion(messages, {
-        stream: true,
-        onToken
-      });
+      // Generate streaming response (refund the credit if the AI call fails)
+      try {
+        await aiService.generateCompletion(messages, {
+          stream: true,
+          onToken
+        });
+      } catch (aiErr) {
+        await User.findByIdAndUpdate(userObjectId, { $inc: { credits: 1 } }).catch(() => {});
+        throw aiErr;
+      }
 
     } catch (error) {
       console.error('[AIChatController] Streaming error:', error);
