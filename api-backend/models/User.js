@@ -14,7 +14,7 @@ const UserSchema = new mongoose.Schema(
     google_id: { type: String },
     avatar: { type: String },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
-    subscription_plan: { type: String, enum: ['free', 'premium'], default: 'free' },
+    subscription_plan: { type: String, enum: ['free', 'cosmic_starter', 'cosmic_explorer', 'cosmic_sage', 'starter', 'explorer', 'sage'], default: 'free' },
     subscription_status: {
       type: String,
       enum: ['active', 'inactive', 'cancelled'],

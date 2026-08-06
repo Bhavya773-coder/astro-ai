@@ -7,6 +7,6 @@ const { getPalmReading } = require('../controllers/palmReading.controller');
 const router = express.Router();
 
 router.use(requireAuth);
-router.post('/', requireCredits, asyncHandler(getPalmReading));
+router.post('/', requireCredits(10), asyncHandler(getPalmReading));
 
 module.exports = router;

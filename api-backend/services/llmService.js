@@ -5,9 +5,112 @@ class LLMService {
     // Update to use Ollama's chat endpoint for OpenAI compatibility
     this.modelEndpoint = process.env.LLM_MODEL_ENDPOINT || 'http://localhost:11434/api/chat';
     this.modelName = process.env.LLM_MODEL_NAME || 'llama3:latest';
+
+    this.geminiApiKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : null;
+    this.geminiModel = 'gemini-flash-latest';
+    this.useGemini = !!this.geminiApiKey;
+  }
+
+  async callGemini(prompt, streamCallback = null) {
+    if (streamCallback) {
+      console.log('🌊 Starting streaming request to Gemini...');
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:streamGenerateContent?key=${this.geminiApiKey}&alt=sse`;
+      
+      const response = await axios.post(url, {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4096
+        }
+      }, {
+        timeout: 300000,
+        headers: { 'Content-Type': 'application/json' },
+        responseType: 'stream'
+      });
+
+      return new Promise((resolve, reject) => {
+        let fullResponse = '';
+        let buffer = '';
+
+        response.data.on('data', (chunk) => {
+          buffer += chunk.toString();
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('data:')) {
+              const dataStr = trimmed.substring(5).trim();
+              if (dataStr === '[DONE]') continue;
+              try {
+                const data = JSON.parse(dataStr);
+                const token = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                if (token) {
+                  fullResponse += token;
+                  streamCallback({
+                    token,
+                    fullResponse,
+                    done: false
+                  });
+                }
+              } catch (err) {
+                // Ignore parse errors on partial stream lines
+              }
+            }
+          }
+        });
+
+        response.data.on('end', () => {
+          streamCallback({
+            token: '',
+            fullResponse,
+            done: true
+          });
+          resolve({
+            choices: [{
+              message: {
+                content: fullResponse
+              }
+            }]
+          });
+        });
+
+        response.data.on('error', (error) => {
+          console.error('Gemini Stream error:', error);
+          reject(error);
+        });
+      });
+    } else {
+      console.log('Calling Gemini (non-stream) with model:', this.geminiModel);
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:generateContent?key=${this.geminiApiKey}`;
+      
+      const response = await axios.post(url, {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4096
+        }
+      }, {
+        timeout: 300000,
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      return {
+        choices: [{
+          message: {
+            content: text
+          }
+        }]
+      };
+    }
   }
 
   async callLLM(prompt, streamCallback = null) {
+    if (this.useGemini) {
+      return this.callGemini(prompt, streamCallback);
+    }
+
     try {
       console.log('Calling Ollama with model:', this.modelName);
       console.log('Endpoint:', this.modelEndpoint);
@@ -1006,6 +1109,34 @@ Provide only these essential fields in JSON format:
 Keep responses very brief and concise. Focus on practical guidance.
 Respond with valid JSON only.`;
 
+      if (this.useGemini) {
+        console.log('Calling Gemini for simplified daily horoscope generation...');
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:generateContent?key=${this.geminiApiKey}`;
+        
+        const response = await axios.post(url, {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048
+          }
+        }, {
+          timeout: 60000,
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        try {
+          const cleanedText = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+          const horoscopeData = JSON.parse(cleanedText);
+          console.log('Successfully parsed simplified AI horoscope for', zodiacSign);
+          return horoscopeData;
+        } catch (parseError) {
+          console.error('Failed to parse AI horoscope response:', parseError);
+          console.log('Raw response:', text);
+          throw new Error('Invalid JSON format in AI response');
+        }
+      }
+
       console.log('Calling Ollama for simplified daily horoscope generation...');
       const response = await axios.post(this.modelEndpoint, {
         model: this.modelName,
@@ -1021,7 +1152,6 @@ Respond with valid JSON only.`;
       console.log('Ollama Horoscope Response Status:', response.status);
       
       if (response.data && response.data.response) {
-        // Parse the JSON response from Ollama
         try {
           const horoscopeData = JSON.parse(response.data.response);
           console.log('Successfully parsed simplified AI horoscope for', zodiacSign);

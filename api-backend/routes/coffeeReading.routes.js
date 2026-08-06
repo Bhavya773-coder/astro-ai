@@ -7,6 +7,6 @@ const { getCoffeeReading } = require('../controllers/coffeeReading.controller');
 const router = express.Router();
 
 router.use(requireAuth);
-router.post('/', requireCredits, asyncHandler(getCoffeeReading));
+router.post('/', requireCredits(10), asyncHandler(getCoffeeReading));
 
 module.exports = router;

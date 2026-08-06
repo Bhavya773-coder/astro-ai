@@ -1,196 +1,192 @@
-const crypto = require('crypto');
-const Razorpay = require('razorpay');
+const axios = require('axios');
+const { JWT } = require('google-auth-library');
 const User = require('../models/User');
 
-let razorpay;
-if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-  razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-  });
-} else {
-  console.warn('[Payment] Warning: Razorpay credentials are not configured. Payment routes will not function.');
+const CREDIT_PACKAGES = {
+  cosmic_starter: { credits: 50, name: 'Cosmic Starter', is_subscription: true },
+  cosmic_explorer: { credits: 180, name: 'Cosmic Explorer', is_subscription: true },
+  cosmic_sage: { credits: 450, name: 'Cosmic Sage', is_subscription: true },
+  starter: { credits: 50, name: 'Cosmic Starter', is_subscription: true },
+  explorer: { credits: 180, name: 'Cosmic Explorer', is_subscription: true },
+  sage: { credits: 450, name: 'Cosmic Sage', is_subscription: true }
+};
+
+// Helper for Apple App Store receipt validation
+async function validateAppleReceipt(receipt, sharedSecret) {
+  const payload = {
+    'receipt-data': receipt,
+    ...(sharedSecret && { 'password': sharedSecret })
+  };
+
+  try {
+    const prodRes = await axios.post('https://buy.itunes.apple.com/verifyReceipt', payload, { timeout: 15000 });
+    if (prodRes.data?.status === 21007) {
+      const sandboxRes = await axios.post('https://sandbox.itunes.apple.com/verifyReceipt', payload, { timeout: 15000 });
+      return sandboxRes.data;
+    }
+    return prodRes.data;
+  } catch (error) {
+    try {
+      const sandboxRes = await axios.post('https://sandbox.itunes.apple.com/verifyReceipt', payload, { timeout: 15000 });
+      return sandboxRes.data;
+    } catch (sandboxError) {
+      throw new Error(`Apple receipt validation request failed: ${error.message}`);
+    }
+  }
 }
 
-
-// Credit Packages
-const CREDIT_PACKAGES = {
-  pro: { amount: 9900, currency: 'INR', credits: 100, name: 'Pro Pack' },      // ?99 = 100 credits
-  ultra: { amount: 19900, currency: 'INR', credits: 300, name: 'Ultra Pack' }  // ?199 = 300 credits
-};
-
-const createOrder = async (req, res, next) => {
-  try {
-    const userId = req.user.userId;
-    const { plan } = req.body;
-
-    if (!CREDIT_PACKAGES[plan]) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid plan. Choose pro (100 credits) or ultra (300 credits).'
-      });
-    }
-
-    // Check if Razorpay credentials are configured
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-      console.error('[Payment] Razorpay credentials not configured');
-      return res.status(500).json({
-        success: false,
-        message: 'Payment service not configured. Please contact support.'
-      });
-    }
-
-    const packageConfig = CREDIT_PACKAGES[plan];
-    // Receipt must be max 40 chars
-    const shortUserId = userId.slice(-6);
-    const timestamp = Date.now().toString().slice(-6);
-    const receipt = `r_${shortUserId}_${plan}_${timestamp}`;
-
-    console.log(`[Payment] Creating order for user ${userId}, plan ${plan}`);
-
-    const order = await razorpay.orders.create({
-      amount: packageConfig.amount,
-      currency: packageConfig.currency,
-      receipt: receipt,
-      notes: {
-        userId: userId,
-        plan: plan,
-        credits: packageConfig.credits
-      }
-    });
-
-    console.log(`[Payment] Order created: ${order.id}`);
-
-    return res.json({
-      success: true,
-      order: order,
-      key_id: process.env.RAZORPAY_KEY_ID,
-      credits: packageConfig.credits
-    });
-  } catch (err) {
-    console.error('[Payment] Error creating order:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create payment order. Please try again.'
-    });
+// Helper for Google Play receipt validation
+async function validateGooglePurchase({ packageName, productId, token, isSubscription }) {
+  const serviceAccountJson = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
+  if (!serviceAccountJson) {
+    throw new Error('Google Play Service Account JSON not configured');
   }
-};
 
-const verifyPayment = async (req, res, next) => {
+  let credentials;
+  try {
+    credentials = JSON.parse(serviceAccountJson.trim());
+  } catch (e) {
+    const fs = require('fs');
+    credentials = JSON.parse(fs.readFileSync(serviceAccountJson.trim(), 'utf8'));
+  }
+
+  const jwtClient = new JWT({
+    email: credentials.client_email,
+    key: credentials.private_key,
+    scopes: ['https://www.googleapis.com/auth/androidpublisher'],
+  });
+
+  await jwtClient.authorize();
+
+  const endpointType = isSubscription ? 'subscriptions' : 'products';
+  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/${endpointType}/${productId}/tokens/${token}`;
+
+  const response = await jwtClient.request({ url });
+  return response.data;
+}
+
+const verifyIAP = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan } = req.body;
+    const { platform, productId, transactionId, receipt, purchaseToken } = req.body;
 
-    // Compute expected signature
-    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(body)
-      .digest('hex');
-
-    if (expectedSignature !== razorpay_signature) {
+    if (!platform || !productId || (!receipt && !purchaseToken)) {
       return res.status(400).json({
         success: false,
-        message: 'Payment verification failed'
+        message: 'Missing required In-App Purchase parameters.'
       });
     }
 
-    const packageConfig = CREDIT_PACKAGES[plan];
+    const packageConfig = CREDIT_PACKAGES[productId];
     if (!packageConfig) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid credit package'
+        message: `Invalid product ID: ${productId}`
       });
     }
 
-    // Check if payment already processed (prevent duplicate credits)
+    const paymentId = transactionId || purchaseToken || `iap_${Date.now()}`;
+    
     const user = await User.findById(userId);
-    if (user.processed_payments && user.processed_payments.includes(razorpay_payment_id)) {
-      console.log(`[Payment] Payment ${razorpay_payment_id} already processed for user ${userId}`);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    if (user.processed_payments && user.processed_payments.includes(paymentId)) {
+      console.log(`[Payment] IAP ${paymentId} already processed for user ${userId}`);
       return res.json({
         success: true,
-        message: 'Payment already processed. Credits were already added.',
+        message: 'Purchase already processed. Credits were already added.',
         credits_added: 0,
         new_balance: user.credits,
-        package: plan
+        package: productId
       });
     }
 
-    // Add credits and track processed payment
-    const updatedUser = await User.findByIdAndUpdate(userId, {
+    let validationResult = null;
+    let isValid = false;
+
+    if (platform === 'ios') {
+      const appleSecret = process.env.APPLE_IAP_SHARED_SECRET ? process.env.APPLE_IAP_SHARED_SECRET.trim() : null;
+      if (!appleSecret && process.env.NODE_ENV === 'development') {
+        console.warn(`[Payment] APPLE_IAP_SHARED_SECRET not set. Allowing mock verification for development.`);
+        isValid = true;
+        validationResult = { mock: true };
+      } else {
+        console.log(`[Payment] Verifying iOS receipt with Apple...`);
+        validationResult = await validateAppleReceipt(receipt, appleSecret);
+        if (validationResult && validationResult.status === 0) {
+          isValid = true;
+        } else {
+          console.error('[Payment] Apple receipt validation failed. Response:', validationResult);
+        }
+      }
+    } else if (platform === 'android') {
+      const googleServiceJson = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
+      if (!googleServiceJson && process.env.NODE_ENV === 'development') {
+        console.warn(`[Payment] GOOGLE_PLAY_SERVICE_ACCOUNT_JSON not set. Allowing mock verification for development.`);
+        isValid = true;
+        validationResult = { mock: true };
+      } else {
+        console.log(`[Payment] Verifying Android purchase token with Google Play...`);
+        const packageName = process.env.ANDROID_PACKAGE_NAME || 'com.astroai4u.app';
+        try {
+          validationResult = await validateGooglePurchase({
+            packageName,
+            productId,
+            token: purchaseToken || receipt,
+            isSubscription: packageConfig.is_subscription
+          });
+          isValid = true;
+        } catch (err) {
+          try {
+            validationResult = await validateGooglePurchase({
+              packageName,
+              productId,
+              token: purchaseToken || receipt,
+              isSubscription: false
+            });
+            isValid = true;
+          } catch (productErr) {
+            console.error('[Payment] Google purchase validation failed:', err.message, productErr.message);
+          }
+        }
+      }
+    } else {
+      return res.status(400).json({ success: false, message: `Unsupported platform: ${platform}` });
+    }
+
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'In-app purchase receipt or token verification failed.'
+      });
+    }
+
+    const updateObj = {
       $inc: { 
         credits: packageConfig.credits,
         total_credits_purchased: packageConfig.credits
       },
-      $addToSet: { processed_payments: razorpay_payment_id },
-      razorpay_payment_id: razorpay_payment_id
-    }, { new: true });
+      $addToSet: { processed_payments: paymentId },
+      subscription_plan: productId,
+      subscription_status: 'active',
+      subscription_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    };
 
-    console.log(`[Payment] Credits added: ${packageConfig.credits} to user ${userId}. New balance: ${updatedUser.credits}`);
+    const updatedUser = await User.findByIdAndUpdate(userId, updateObj, { new: true });
+    console.log(`[Payment] Native IAP successful. Added ${packageConfig.credits} credits to ${userId}. New balance: ${updatedUser.credits}`);
 
     return res.json({
       success: true,
-      message: `${packageConfig.credits} credits added to your account!`,
+      message: `Successfully processed purchase! ${packageConfig.credits} credits added to your celestial balance.`,
       credits_added: packageConfig.credits,
       new_balance: updatedUser.credits,
-      package: plan
+      package: productId
     });
+
   } catch (err) {
-    console.error('[Payment] Error in verifyPayment:', err);
-    next(err);
-  }
-};
-
-const handleWebhook = async (req, res, next) => {
-  try {
-    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-    const signature = req.headers['x-razorpay-signature'];
-
-    // Verify webhook signature
-    const expectedSignature = crypto
-      .createHmac('sha256', webhookSecret)
-      .update(JSON.stringify(req.body))
-      .digest('hex');
-
-    if (expectedSignature !== signature) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid webhook signature'
-      });
-    }
-
-    const event = req.body;
-
-    if (event.event === 'payment.captured') {
-      const payment = event.payload.payment.entity;
-      const { notes } = payment;
-      const userId = notes?.userId;
-      const plan = notes?.plan;
-      const credits = notes?.credits;
-      const paymentId = payment.id;
-
-      if (userId && plan && credits) {
-        // Check if payment already processed
-        const user = await User.findById(userId);
-        if (user?.processed_payments?.includes(paymentId)) {
-          console.log(`[Webhook] Payment ${paymentId} already processed for user ${userId}`);
-          return res.json({ success: true, message: 'Payment already processed' });
-        }
-
-        await User.findByIdAndUpdate(userId, {
-          $inc: { 
-            credits: credits,
-            total_credits_purchased: credits
-          },
-          $addToSet: { processed_payments: paymentId },
-          razorpay_payment_id: paymentId
-        });
-        console.log(`[Webhook] Credits added: ${credits} to user ${userId} for payment ${paymentId}`);
-      }
-    }
-
-    return res.json({ success: true });
-  } catch (err) {
+    console.error('[Payment] Error in verifyIAP:', err);
     next(err);
   }
 };
@@ -201,10 +197,7 @@ const getPaymentStatus = async (req, res, next) => {
     const user = await User.findById(userId).select('credits total_credits_purchased');
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     return res.json({
@@ -219,4 +212,4 @@ const getPaymentStatus = async (req, res, next) => {
   }
 };
 
-module.exports = { createOrder, verifyPayment, handleWebhook, getPaymentStatus };
+module.exports = { verifyIAP, getPaymentStatus };

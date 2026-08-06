@@ -75,13 +75,15 @@ function calculateHouses(jdUt, latitude, longitude) {
     throw new Error('Swiss Ephemeris error for houses calculation');
   }
 
-  const houses = {};
-  for (let i = 1; i <= 12; i += 1) {
-    houses[i] = getSignFromLongitude(houseResult.cusps[i]);
-  }
-
   const ascendantLon = houseResult.ascendant;
   const ascendantSign = getSignFromLongitude(ascendantLon);
+
+  // Vedic Whole Sign houses
+  const houses = {};
+  const ascendantIdx = ZODIAC_SIGNS.indexOf(ascendantSign);
+  for (let i = 1; i <= 12; i += 1) {
+    houses[i] = ZODIAC_SIGNS[(ascendantIdx + i - 1) % 12];
+  }
 
   return {
     houses,

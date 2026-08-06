@@ -25,13 +25,34 @@ const getCoffeeReading = async (req, res, next) => {
       });
 
       if (existingReading) {
+        const user = await User.findById(userId).select('credits');
         return res.json({
           success: true,
           data: existingReading.result,
-          source: 'cache'
+          source: 'cache',
+          remaining_credits: user ? user.credits : 0
         });
       }
     }
+
+    // Deduct 10 credits BEFORE the AI call (prevents free usage if AI errors)
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { credits: -10 } },
+      { new: true }
+    );
+
+    if (!updatedUser || updatedUser.credits < -9) {
+      if (updatedUser) await User.findByIdAndUpdate(userId, { $inc: { credits: 10 } });
+      return res.status(402).json({
+        success: false,
+        message: 'Insufficient credits. This feature requires 10 Cosmic Credits.',
+        code: 'INSUFFICIENT_CREDITS',
+        credits: updatedUser ? updatedUser.credits + 10 : 0
+      });
+    }
+
+    console.log(`[CoffeeReading] 10 credits deducted. Remaining: ${updatedUser.credits}`);
 
     // Fetch user profile for context
     const profile = await Profile.findOne({ user_id: userId });
@@ -53,20 +74,11 @@ const getCoffeeReading = async (req, res, next) => {
       result
     });
 
-    // Deduct 1 credit and get updated count
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $inc: { credits: -1 } },
-      { new: true }
-    );
-
-    console.log(`[CoffeeReading] Credit deducted. Remaining: ${updatedUser.credits}`);
-
     return res.json({
       success: true,
       data: result,
       source: 'generated',
-      credits_used: 1,
+      credits_used: 10,
       remaining_credits: updatedUser.credits
     });
   } catch (err) {

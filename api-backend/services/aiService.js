@@ -10,12 +10,49 @@ class AIService {
     this.model = process.env.OLLAMA_MODEL || 'llama3:latest';
     this.timeout = parseInt(process.env.OLLAMA_TIMEOUT) || 300000; // 5 minutes default
     this.maxRetries = parseInt(process.env.OLLAMA_MAX_RETRIES) || 2;
+
+    this.geminiApiKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : null;
+    this.geminiModel = 'gemini-flash-latest';
+    this.useGemini = !!this.geminiApiKey;
     
     console.log('[AIService] Initialized with:', {
       baseUrl: this.baseUrl,
       model: this.model,
-      timeout: this.timeout
+      timeout: this.timeout,
+      useGemini: this.useGemini,
+      geminiModel: this.geminiModel
     });
+  }
+
+  /**
+   * Helper to convert OpenAI/Ollama messages to Gemini API format
+   */
+  _convertToGemini(messages) {
+    let systemInstruction = null;
+    const contents = [];
+
+    for (const msg of messages) {
+      if (msg.role === 'system') {
+        systemInstruction = {
+          parts: [{ text: msg.content }]
+        };
+      } else {
+        contents.push({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: msg.content }]
+        });
+      }
+    }
+
+    // Gemini requires at least one user message in contents
+    if (contents.length === 0) {
+      contents.push({
+        role: 'user',
+        parts: [{ text: 'Hello' }]
+      });
+    }
+
+    return { contents, systemInstruction };
   }
 
   /**
@@ -30,7 +67,8 @@ class AIService {
     console.log('[AIService] Generating completion:', {
       messageCount: messages.length,
       stream: stream,
-      model: this.model
+      model: this.useGemini ? this.geminiModel : this.model,
+      engine: this.useGemini ? 'Gemini' : 'Ollama'
     });
 
     let lastError = null;
@@ -39,10 +77,18 @@ class AIService {
       try {
         console.log(`[AIService] Attempt ${attempt}/${this.maxRetries}`);
         
-        if (stream && onToken) {
-          return await this._streamChat(messages, onToken, temperature);
+        if (this.useGemini) {
+          if (stream && onToken) {
+            return await this._geminiStreamChat(messages, onToken, temperature);
+          } else {
+            return await this._geminiNonStreamChat(messages, temperature);
+          }
         } else {
-          return await this._nonStreamChat(messages, temperature);
+          if (stream && onToken) {
+            return await this._streamChat(messages, onToken, temperature);
+          } else {
+            return await this._nonStreamChat(messages, temperature);
+          }
         }
         
       } catch (error) {
@@ -61,11 +107,112 @@ class AIService {
   }
 
   /**
-   * Non-streaming chat completion
+   * Gemini Non-streaming chat completion
+   */
+  async _geminiNonStreamChat(messages, temperature) {
+    const { contents, systemInstruction } = this._convertToGemini(messages);
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:generateContent?key=${this.geminiApiKey}`;
+    
+    const response = await axios.post(
+      url,
+      {
+        contents,
+        ...(systemInstruction && { systemInstruction }),
+        generationConfig: {
+          temperature: temperature,
+          maxOutputTokens: 4096
+        }
+      },
+      {
+        timeout: 60000,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+
+    const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      console.error('[AIService] No text in Gemini response:', JSON.stringify(response.data, null, 2));
+      throw new Error('No content received from Gemini API');
+    }
+    return text;
+  }
+
+  /**
+   * Gemini Streaming chat completion
+   */
+  async _geminiStreamChat(messages, onToken, temperature) {
+    const { contents, systemInstruction } = this._convertToGemini(messages);
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:streamGenerateContent?key=${this.geminiApiKey}&alt=sse`;
+    
+    const response = await axios.post(
+      url,
+      {
+        contents,
+        ...(systemInstruction && { systemInstruction }),
+        generationConfig: {
+          temperature: temperature,
+          maxOutputTokens: 4096
+        }
+      },
+      {
+        timeout: 60000,
+        headers: { 'Content-Type': 'application/json' },
+        responseType: 'stream'
+      }
+    );
+
+    return new Promise((resolve, reject) => {
+      let fullResponse = '';
+      let buffer = '';
+
+      response.data.on('data', (chunk) => {
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('data:')) {
+            const dataStr = trimmed.substring(5).trim();
+            if (dataStr === '[DONE]') continue;
+            try {
+              const data = JSON.parse(dataStr);
+              const token = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+              if (token) {
+                fullResponse += token;
+                onToken({
+                  token,
+                  fullResponse,
+                  done: false
+                });
+              }
+            } catch (err) {
+              // Ignore parse errors on partial stream lines or empty data
+            }
+          }
+        }
+      });
+
+      response.data.on('end', () => {
+        onToken({
+          token: '',
+          fullResponse,
+          done: true
+        });
+        resolve(fullResponse);
+      });
+
+      response.data.on('error', (err) => {
+        reject(err);
+      });
+    });
+  }
+
+  /**
+   * Ollama Non-streaming chat completion
    */
   async _nonStreamChat(messages, temperature) {
     try {
-      // Try the chat endpoint first (OpenAI compatible)
       const response = await axios.post(
         `${this.baseUrl}/api/chat`,
         {
@@ -89,12 +236,10 @@ class AIService {
         hasMessage: !!response.data?.message?.content
       });
 
-      // Ollama chat endpoint format
       if (response.data?.message?.content) {
         return response.data.message.content;
       }
 
-      // Fallback to generate endpoint if chat doesn't work
       return await this._fallbackGenerate(messages, temperature);
       
     } catch (error) {
@@ -104,7 +249,7 @@ class AIService {
   }
 
   /**
-   * Streaming chat completion
+   * Ollama Streaming chat completion
    */
   async _streamChat(messages, onToken, temperature) {
     return new Promise(async (resolve, reject) => {
@@ -150,10 +295,6 @@ class AIService {
                     done: data.done || false
                   });
                 }
-                
-                if (data.done) {
-                  console.log('[AIService] Streaming completed, length:', fullResponse.length);
-                }
               } catch (parseError) {
                 console.error('[AIService] Error parsing stream line:', line, parseError.message);
               }
@@ -170,11 +311,9 @@ class AIService {
         });
 
       } catch (error) {
-        // If streaming fails, fall back to non-streaming
         console.log('[AIService] Streaming failed, using non-stream fallback');
         try {
           const response = await this._nonStreamChat(messages, temperature);
-          // Simulate streaming by sending the whole response as one token
           onToken({
             token: response,
             fullResponse: response,
@@ -192,7 +331,6 @@ class AIService {
    * Fallback to generate endpoint (older Ollama API)
    */
   async _fallbackGenerate(messages, temperature) {
-    // Convert messages array to prompt string
     const prompt = messages.map(m => {
       if (m.role === 'system') return `System: ${m.content}`;
       if (m.role === 'user') return `User: ${m.content}`;
@@ -217,11 +355,6 @@ class AIService {
       }
     );
 
-    console.log('[AIService] Generate endpoint response:', {
-      status: response.status,
-      hasResponse: !!response.data?.response
-    });
-
     if (response.data?.response) {
       return response.data.response;
     }
@@ -230,9 +363,31 @@ class AIService {
   }
 
   /**
-   * Check if Ollama service is available
+   * Check if service is available
    */
   async healthCheck() {
+    if (this.useGemini) {
+      try {
+        const response = await axios.get(
+          `https://generativelanguage.googleapis.com/v1beta/models?key=${this.geminiApiKey}`,
+          { timeout: 5000 }
+        );
+        return {
+          healthy: true,
+          modelAvailable: response.data?.models?.some(m => m.name.includes(this.geminiModel)) || false,
+          availableModels: [this.geminiModel],
+          engine: 'Gemini'
+        };
+      } catch (error) {
+        return {
+          healthy: false,
+          modelAvailable: false,
+          error: `Gemini API check failed: ${error.message}`,
+          engine: 'Gemini'
+        };
+      }
+    }
+
     try {
       const response = await axios.get(`${this.baseUrl}/api/tags`, {
         timeout: 5000
@@ -244,13 +399,15 @@ class AIService {
       return {
         healthy: true,
         modelAvailable: hasModel,
-        availableModels: models.map(m => m.name || m.model)
+        availableModels: models.map(m => m.name || m.model),
+        engine: 'Ollama'
       };
     } catch (error) {
       return {
         healthy: false,
         modelAvailable: false,
-        error: error.message
+        error: error.message,
+        engine: 'Ollama'
       };
     }
   }
@@ -259,6 +416,10 @@ class AIService {
    * Format error for consistent handling
    */
   _formatError(error) {
+    if (this.useGemini) {
+      return new Error(error.response?.data?.error?.message || error.message || 'Gemini API Error');
+    }
+
     let message = 'AI service error';
     let code = 'UNKNOWN_ERROR';
 
@@ -288,3 +449,4 @@ class AIService {
 }
 
 module.exports = new AIService();
+

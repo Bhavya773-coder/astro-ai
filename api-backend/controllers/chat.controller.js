@@ -1,5 +1,6 @@
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
+const User = require('../models/User');
 const mongoose = require('mongoose');
 
 class ChatController {
@@ -146,6 +147,25 @@ class ChatController {
       });
       console.log('🔄 Conversation timestamp updated');
       
+      // Deduct 1 credit before AI response
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user.userId,
+        { $inc: { credits: -1 } },
+        { new: true }
+      );
+
+      if (!updatedUser || updatedUser.credits < -0.5) {
+        if (updatedUser) await User.findByIdAndUpdate(req.user.userId, { $inc: { credits: 1 } });
+        return res.status(402).json({
+          success: false,
+          message: 'Insufficient credits. Each AI message costs 1 Cosmic Credit.',
+          code: 'INSUFFICIENT_CREDITS',
+          credits: updatedUser ? updatedUser.credits + 1 : 0
+        });
+      }
+
+      console.log(`[Chat] 1 credit deducted. Remaining: ${updatedUser.credits}`);
+
       // Get AI response
       console.log('🤖 Requesting AI response...');
       const aiResponse = await this.getAIResponse(message, conversation_id);
@@ -168,7 +188,8 @@ class ChatController {
         console.log('🎉 sendMessage completed successfully');
         res.status(201).json({
           success: true,
-          data: aiMessage
+          data: aiMessage,
+          remaining_credits: updatedUser.credits
         });
       } else {
         console.log('❌ Failed to get AI response');

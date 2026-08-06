@@ -421,11 +421,75 @@ const saveStylePreferences = async (req, res, next) => {
   }
 };
 
+const deleteAccount = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    console.log(`[Profile] Deleting account for user: ${userId}`);
+
+    // 1. Delete user from User collection
+    await User.findByIdAndDelete(userId);
+
+    // 2. Delete user's Profile
+    await Profile.findOneAndDelete({ user_id: userId });
+
+    // 3. Delete user's Reports (birth chart, etc.)
+    await Report.deleteMany({ user_id: userId });
+
+    // 4. Delete user's Chats and Messages
+    try {
+      const Chat = require('../models/Chat');
+      const Message = require('../models/Message');
+      await Chat.deleteMany({ user_id: userId });
+      await Message.deleteMany({ user_id: userId });
+    } catch (e) {
+      console.warn('[Profile] Chat/Message deletion warning:', e.message);
+    }
+
+    // 5. Delete Calendar Events
+    try {
+      const AstroCalendarEvent = require('../models/AstroCalendarEvent');
+      await AstroCalendarEvent.deleteMany({ user_id: userId });
+    } catch (e) {
+      console.warn('[Profile] Calendar Event deletion warning:', e.message);
+    }
+
+    // 6. Delete Image Readings (palm, face, coffee)
+    try {
+      const ImageReading = require('../models/ImageReading');
+      await ImageReading.deleteMany({ user_id: userId });
+    } catch (e) {
+      console.warn('[Profile] ImageReading deletion warning:', e.message);
+    }
+
+    // 7. Delete Push Tokens
+    try {
+      const PushToken = require('../models/PushToken');
+      await PushToken.deleteMany({ user_id: userId });
+    } catch (e) {
+      console.warn('[Profile] PushToken deletion warning:', e.message);
+    }
+
+    console.log(`[Profile] Account ${userId} successfully and completely deleted from database.`);
+
+    res.json({
+      success: true,
+      message: 'Your account and all associated celestial records have been completely and permanently deleted.'
+    });
+  } catch (err) {
+    console.error('[Profile] Error in deleteAccount:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete account. Please try again.'
+    });
+  }
+};
+
 module.exports = {
   getProfile,
   getInsightStatus,
   saveBasicProfile,
   saveLifeContext,
   saveStylePreferences,
-  generateInsights
+  generateInsights,
+  deleteAccount
 };

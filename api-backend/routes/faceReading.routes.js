@@ -7,6 +7,6 @@ const { getFaceReading } = require('../controllers/faceReading.controller');
 const router = express.Router();
 
 router.use(requireAuth);
-router.post('/', requireCredits, asyncHandler(getFaceReading));
+router.post('/', requireCredits(10), asyncHandler(getFaceReading));
 
 module.exports = router;

@@ -33,9 +33,9 @@ class DressingStylerController {
       });
       const isRegeneration = !!(existingSuggestion?.generated_image_base64 || existingSuggestion?.generated_image_url);
 
-      // 1. CHECK + DEDUCT CREDITS (5 credits for this premium feature)
+      // 1. CHECK + DEDUCT CREDITS (1 credit for StyleForecaster reading)
       const user = await User.findById(userId);
-      const CREDIT_COST = 5;
+      const CREDIT_COST = 1;
       
       const isForceRegenerate = req.body.force === true;
 

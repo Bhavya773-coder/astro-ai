@@ -67,7 +67,7 @@ function startOllama() {
 function startBackend() {
   console.log('🌟 Starting AstroAi4u Backend...');
   
-  const backendProcess = spawn('node', ['server.js'], {
+  const backendProcess = spawn('npx', ['nodemon', 'server.js'], {
     stdio: 'inherit',
     shell: true,
     cwd: __dirname

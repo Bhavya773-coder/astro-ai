@@ -306,7 +306,8 @@ const getBirthChart = asyncHandler(async (req, res) => {
     source: 'generated',
     data: {
       birth_details: kundliReport.birth_details,
-      chart_data: kundliReport.chart_data
+      chart_data: kundliReport.chart_data,
+      interpretation: kundliReport.interpretation
     }
   });
 });

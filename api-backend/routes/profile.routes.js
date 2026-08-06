@@ -1,6 +1,6 @@
 const express = require('express');
 const { asyncHandler } = require('../middleware/asyncHandler');
-const { getProfile, getInsightStatus, saveBasicProfile, saveLifeContext, saveStylePreferences, generateInsights } = require('../controllers/profile.controller');
+const { getProfile, getInsightStatus, saveBasicProfile, saveLifeContext, saveStylePreferences, generateInsights, deleteAccount } = require('../controllers/profile.controller');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -14,5 +14,6 @@ router.post('/basic', asyncHandler(saveBasicProfile));
 router.post('/context', asyncHandler(saveLifeContext));
 router.post('/style-preferences', asyncHandler(saveStylePreferences));
 router.post('/generate-insights', asyncHandler(generateInsights));
+router.delete('/delete-account', asyncHandler(deleteAccount));
 
 module.exports = router;

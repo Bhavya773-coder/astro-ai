@@ -25,7 +25,7 @@ const start = async () => {
   initScheduler();
 
   app.listen(PORT, () => {
-    console.log(`API listening on port ${PORT}`);
+    console.log(`API listening on port ${PORT} - restarted`);
   });
 };
 
