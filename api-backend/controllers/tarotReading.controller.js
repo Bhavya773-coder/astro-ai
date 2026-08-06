@@ -35,7 +35,7 @@ const interpretCard = async (req, res, next) => {
     // ─── 1. Gather ALL user context in parallel ───
     const [profile, user, kundli, recentChats, imageReadings, reports, growthMetric] = await Promise.all([
       Profile.findOne({ user_id: userId }),
-      User.findById(userId).select('email is_believer created_at'),
+      User.findById(userId).select('email is_believer credits created_at'),
       KundliReport.findOne({ user_id: userId }),
       // Get last 30 messages from user's most recent chats
       Chat.find({ user_id: userId }).sort({ updated_at: -1 }).limit(5).then(async chats => {
@@ -51,6 +51,16 @@ const interpretCard = async (req, res, next) => {
       Report.find({ user_id: userId }).sort({ generated_at: -1 }).limit(5).select('report_type summary content generated_at').lean(),
       GrowthMetric.findOne({ user_id: userId })
     ]);
+
+    // Verify user has sufficient credits (1 credit required)
+    if (!user || user.credits < 1) {
+      return res.status(402).json({
+        success: false,
+        message: 'Insufficient credits. This feature requires 1 Cosmic Credit.',
+        code: 'INSUFFICIENT_CREDITS',
+        credits: user ? user.credits : 0
+      });
+    }
 
     // ─── 2. Build rich user context string ───
     const contextParts = [];
@@ -210,20 +220,30 @@ Be warm, mystical, deeply empathetic, and specific. Reference their actual life 
 
     if (!responseText) throw new Error('No content received from AI service');
 
-    // Deduct 1 credit
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $inc: { credits: -1 } },
-      { new: true }
-    );
+    // Deduct 1 credit (if not already deducted during reveal)
+    const { skipDeduction } = req.body;
+    let remainingCredits;
+    if (!skipDeduction) {
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $inc: { credits: -1 } },
+        { new: true }
+      );
+      remainingCredits = updatedUser.credits;
+      console.log(`[TarotController] Deducted 1 credit for interpretation. Remaining: ${remainingCredits}`);
+    } else {
+      const user = await User.findById(userId).select('credits');
+      remainingCredits = user ? user.credits : 0;
+      console.log(`[TarotController] Skipped credit deduction for interpretation. Remaining: ${remainingCredits}`);
+    }
 
-    console.log(`[TarotController] Deep AI interpretation generated for "${card_name}" (${position}). Context sources: profile=${!!profile}, kundli=${!!kundli}, chats=${recentChats.length}, readings=${imageReadings.length}, reports=${reports.length}, growth=${!!growthMetric}. Credits remaining: ${updatedUser.credits}`);
+    console.log(`[TarotController] Deep AI interpretation generated for "${card_name}" (${position}). Context sources: profile=${!!profile}, kundli=${!!kundli}, chats=${recentChats.length}, readings=${imageReadings.length}, reports=${reports.length}, growth=${!!growthMetric}. Credits remaining: ${remainingCredits}`);
 
     return res.json({
       success: true,
       interpretation: responseText,
-      credits_used: 1,
-      remaining_credits: updatedUser.credits
+      credits_used: skipDeduction ? 0 : 1,
+      remaining_credits: remainingCredits
     });
   } catch (err) {
     console.error('[TarotController] Interpret error:', err.message);
@@ -231,4 +251,29 @@ Be warm, mystical, deeply empathetic, and specific. Reference their actual life 
   }
 };
 
-module.exports = { interpretCard };
+const deductTarotCredit = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    console.log(`[TarotController] Deducting 1 credit for tarot reading card reveal for user: ${userId}`);
+
+    // Deduct 1 credit
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { credits: -1 } },
+      { new: true }
+    );
+
+    console.log(`[TarotController] 1 credit deducted. New balance: ${updatedUser.credits}`);
+
+    return res.json({
+      success: true,
+      message: '1 Cosmic Credit deducted for Tarot Reading.',
+      remaining_credits: updatedUser.credits
+    });
+  } catch (err) {
+    console.error('[TarotController] Deduct credit error:', err.message);
+    next(err);
+  }
+};
+
+module.exports = { interpretCard, deductTarotCredit };
