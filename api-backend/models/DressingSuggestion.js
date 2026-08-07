@@ -98,6 +98,31 @@ const dressingSuggestionSchema = new mongoose.Schema({
     confidence: { type: Number, default: 90 },
     attention: { type: Number, default: 75 }
   },
+  // User Photo & Rating additions
+  user_photo_base64: {
+    type: String,
+    default: null
+  },
+  current_outfit_rating: {
+    type: Number,
+    default: null
+  },
+  plus_points: {
+    type: [String],
+    default: []
+  },
+  current_outfit_summary: {
+    type: String,
+    default: ''
+  },
+  alternative_outfit_description: {
+    type: String,
+    default: ''
+  },
+  occasion: {
+    type: String,
+    default: 'Date Night'
+  },
   created_at: {
     type: Date,
     default: Date.now

@@ -125,7 +125,6 @@ class DressingStylerController {
       }
 
       // 4. BUILD STYLE CONTEXT
-      // Calculate age from date_of_birth
       let age = null;
       if (profile.date_of_birth) {
         const birthDate = new Date(profile.date_of_birth);
@@ -145,9 +144,9 @@ class DressingStylerController {
         moon_sign: profile.birth_chart_data?.moon_sign || 'Unknown',
         ascendant: profile.birth_chart_data?.ascendant || 'Unknown',
         life_path: profile.numerology_data?.life_path || 'Unknown',
-        work_setting: existingSuggestion?.selected_context || profile.style_preferences?.work_setting || 'Daily Wear',
-        style_vibe: existingSuggestion?.selected_modifier || profile.style_preferences?.style_vibe || 'Authentic Self',
-        fit_preference: existingSuggestion?.vibe_selection || profile.style_preferences?.fit_preference || 'Standard',
+        work_setting: req.body.context || existingSuggestion?.selected_context || profile.style_preferences?.work_setting || 'Daily Wear',
+        style_vibe: req.body.modifier || existingSuggestion?.selected_modifier || profile.style_preferences?.style_vibe || 'Authentic Self',
+        fit_preference: req.body.vibe || existingSuggestion?.vibe_selection || profile.style_preferences?.fit_preference || 'Standard',
         avoid_colors: profile.style_preferences?.avoid_colors || 'None'
       };
 
@@ -156,148 +155,178 @@ class DressingStylerController {
                      currentMonth >= 5 && currentMonth <= 7 ? 'Summer' :
                      currentMonth >= 8 && currentMonth <= 10 ? 'Fall' : 'Winter';
 
-      // 5. STEP A - Generate style analysis text using Gemini
-      const faceContext = faceReadingData 
-        ? `- Physical Traits: Has a ${faceReadingData.face_shape} face shape with ${faceReadingData.eyes}. Their nose is ${faceReadingData.nose} and mouth is ${faceReadingData.mouth}. They have a ${faceReadingData.overall_aura} aura.`
-        : '';
-
-      const styleAnalysisPrompt = `You are a professional fashion stylist with deep knowledge of Vedic astrology and physiognomy.
-Generate a detailed outfit description for this person:
-- Name: ${userContext.full_name}
-- Gender: ${userContext.gender}
-- Age: ${userContext.age} years old
-${faceContext}
-- Sun Sign: ${userContext.sun_sign}, Moon Sign: ${userContext.moon_sign}, Ascendant: ${userContext.ascendant}
-- Life Path Number: ${userContext.life_path}
-- Today's Setting: ${userContext.work_setting}
-- Style Vibe: ${userContext.style_vibe}
-- Fit Preference: ${userContext.fit_preference}
-- User Vibe: ${stylePreferences?.style_vibe || 'Modern & Balanced'}
-- Preferred Fit: ${stylePreferences?.fit_preference || 'Standard'}
-- Work Setting: ${stylePreferences?.work_setting || 'General'}
-- Accessory Level: ${stylePreferences?.accessory_level || 'Moderate'}
-- Avoid: ${stylePreferences?.avoid_colors || userContext.avoid_colors}
-- Season: ${season}
-
-Based on today's astrological forecast and their physical/astrological persona, create a personalized style recommendation that strictly aligns with their preferences.
-
-Respond ONLY with valid JSON:
-{
-  "headline": "5-8 word creative headline",
-  "outfit_description": "Detailed 3-4 sentence description of garments, fabrics, and cuts.",
-  "colors": ["#hexcode1", "#hexcode2", "#hexcode3", "#hexcode4"],
-  "color_names": ["Color 1", "Color 2", "Color 3", "Color 4"],
-  "astrological_reason": "2 sentences explanation.",
-  "mood_energy": "3-5 word vibe",
-  "image_prompt": "Prompt for image generator"
-}`;
-
-      console.log('[DressingStylerController] Calling Gemini for style analysis...');
-
-      const geminiApiKey = process.env.GEMINI_API_KEY;
+      const geminiApiKey = process.env.GEMINI_STYLE_API_KEY || process.env.GEMINI_API_KEY;
       if (!geminiApiKey) {
         return res.status(500).json({
           success: false,
           message: 'AI service not configured.'
         });
       }
-
-      const geminiModel = 'gemini-flash-latest';
-      let styleData;
-      try {
-        const textResponse = await axios.post(
-          `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`,
-          {
-            contents: [{ parts: [{ text: styleAnalysisPrompt }] }],
-            generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
-          },
-          { headers: { 'Content-Type': 'application/json' }, timeout: 30000 }
-        );
-
-        const textPart = textResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const jsonMatch = textPart.match(/```json\s*([\s\S]*?)\s*```/) || textPart.match(/{[\s\S]*}/);
-        const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : textPart;
-        styleData = JSON.parse(jsonStr);
-      } catch (apiError) {
-        console.error('[DressingStylerController] Gemini API error:', apiError.message);
-        styleData = {
-          headline: `Cosmic Style for ${userContext.sun_sign}`,
-          outfit_description: `A sophisticated ensemble featuring colors aligned with your ${userContext.sun_sign} energy.`,
-          colors: ['#4B0082', '#FFD700', '#FF6B6B', '#4ECDC4'],
-          color_names: ['Cosmic Indigo', 'Solar Gold', 'Mars Red', 'Aquarian Teal'],
-          astrological_reason: `As a ${userContext.sun_sign}, these colors align with your energy.`,
-          mood_energy: 'Strong Cosmic Balance'
-        };
+      if (process.env.GEMINI_STYLE_API_KEY) {
+        console.log('[DressingStylerController] Using dedicated GEMINI_STYLE_API_KEY for Style Forecaster');
       }
 
-      const { headline, outfit_description, colors, color_names, astrological_reason, mood_energy, image_prompt } = styleData;
+      const userUploadedPhoto = req.body.image_base64 || null;
+      const targetOccasion = req.body.occasion || req.body.context || 'Date Night';
 
-      let base64ImageData = null;
-      let finalImagePrompt = image_prompt || headline;
-      let facialBlueprint = "balanced features";
+      let styleData = null;
+      let facialBlueprint = "balanced natural features";
 
-      // NEW: Deep Vision Likeness Decoding
-      if (faceReadingData?.imageBase64) {
+      if (userUploadedPhoto) {
+        console.log('[DressingStylerController] Analyzing uploaded user outfit & face photo...');
+        const cleanBase64 = userUploadedPhoto.replace(/^data:image\/\w+;base64,/, '');
+
+        const photoPrompt = `You are an expert celebrity fashion stylist and Vedic astrology charm forecaster.
+The user has provided a photo showing their face and current outfit.
+Target Occasion: ${targetOccasion}
+User Info: Name: ${userContext.full_name}, Gender: ${userContext.gender}, Age: ${userContext.age}
+Astrology: Sun Sign: ${userContext.sun_sign}, Moon Sign: ${userContext.moon_sign}, Ascendant: ${userContext.ascendant}, Life Path: ${userContext.life_path}
+Season: ${season}
+
+Analyze the photo and perform:
+1. RATE CURRENT OUTFIT: Give a score (1-100) on how well their current outfit aligns with today's astrological charm & vibe for ${targetOccasion}.
+2. PLUS POINTS: Provide 2-4 key positive highlights (e.g. "+15 Sky Blue Jeans align with Venus transit today", "+10 Black shirt absorbs chaotic Rahu energy").
+3. CONCISE SUMMARY: Provide a VERY CONCISE 1-2 sentence note evaluating the current look. DO NOT over-explain or write long details about their current clothes.
+4. ALTERNATIVE OUTFIT SUGGESTION: Suggest an alternative outfit recommendation they can wear for ${targetOccasion} that maximizes their astrological charm today.
+5. FORENSIC FACIAL BLUEPRINT: Describe the person's face structure, hair style/color, skin tone, eyes, facial features, and body posture in 2-3 dense sentences so an AI image generator can reproduce this exact person.
+
+Respond ONLY with valid JSON:
+{
+  "current_outfit_rating": 88,
+  "plus_points": ["+15 Sky Blue Jeans align with Venus transit today", "+10 Black top balances Mars energy"],
+  "current_outfit_summary": "Solid casual look with strong Venusian color harmony.",
+  "headline": "Cosmic Date Night Ensemble",
+  "outfit_description": "A tailored dark navy velvet blazer with sky blue dress shirt, charcoal trousers, and subtle silver wrist accents.",
+  "colors": ["#1D2A44", "#87CEEB", "#36454F", "#C0C0C0"],
+  "color_names": ["Midnight Velvet Navy", "Cosmic Sky Blue", "Charcoal Slate", "Lunar Silver"],
+  "astrological_reason": "Venus in Taurus activates your house of attraction, making sky blue and royal navy your prime magnetic frequencies today.",
+  "mood_energy": "Magnetic Date Night Charm",
+  "facial_blueprint": "Exact facial structure, skin tone, hair style, and features extracted from the photo"
+}`;
+
         try {
-          console.log('[DressingStylerController] Decoding facial features for likeness...');
           const visionResponse = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
             {
               contents: [{
                 parts: [
-                  { inline_data: { mime_type: faceReadingData.mimeType || 'image/jpeg', data: faceReadingData.imageBase64 } },
-                  { text: "Act as a forensic facial artist. Describe this person's face in extreme, technical detail for a high-end AI image generator. Focus on: facial structure, eye shape and color, nose bridge, lip fullness, hair texture, and skin undertones. Provide the description in 3-4 dense sentences." }
+                  { inline_data: { mime_type: req.body.mime_type || 'image/jpeg', data: cleanBase64 } },
+                  { text: photoPrompt }
                 ]
-              }]
-            }
+              }],
+              generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+            },
+            { headers: { 'Content-Type': 'application/json' }, timeout: 40000 }
           );
-          facialBlueprint = visionResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || "natural features";
+
+          const textPart = visionResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          const jsonMatch = textPart.match(/```json\s*([\s\S]*?)\s*```/) || textPart.match(/{[\s\S]*}/);
+          const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : textPart;
+          styleData = JSON.parse(jsonStr);
+          if (styleData?.facial_blueprint) {
+            facialBlueprint = styleData.facial_blueprint;
+          }
         } catch (visionErr) {
-          console.warn('[DressingStylerController] Facial decoding failed, falling back to reading results:', visionErr.message);
-          facialBlueprint = `${faceReadingData.face_shape} face with ${faceReadingData.eyes_reading} eyes and ${faceReadingData.nose_reading} nose.`;
+          console.error('[DressingStylerController] Vision photo analysis failed:', visionErr.message);
         }
       }
 
-      const enhancedImagePrompt = `A high-end 2x2 fashion collage showing the same person in 4 distinct full-body poses.
-MODEL BLUEPRINT: Strictly replicate this person - ${facialBlueprint}. They are a ${userContext.gender} age ${userContext.age}.
-QUADRANT COLOR ASSIGNMENTS (MUST BE 4 SEPARATE PANELS):
-- Panel 1 (Top-Left): Full-body outfit strictly dominant in ${color_names[0]} (${colors[0]}).
-- Panel 2 (Top-Right): Full-body outfit strictly dominant in ${color_names[1]} (${colors[1]}).
-- Panel 3 (Bottom-Left): Full-body outfit strictly dominant in ${color_names[2]} (${colors[2]}).
-- Panel 4 (Bottom-Right): Full-body outfit strictly dominant in ${color_names[3]} (${colors[3]}).
-STYLE: ${outfit_description}. ALL panels are Head-to-Toe Full Body shots.
-LAYOUT: Single image, symmetrical 4-panel grid. ENSURE EXACTLY 4 PANELS, DO NOT MERGE. [Seed: ${Date.now()}]`;
+      // Fallback if no photo or vision call failed
+      if (!styleData) {
+        const styleAnalysisPrompt = `You are a professional fashion stylist with deep knowledge of Vedic astrology.
+Generate a detailed outfit description for this person:
+- Name: ${userContext.full_name}, Gender: ${userContext.gender}, Age: ${userContext.age}
+- Sun Sign: ${userContext.sun_sign}, Moon Sign: ${userContext.moon_sign}, Ascendant: ${userContext.ascendant}
+- Life Path Number: ${userContext.life_path}
+- Target Occasion: ${targetOccasion}
+- Style Vibe: ${userContext.style_vibe}
+- Season: ${season}
 
-      finalImagePrompt = enhancedImagePrompt;
+Respond ONLY with valid JSON:
+{
+  "current_outfit_rating": 85,
+  "plus_points": ["+15 Color alignment with planetary transit", "+10 Natural elemental balance"],
+  "current_outfit_summary": "Harmonious daily ensemble aligned with cosmic transits.",
+  "headline": "5-8 word creative headline",
+  "outfit_description": "Detailed 3-4 sentence description of alternative garments, fabrics, and cuts for ${targetOccasion}.",
+  "colors": ["#4B0082", "#FFD700", "#FF6B6B", "#4ECDC4"],
+  "color_names": ["Cosmic Indigo", "Solar Gold", "Mars Red", "Aquarian Teal"],
+  "astrological_reason": "2 sentences explanation.",
+  "mood_energy": "Strong Cosmic Balance"
+}`;
 
         try {
-          console.log('[DressingStylerController] Calling Imagen 4.0 Fast (Production)...');
-          const imageModel = 'imagen-4.0-fast-generate-001';
-
-          const imageResponse = await axios.post(
-            `https://generativelanguage.googleapis.com/v1beta/models/${imageModel}:predict?key=${geminiApiKey}`,
+          const textResponse = await axios.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiApiKey}`,
             {
-              instances: [{ prompt: enhancedImagePrompt }],
-              parameters: { 
-                sampleCount: 1
-              }
+              contents: [{ parts: [{ text: styleAnalysisPrompt }] }],
+              generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
             },
-            { headers: { 'Content-Type': 'application/json' }, timeout: 60000 }
+            { headers: { 'Content-Type': 'application/json' }, timeout: 30000 }
           );
+
+          const textPart = textResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          const jsonMatch = textPart.match(/```json\s*([\s\S]*?)\s*```/) || textPart.match(/{[\s\S]*}/);
+          const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : textPart;
+          styleData = JSON.parse(jsonStr);
+        } catch (apiError) {
+          console.error('[DressingStylerController] Gemini text API error:', apiError.message);
+          styleData = {
+            current_outfit_rating: 85,
+            plus_points: ['+15 Planetary color harmony', '+10 Element balance'],
+            current_outfit_summary: 'Well-aligned cosmic outfit.',
+            headline: `Cosmic Style for ${userContext.sun_sign}`,
+            outfit_description: `A sophisticated ensemble featuring colors aligned with your ${userContext.sun_sign} energy.`,
+            colors: ['#4B0082', '#FFD700', '#FF6B6B', '#4ECDC4'],
+            color_names: ['Cosmic Indigo', 'Solar Gold', 'Mars Red', 'Aquarian Teal'],
+            astrological_reason: `As a ${userContext.sun_sign}, these colors align with your energy.`,
+            mood_energy: 'Strong Cosmic Balance'
+          };
+        }
+      }
+
+      const {
+        headline,
+        outfit_description,
+        colors,
+        color_names,
+        astrological_reason,
+        mood_energy,
+        current_outfit_rating,
+        plus_points,
+        current_outfit_summary
+      } = styleData;
+
+      let base64ImageData = null;
+      const enhancedImagePrompt = userUploadedPhoto
+        ? `High resolution full-body fashion photography of the EXACT SAME PERSON from this facial blueprint: ${facialBlueprint}.
+CRITICAL IDENTITY DIRECTIVE: Strictly maintain this person's exact face, facial structure, skin tone, hair style, and body shape without changing their face or identity.
+OUTFIT: Wearing ${outfit_description}.
+SETTING: Styled background appropriate for ${targetOccasion}.
+STYLE: Photorealistic 8k fashion magazine style photo of the user wearing their alternative outfit.`
+        : `A high-end 2x2 fashion collage showing the same person in 4 distinct full-body poses.
+MODEL BLUEPRINT: Strictly replicate this person - ${facialBlueprint}. They are a ${userContext.gender} age ${userContext.age}.
+STYLE: ${outfit_description}. ALL panels are Head-to-Toe Full Body shots. [Seed: ${Date.now()}]`;
+
+      const finalImagePrompt = enhancedImagePrompt;
+
+      try {
+        console.log('[DressingStylerController] Generating alternative outfit image with identity preservation...');
+        const imageModel = 'imagen-4.0-fast-generate-001';
+
+        const imageResponse = await axios.post(
+          `https://generativelanguage.googleapis.com/v1beta/models/${imageModel}:predict?key=${geminiApiKey}`,
+          {
+            instances: [{ prompt: enhancedImagePrompt }],
+            parameters: { sampleCount: 1 }
+          },
+          { headers: { 'Content-Type': 'application/json' }, timeout: 60000 }
+        );
 
         const prediction = imageResponse.data?.predictions?.[0];
         base64ImageData = prediction?.bytesBase64Encoded || prediction?.image?.bytesBase64Encoded;
-
-        if (base64ImageData) {
-          console.log('[DressingStylerController] Imagen 3.0 image generated successfully.');
-        } else {
-          console.warn('[DressingStylerController] No image data in prediction response');
-        }
       } catch (imageError) {
-        console.error('[DressingStylerController] Image generation failed:');
-        console.error(' - Status:', imageError.response?.status);
-        console.error(' - Data:', JSON.stringify(imageError.response?.data, null, 2));
-        console.error(' - Message:', imageError.message);
+        console.error('[DressingStylerController] Image generation error:', imageError.message);
       }
 
       // 7. SAVE TO DATABASE
@@ -306,14 +335,22 @@ LAYOUT: Single image, symmetrical 4-panel grid. ENSURE EXACTLY 4 PANELS, DO NOT 
         {
           headline,
           overview: outfit_description,
-          color_palette: color_names.join(', '),
-          lucky_item: '',
+          alternative_outfit_description: outfit_description,
+          color_palette: (color_names || []).join(', '),
           astrological_reason,
           mood_energy,
-          colors,
-          color_names,
+          colors: colors || [],
+          color_names: color_names || [],
           generated_image_base64: base64ImageData,
           image_prompt_used: finalImagePrompt,
+          user_photo_base64: userUploadedPhoto || null,
+          current_outfit_rating: current_outfit_rating || 85,
+          plus_points: plus_points || [],
+          current_outfit_summary: current_outfit_summary || '',
+          occasion: targetOccasion,
+          selected_context: targetOccasion,
+          selected_modifier: req.body.modifier || 'Standard',
+          vibe_selection: req.body.vibe || 'Standard',
           created_at: new Date()
         },
         { upsert: true, new: true }
@@ -327,12 +364,18 @@ LAYOUT: Single image, symmetrical 4-panel grid. ENSURE EXACTLY 4 PANELS, DO NOT 
         data: {
           headline,
           outfit_description,
-          colors,
-          color_names,
+          alternative_outfit_description: outfit_description,
+          colors: colors || [],
+          color_names: color_names || [],
           image_base64: base64ImageData,
           astrological_reason,
           mood_energy,
           date: today,
+          user_photo_base64: userUploadedPhoto || null,
+          current_outfit_rating: current_outfit_rating || 85,
+          plus_points: plus_points || [],
+          current_outfit_summary: current_outfit_summary || '',
+          occasion: targetOccasion,
           interactive_state: {
             selected_context: savedSuggestion.selected_context,
             selected_modifier: savedSuggestion.selected_modifier,
@@ -384,18 +427,23 @@ LAYOUT: Single image, symmetrical 4-panel grid. ENSURE EXACTLY 4 PANELS, DO NOT 
         });
       }
 
-      // Return new response shape with image and colors
       res.json({
         success: true,
         data: {
           headline: suggestion.headline,
-          outfit_description: suggestion.overview,
+          outfit_description: suggestion.alternative_outfit_description || suggestion.overview,
+          alternative_outfit_description: suggestion.alternative_outfit_description || suggestion.overview,
           colors: suggestion.colors || [],
           color_names: suggestion.color_names || [],
           image_base64: suggestion.generated_image_base64 || null,
           astrological_reason: suggestion.astrological_reason,
           mood_energy: suggestion.mood_energy,
           date: suggestion.date,
+          user_photo_base64: suggestion.user_photo_base64 || null,
+          current_outfit_rating: suggestion.current_outfit_rating || null,
+          plus_points: suggestion.plus_points || [],
+          current_outfit_summary: suggestion.current_outfit_summary || '',
+          occasion: suggestion.occasion || suggestion.selected_context || 'Date Night',
           interactive_state: {
             selected_context: suggestion.selected_context,
             selected_modifier: suggestion.selected_modifier,
