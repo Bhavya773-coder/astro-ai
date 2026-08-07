@@ -8,12 +8,14 @@ yarn-error.log*
 /build
 /dist
 
-# Environment variables
+# Environment & Secret files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+*.pem
+astro-ai.pem
 
 # IDE
 .vscode/
@@ -87,3 +89,7 @@ temp/
 test_*.js
 *.test.js
 __tests__/
+
+# Mobile App
+mobile-app/
+
