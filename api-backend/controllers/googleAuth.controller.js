@@ -54,17 +54,21 @@ const googleAuth = async (req, res, next) => {
         subscription_status: 'inactive',
         google_id: id,
         avatar: picture,
+        is_verified: true,
         credits: 50
       });
       console.log('[Google Auth] New user created successfully');
     } else {
       console.log('[Google Auth] User already exists, updating Google info:', email);
-      // Update existing user's Google info if not already set
+      // Update existing user's Google info and verification if not already set
       if (!user.google_id) {
         user.google_id = id;
       }
       if (picture && !user.avatar) {
         user.avatar = picture;
+      }
+      if (!user.is_verified) {
+        user.is_verified = true;
       }
       await user.save();
       console.log('[Google Auth] Existing user updated successfully');
@@ -85,7 +89,9 @@ const googleAuth = async (req, res, next) => {
         id: user._id,
         email: user.email,
         role: user.role,
-        avatar: user.avatar
+        avatar: user.avatar,
+        is_believer: user.is_believer,
+        is_verified: user.is_verified
       }
     });
   } catch (error) {

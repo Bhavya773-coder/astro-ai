@@ -38,20 +38,30 @@ class DressingStylerController {
       const CREDIT_COST = 1;
       
       const isForceRegenerate = req.body.force === true;
+      const hasUserUploadedPhoto = !!req.body.image_base64;
 
-      // If not force-regenerate, check if already generated today
-      if (!isForceRegenerate && existingSuggestion?.generated_image_base64) {
+      console.log(`[DressingStylerController] Request payload: force=${isForceRegenerate}, hasPhoto=${hasUserUploadedPhoto}, occasion=${req.body.occasion || 'none'}`);
+
+      // If not force-regenerate AND no new photo uploaded, return existing cached suggestion if available
+      if (!isForceRegenerate && !hasUserUploadedPhoto && existingSuggestion?.generated_image_base64) {
+        console.log('[DressingStylerController] Returning cached suggestion for today (no photo uploaded)');
         return res.json({
           success: true,
           data: {
             headline: existingSuggestion.headline,
-            outfit_description: existingSuggestion.overview,
+            outfit_description: existingSuggestion.alternative_outfit_description || existingSuggestion.overview,
+            alternative_outfit_description: existingSuggestion.alternative_outfit_description || existingSuggestion.overview,
             colors: existingSuggestion.colors || [],
             color_names: existingSuggestion.color_names || [],
             image_base64: existingSuggestion.generated_image_base64 || null,
             astrological_reason: existingSuggestion.astrological_reason,
             mood_energy: existingSuggestion.mood_energy,
             date: today,
+            user_photo_base64: existingSuggestion.user_photo_base64 || null,
+            current_outfit_rating: existingSuggestion.current_outfit_rating || null,
+            plus_points: existingSuggestion.plus_points || [],
+            current_outfit_summary: existingSuggestion.current_outfit_summary || '',
+            occasion: existingSuggestion.occasion || existingSuggestion.selected_context || 'Date Night',
             interactive_state: {
               selected_context: existingSuggestion.selected_context,
               selected_modifier: existingSuggestion.selected_modifier,
@@ -59,7 +69,7 @@ class DressingStylerController {
               outfit_score: existingSuggestion.outfit_score
             }
           },
-          credits_remaining: user.credits,
+          credits_remaining: user?.credits || 0,
           is_regeneration: false
         });
       }
@@ -204,30 +214,36 @@ Respond ONLY with valid JSON:
   "facial_blueprint": "Exact facial structure, skin tone, hair style, and features extracted from the photo"
 }`;
 
-        try {
-          const visionResponse = await axios.post(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
-            {
-              contents: [{
-                parts: [
-                  { inline_data: { mime_type: req.body.mime_type || 'image/jpeg', data: cleanBase64 } },
-                  { text: photoPrompt }
-                ]
-              }],
-              generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
-            },
-            { headers: { 'Content-Type': 'application/json' }, timeout: 40000 }
-          );
+        const visionCandidateModels = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-3.6-flash'];
+        for (const modelName of visionCandidateModels) {
+          try {
+            console.log(`[DressingStylerController] Trying Vision analysis with model ${modelName}...`);
+            const visionResponse = await axios.post(
+              `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiApiKey}`,
+              {
+                contents: [{
+                  parts: [
+                    { inline_data: { mime_type: req.body.mime_type || 'image/jpeg', data: cleanBase64 } },
+                    { text: photoPrompt }
+                  ]
+                }],
+                generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+              },
+              { headers: { 'Content-Type': 'application/json' }, timeout: 40000 }
+            );
 
-          const textPart = visionResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          const jsonMatch = textPart.match(/```json\s*([\s\S]*?)\s*```/) || textPart.match(/{[\s\S]*}/);
-          const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : textPart;
-          styleData = JSON.parse(jsonStr);
-          if (styleData?.facial_blueprint) {
-            facialBlueprint = styleData.facial_blueprint;
+            const textPart = visionResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            const jsonMatch = textPart.match(/```json\s*([\s\S]*?)\s*```/) || textPart.match(/{[\s\S]*}/);
+            const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : textPart;
+            styleData = JSON.parse(jsonStr);
+            if (styleData?.facial_blueprint) {
+              facialBlueprint = styleData.facial_blueprint;
+            }
+            console.log(`[DressingStylerController] Vision analysis SUCCESS with model ${modelName}`);
+            break;
+          } catch (visionErr) {
+            console.warn(`[DressingStylerController] Vision model ${modelName} failed (${visionErr.response?.status || visionErr.message}). Trying next fallback...`);
           }
-        } catch (visionErr) {
-          console.error('[DressingStylerController] Vision photo analysis failed:', visionErr.message);
         }
       }
 
@@ -255,33 +271,36 @@ Respond ONLY with valid JSON:
   "mood_energy": "Strong Cosmic Balance"
 }`;
 
-        try {
-          const textResponse = await axios.post(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiApiKey}`,
-            {
-              contents: [{ parts: [{ text: styleAnalysisPrompt }] }],
-              generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
-            },
-            { headers: { 'Content-Type': 'application/json' }, timeout: 30000 }
-          );
+        const textCandidateModels = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-2.5-flash'];
+        for (const modelName of textCandidateModels) {
+          try {
+            console.log(`[DressingStylerController] Trying text analysis with model ${modelName}...`);
+            const textResponse = await axios.post(
+              `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiApiKey}`,
+              {
+                contents: [{ parts: [{ text: styleAnalysisPrompt }] }],
+                generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
+              },
+              { headers: { 'Content-Type': 'application/json' }, timeout: 30000 }
+            );
 
-          const textPart = textResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          const jsonMatch = textPart.match(/```json\s*([\s\S]*?)\s*```/) || textPart.match(/{[\s\S]*}/);
-          const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : textPart;
-          styleData = JSON.parse(jsonStr);
-        } catch (apiError) {
-          console.error('[DressingStylerController] Gemini text API error:', apiError.message);
-          styleData = {
-            current_outfit_rating: 85,
-            plus_points: ['+15 Planetary color harmony', '+10 Element balance'],
-            current_outfit_summary: 'Well-aligned cosmic outfit.',
-            headline: `Cosmic Style for ${userContext.sun_sign}`,
-            outfit_description: `A sophisticated ensemble featuring colors aligned with your ${userContext.sun_sign} energy.`,
-            colors: ['#4B0082', '#FFD700', '#FF6B6B', '#4ECDC4'],
-            color_names: ['Cosmic Indigo', 'Solar Gold', 'Mars Red', 'Aquarian Teal'],
-            astrological_reason: `As a ${userContext.sun_sign}, these colors align with your energy.`,
-            mood_energy: 'Strong Cosmic Balance'
-          };
+            const textPart = textResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            const jsonMatch = textPart.match(/```json\s*([\s\S]*?)\s*```/) || textPart.match(/{[\s\S]*}/);
+            const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : textPart;
+            styleData = JSON.parse(jsonStr);
+            console.log(`[DressingStylerController] Text analysis SUCCESS with model ${modelName}`);
+            break;
+          } catch (apiError) {
+            console.warn(`[DressingStylerController] Text model ${modelName} failed (${apiError.response?.status || apiError.message}).`);
+          }
+        }
+
+        if (!styleData) {
+          console.error('[DressingStylerController] All text/vision analysis models failed.');
+          return res.status(500).json({
+            success: false,
+            message: 'Unable to analyze photo or generate style forecast at this time. Gemini API model error.'
+          });
         }
       }
 
@@ -310,23 +329,46 @@ STYLE: ${outfit_description}. ALL panels are Head-to-Toe Full Body shots. [Seed:
 
       const finalImagePrompt = enhancedImagePrompt;
 
-      try {
-        console.log('[DressingStylerController] Generating alternative outfit image with identity preservation...');
-        const imageModel = 'imagen-4.0-fast-generate-001';
+      const imageCandidateModels = ['gemini-2.5-flash-image', 'gemini-3.1-flash-image', 'gemini-3-pro-image'];
+      for (const imageModel of imageCandidateModels) {
+        try {
+          console.log(`[DressingStylerController] Generating image with model ${imageModel}...`);
+          const imageParts = [];
+          if (userUploadedPhoto) {
+            const cleanUserBase64 = userUploadedPhoto.replace(/^data:image\/\w+;base64,/, '');
+            imageParts.push({
+              inline_data: {
+                mime_type: req.body.mime_type || 'image/jpeg',
+                data: cleanUserBase64
+              }
+            });
+          }
+          imageParts.push({
+            text: `VIRTUAL TRY-ON MANDATE:
+1. PRESERVE EVERYTHING IN THE INPUT PHOTO: Keep the exact same person, exact face, facial features, facial expression, eye color, hair style and hair color, skin tone, body pose, posture, background environment, camera angle, and lighting.
+2. REPLACE ONLY THE CLOTHING: Replace the clothes currently worn in the photo with this new recommended outfit: ${outfit_description}.
+3. The generated photo MUST look like the EXACT same person in the EXACT same photo, wearing the updated outfit.`
+          });
 
-        const imageResponse = await axios.post(
-          `https://generativelanguage.googleapis.com/v1beta/models/${imageModel}:predict?key=${geminiApiKey}`,
-          {
-            instances: [{ prompt: enhancedImagePrompt }],
-            parameters: { sampleCount: 1 }
-          },
-          { headers: { 'Content-Type': 'application/json' }, timeout: 60000 }
-        );
+          const imageResponse = await axios.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/${imageModel}:generateContent?key=${geminiApiKey}`,
+            { contents: [{ parts: imageParts }] },
+            { headers: { 'Content-Type': 'application/json' }, timeout: 65000 }
+          );
 
-        const prediction = imageResponse.data?.predictions?.[0];
-        base64ImageData = prediction?.bytesBase64Encoded || prediction?.image?.bytesBase64Encoded;
-      } catch (imageError) {
-        console.error('[DressingStylerController] Image generation error:', imageError.message);
+          const parts = imageResponse.data?.candidates?.[0]?.content?.parts || [];
+          const imagePart = parts.find(p => p.inlineData || p.inline_data);
+          if (imagePart) {
+            const dataObj = imagePart.inlineData || imagePart.inline_data;
+            base64ImageData = dataObj.data || null;
+            if (base64ImageData) {
+              console.log(`[DressingStylerController] Image generation SUCCESS with model ${imageModel}! Data length: ${base64ImageData.length}`);
+              break;
+            }
+          }
+        } catch (imageError) {
+          console.warn(`[DressingStylerController] Image model ${imageModel} failed (${imageError.response?.status || imageError.message}). Trying next fallback...`);
+        }
       }
 
       // 7. SAVE TO DATABASE
