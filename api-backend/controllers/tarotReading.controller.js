@@ -25,6 +25,7 @@ const interpretCard = async (req, res, next) => {
     const userId = req.user.userId;
     const {
       card_name, is_reversed, meaning_up, meaning_rev, desc, position,
+      spread_id, spread_title,
       all_cards // Array of all 3 selected cards for cross-card context
     } = req.body;
 
@@ -170,12 +171,20 @@ const interpretCard = async (req, res, next) => {
     // ─── 3. Build the full spread context ───
     let spreadContext = '';
     if (all_cards && Array.isArray(all_cards) && all_cards.length > 0) {
-      spreadContext = `\n\n🃏 FULL SPREAD (Past → Present → Future):
+      spreadContext = `\n\n🃏 FULL SPREAD (${spread_title || '3-card spread'}):
 ${all_cards.map((c, i) => {
   const positions = ['Past', 'Present', 'Future'];
-  return `${i + 1}. ${positions[i] || 'Card ' + (i + 1)}: ${c.name} (${c.is_reversed ? 'REVERSED' : 'UPRIGHT'})`;
+  const label = c.position || positions[i] || 'Card ' + (i + 1);
+  const meaning = c.position_meaning ? ` — ${c.position_meaning}` : '';
+  return `${i + 1}. ${label}${meaning}: ${c.name} (${c.is_reversed ? 'REVERSED' : 'UPRIGHT'})`;
 }).join('\n')}`;
     }
+
+    const spreadInstruction = spread_id === 'situation-action-outcome'
+      ? `Because this is a Situation • Action • Outcome spread, include one clear practical example in this exact shape: "Example: If you do [action card guidance] in this situation, the likely outcome is [outcome card guidance]." Keep it grounded; do not promise certainty.`
+      : spread_id === 'love-connection'
+        ? `Because this is a You • Them • Connection spread, include one clear relationship example in this exact shape: "Example: If you show up as [You card guidance] while they are moving through [Them card guidance], the connection is likely to [Connection card guidance]." Keep it grounded; do not claim to know the other person's hidden facts.`
+        : '';
 
     // ─── 4. Build the AI prompt ───
     const orientation = is_reversed ? 'REVERSED' : 'UPRIGHT';
@@ -208,6 +217,7 @@ Structure your response like this:
 2. **💫 The Deeper Message** — Connect this card to their zodiac energy, planetary influences${isBeliever ? ', nakshatra, and Vedic insights' : ''}, and what their recent thoughts/chats reveal about why THIS card appeared
 3. **🔑 Key Guidance** — Concrete, actionable advice that speaks directly to their primary life focus and challenges
 4. **✨ Cosmic Alignment** — How this card connects to the other cards in their spread and what the universe is trying to tell them
+${spreadInstruction ? `5. **🧭 Example in Real Life** — ${spreadInstruction}` : ''}
 
 Be warm, mystical, deeply empathetic, and specific. Reference their actual life details naturally (their career situation, relationship, emotional state, etc.). This should feel like a reading from someone who truly KNOWS them. 4-5 paragraphs. Do NOT use JSON format — respond in natural flowing text with the emoji headers.`;
 
@@ -216,7 +226,7 @@ Be warm, mystical, deeply empathetic, and specific. Reference their actual life 
     const responseText = await aiService.generateCompletion([
       { role: 'system', content: `You are an elite, deeply intuitive Tarot master${isBeliever ? ' and Vedic astrologer who integrates Vedic wisdom into every reading' : ''} who gives DEEPLY PERSONAL readings. You don't give generic interpretations — you weave the user's ENTIRE life story, their current struggles, emotional state, and cosmic blueprint into every card you interpret.` },
       { role: 'user', content: prompt }
-    ], { temperature: 0.8 });
+    ], { temperature: 0.8, localOnly: true });
 
     if (!responseText) throw new Error('No content received from AI service');
 
