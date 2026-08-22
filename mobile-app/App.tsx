@@ -181,8 +181,15 @@ export default function App() {
             } else {
               changeMode('onboarding');
             }
-          } catch {
-            changeMode('dashboard');
+          } catch (err: any) {
+            if (err?.status === 401) {
+              setAuthToken(null);
+              setAuthTokenState(null);
+              await saveAuthToken(null);
+              changeMode('login');
+            } else {
+              changeMode('dashboard');
+            }
           }
         }
       } catch {

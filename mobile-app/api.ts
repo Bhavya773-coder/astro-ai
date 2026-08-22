@@ -150,6 +150,10 @@ export const apiFetch = async (path: string, options: RequestInit = {}) => {
     error.status = response.status;
     error.code = data.code;
     error.data = data;
+    if (response.status === 401 && (data.message === 'Invalid token' || data.message === 'Unauthorized')) {
+      authToken = null;
+      saveAuthToken(null).catch(() => {});
+    }
     throw error;
   }
 
