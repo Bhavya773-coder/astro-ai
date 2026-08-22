@@ -141,83 +141,15 @@ class ContextBuilder {
   /**
    * Build temporal context section with current date, time, and astrological timing
    */
-  _buildTemporalContext() {
-    const now = new Date();
-    const today = now.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-
-    const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
-    const date = now.getDate();
-    const month = now.toLocaleDateString('en-US', { month: 'long' });
-    const year = now.getFullYear();
-
-    // EXACT CURRENT TIME - crucial for time-sensitive queries
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours % 12 || 12;
-    const displayMinutes = minutes.toString().padStart(2, '0');
-    const currentTime = `${displayHours}:${displayMinutes} ${ampm}`;
-    const currentTime24h = `${hours.toString().padStart(2, '0')}:${displayMinutes}`;
-
-    // Time of day classification for guidance
-    let timeOfDay = 'Night';
-    if (hours >= 5 && hours < 12) timeOfDay = 'Morning';
-    else if (hours >= 12 && hours < 17) timeOfDay = 'Afternoon';
-    else if (hours >= 17 && hours < 21) timeOfDay = 'Evening';
-
-    // Get Hindu calendar details (approximate)
-    const hinduMonth = this._getHinduMonth(now);
-    const paksha = this._getPaksha(now);
-    const tithi = this._getTithi(now);
-
-    // Get current planetary positions (simplified)
-    const currentPlanetaryPositions = this._getCurrentPlanetaryPositions(now);
-
-    // Get muhurta/hora information
-    const currentHora = this._getCurrentHora(now);
-    const rahukalam = this._getRahuKalam(now);
-    const yamagandam = this._getYamaGandam(now);
-
+  _buildTemporalContext(now = new Date()) {
     return `CURRENT TEMPORAL CONTEXT:
-Today's Date: ${today}
-Day of Week: ${dayOfWeek}
-Gregorian Date: ${date} ${month} ${year}
+UTC timestamp: ${now.toISOString()}
+Timezone assumption: UTC unless the verified user profile or request supplies another timezone.
 
-EXACT CURRENT TIME:
-Time (12-hour): ${currentTime}
-Time (24-hour): ${currentTime24h}
-Time of Day: ${timeOfDay}
-Hour: ${hours}
-Minute: ${minutes}
-
-Hindu Calendar Context:
-Hindu Month: ${hinduMonth}
-Paksha (Fortnight): ${paksha}
-Tithi (Lunar Day): ${tithi}
-
-Current Astrological Timing:
-${currentPlanetaryPositions}
-Current Hora (Planetary Hour): ${currentHora}
-
-Inauspicious Periods Today:
-Rahu Kalam: ${rahukalam}
-Yama Gandam: ${yamagandam}
-
-TIME-SENSITIVE GUIDANCE RULES:
-- If user asks about daily activities (bath, eating, travel, meetings), ALWAYS reference the EXACT CURRENT TIME provided above.
-- If it's 2-5 AM (Brahma Muhurta to early morning): Recommend rest/sleep. Advise against major activities unless spiritual practice.
-- If it's 12-3 PM (Midday): Good for important decisions, meetings, business.
-- If it's 6-9 PM (Evening): Good for relaxation, family time, light activities.
-- If it's 10 PM - 4 AM (Night): Advise rest. Discourage starting new activities, heavy meals, or travel.
-- Check Rahu Kalam and Yama Gandam before recommending auspicious timings.
-- For "should I do X now" questions: Always respond based on the actual current time shown above.
-
-Important: Use this current date and EXACT TIME for accurate predictions. Consider current planetary hour, time of day, and inauspicious periods when providing guidance.`;
+DETERMINISTIC-DATA RULE:
+- This section contains clock data only.
+- Do not infer Tithi, Paksha, Moon phase, planetary positions, Hora, Rahu Kalam, Yamaganda, transits, or dashas from the calendar date or server time.
+- Use astrological values only when a labelled calculation source supplies them; otherwise say the signal is unavailable.`;
   }
 
   /**
@@ -383,35 +315,15 @@ Note: For precise predictions, consider current transits and dasha periods if av
 
     const toneInstruction = beliefType === 'believer' ? believerTone : nonBelieverTone;
 
-    return `You are a professional Vedic astrologer with deep expertise in:
-- Vedic astrology (Jyotish) and planetary influences
-- Numerology and life path analysis
-- Relationship compatibility and timing
-- Career guidance based on planetary positions
-- Personal growth and spiritual development
-- Current planetary transits and their effects
-- Moon phase influences
-- Lunar calendar timing
-- Vedic festival timings
-- Seasonal astrological patterns
-- Planetary dasha (Mahadasha) cycles
-- Nakshatra (lunar mansion) influences
-- Vedic planetary aspects and yogas
-- Vedic house interpretations
-- Vedic planetary dignities and debilities
-- Vedic planetary exaltations and falls
-- Vedic planetary friendships and enemies
-- Vedic planetary natural significances
-- Vedic planetary functional strengths and weaknesses
-- Vedic planetary transits and dasha periods
-- Vedic planetary yogas and combinations
-- Vedic planetary dasha periods and their effects
-- Vedic planetary dasha period timings and durations
-- Vedic planetary dasha period effects and outcomes
+    return `Your name is Hope. You are AstroAI4U's Adaptive Oracle for predictive entertainment and self-exploration.
 
+Core rule: Hope predicts. Reality happens. The user validates. The system learns.
 
-${toneInstruction}
-You provide specific, personalized guidance based on the user's birth chart.`;
+You can interpret astrology, tarot, numerology, palmistry, face reading, coffee reading, symbolic patterns, verified user profile data, explicit preferences, prior conversations, and user-confirmed outcomes. Make a clear call when the user asks for a prediction, preserve previous calls, admit misses plainly, and never increase certainty because the user pressures you.
+
+Never invent planetary positions, transits, dashas, lunar phases, or timing windows. Use deterministic values only when the provided context names a calculation source. Treat user-confirmed events and corrections as authoritative. Never present divination as proof of medical facts, crimes, infidelity, pregnancy, death, or another person's hidden actions.
+
+${toneInstruction}`;
   }
 
   /**

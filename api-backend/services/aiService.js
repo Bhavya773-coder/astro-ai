@@ -13,7 +13,8 @@ class AIService {
 
     this.geminiApiKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : null;
     this.geminiModel = 'gemini-flash-latest';
-    this.useGemini = !!this.geminiApiKey;
+    this.provider = String(process.env.AI_PROVIDER || 'ollama').trim().toLowerCase();
+    this.useGemini = this.provider === 'gemini';
     
     console.log('[AIService] Initialized with:', {
       baseUrl: this.baseUrl,
@@ -62,13 +63,14 @@ class AIService {
    * @returns {Promise<string>} - The AI response content
    */
   async generateCompletion(messages, options = {}) {
-    const { stream = false, onToken = null, temperature = 0.7 } = options;
+    const { stream = false, onToken = null, temperature = 0.7, localOnly = false } = options;
+    const useGemini = this.useGemini && !localOnly;
     
     console.log('[AIService] Generating completion:', {
       messageCount: messages.length,
       stream: stream,
-      model: this.useGemini ? this.geminiModel : this.model,
-      engine: this.useGemini ? 'Gemini' : 'Ollama'
+      model: useGemini ? this.geminiModel : this.model,
+      engine: useGemini ? 'Gemini' : 'Ollama'
     });
 
     let lastError = null;
@@ -77,7 +79,7 @@ class AIService {
       try {
         console.log(`[AIService] Attempt ${attempt}/${this.maxRetries}`);
         
-        if (this.useGemini) {
+        if (useGemini) {
           if (stream && onToken) {
             return await this._geminiStreamChat(messages, onToken, temperature);
           } else {
@@ -102,8 +104,19 @@ class AIService {
         }
       }
     }
+
+    if (useGemini && this._isTransientGeminiError(lastError)) {
+      console.warn('[AIService] Gemini is temporarily unavailable; using local Ollama.');
+      if (stream && onToken) return this._streamChat(messages, onToken, temperature);
+      return this._nonStreamChat(messages, temperature);
+    }
     
     throw this._formatError(lastError);
+  }
+
+  _isTransientGeminiError(error) {
+    return [429, 500, 502, 503, 504].includes(error?.response?.status)
+      || ['ECONNABORTED', 'ECONNRESET', 'ETIMEDOUT'].includes(error?.code);
   }
 
   /**

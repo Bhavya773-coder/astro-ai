@@ -10,12 +10,16 @@ import { GlassCard, LoadingSpinner, GradientText } from './CosmicUI';
 import toast from 'react-hot-toast';
 import { useAuth } from '../auth/AuthContext';
 import { Sparkles } from 'lucide-react';
+import OracleDisclosureModal from './OracleDisclosureModal';
+import OraclePredictionCard from './OraclePredictionCard';
 
 interface ChatMessage {
   _id?: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   created_at: Date | string;
+  oracle_prediction_id?: string;
+  oracle_metadata?: any;
 }
 
 interface Chat {
@@ -108,6 +112,9 @@ const GPTChatPage: React.FC = () => {
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
   const [editMsgContent, setEditMsgContent] = useState('');
+  const [oracleMethod, setOracleMethod] = useState('astrology');
+  const [oracleDisclosure, setOracleDisclosure] = useState<{ loaded: boolean; accepted: boolean; version?: string; text?: string }>({ loaded: false, accepted: false });
+  const [oracleFeed, setOracleFeed] = useState<any>(null);
   
   // Share modal state
   const [showShareModal, setShowShareModal] = useState(false);
@@ -189,7 +196,26 @@ const GPTChatPage: React.FC = () => {
   useEffect(() => {
     loadProfile();
     loadChats();
+    loadOracleDisclosure();
   }, []);
+
+  const loadOracleDisclosure = async () => {
+    try {
+      const response = await apiFetch('/api/oracle/disclosure');
+      setOracleDisclosure({ loaded: true, ...(response?.data || { accepted: false }) });
+    } catch (error) {
+      console.error('Failed to load Hope disclosure:', error);
+      setOracleDisclosure(current => ({ ...current, loaded: true, accepted: false }));
+    }
+  };
+
+  useEffect(() => {
+    if (!oracleDisclosure.accepted || oracleFeed) return;
+    const period = new Date().getHours() < 17 ? 'morning' : 'evening';
+    apiFetch(`/api/oracle/feed?period=${period}`)
+      .then(response => setOracleFeed(response?.data || null))
+      .catch(error => console.error('Failed to load Hope feed:', error));
+  }, [oracleDisclosure.accepted, oracleFeed]);
 
   // Handle URL query parameter for chatId
   useEffect(() => {
@@ -277,7 +303,9 @@ const GPTChatPage: React.FC = () => {
           _id: m._id,
           role: m.role,
           content: m.content,
-          created_at: m.created_at
+          created_at: m.created_at,
+          oracle_prediction_id: m.oracle_prediction_id,
+          oracle_metadata: m.oracle_metadata
         })));
       }
     } catch (err) {
@@ -398,6 +426,10 @@ const GPTChatPage: React.FC = () => {
   const sendMessage = async (text?: string) => {
     const toSend = (text || inputMessage).trim();
     if (!toSend || isLoading) return;
+    if (!oracleDisclosure.accepted) {
+      toast('Please review Hope’s disclosure first.');
+      return;
+    }
     if (!currentChat) {
       await createNewChat();
       setInputMessage(toSend);
@@ -405,6 +437,7 @@ const GPTChatPage: React.FC = () => {
     }
 
     const userMsg: ChatMessage = { 
+      _id: 'user-' + crypto.randomUUID(),
       role: 'user', 
       content: toSend, 
       created_at: new Date() 
@@ -432,15 +465,18 @@ const GPTChatPage: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'text/event-stream',
+          ...(localStorage.getItem('astroai4u_token') ? { Authorization: `Bearer ${localStorage.getItem('astroai4u_token')}` } : {})
         },
         body: JSON.stringify({ 
           chatId: currentChat._id, 
-          message: toSend 
+          message: toSend,
+          method: oracleMethod
         }),
         signal: abortControllerRef.current.signal
       });
 
       if (!response.ok) {
+        if (response.status === 428) setOracleDisclosure(current => ({ ...current, accepted: false }));
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -492,7 +528,13 @@ const GPTChatPage: React.FC = () => {
                 setMessages(prev => 
                   prev.map(msg => 
                     msg._id === aiPlaceholder._id 
-                      ? { ...msg, _id: data.messageId, content: data.content }
+                      ? {
+                          ...msg,
+                          _id: data.messageId,
+                          content: data.content,
+                          oracle_prediction_id: data.oracle_prediction_id,
+                          oracle_metadata: data.oracle_metadata
+                        }
                       : msg
                   )
                 );
@@ -530,48 +572,18 @@ const GPTChatPage: React.FC = () => {
         return;
       }
       
-      console.error('Streaming failed, trying fallback:', err);
-      
-      try {
-        const res = await apiFetch('/api/ai-chat/send', {
-          method: 'POST',
-          body: JSON.stringify({ 
-            chatId: currentChat._id, 
-            message: toSend 
-          })
-        });
-
-        if (res?.success && res?.data?.aiMessage) {
-          setMessages(prev => 
-            prev.map(msg => 
-              msg._id === aiPlaceholder._id 
-                ? { 
-                    ...msg, 
-                    _id: res.data.aiMessage._id,
-                    content: res.data.aiMessage.content 
-                  }
-                : msg
-            )
-          );
-          loadChats();
-        } else {
-          throw new Error(res?.message || 'Failed to get response');
-        }
-      } catch (fallbackErr) {
-        console.error('Fallback also failed:', fallbackErr);
-        setMessages(prev => 
-          prev.map(msg => 
-            msg._id === aiPlaceholder._id 
-              ? { 
-                  ...msg, 
-                  content: "Sorry, I couldn't generate a response. Please try again." 
-                }
-              : msg
-          )
-        );
-      } finally {
-        setIsLoading(false);
-      }
+      console.error('Streaming failed:', err);
+      setMessages(prev =>
+        prev.map(msg =>
+          msg._id === aiPlaceholder._id
+            ? {
+                ...msg,
+                content: "The connection was interrupted. Reopen this chat to check Hope's saved response before retrying."
+              }
+            : msg
+        )
+      );
+      setIsLoading(false);
     }
     
     // Auto-generate title if this is the first message and title hasn't been generated yet
@@ -660,6 +672,12 @@ const GPTChatPage: React.FC = () => {
 
   return (
     <CosmicBackground className="h-screen overflow-hidden">
+      <OracleDisclosureModal
+        open={oracleDisclosure.loaded && !oracleDisclosure.accepted}
+        version={oracleDisclosure.version}
+        text={oracleDisclosure.text}
+        onAccepted={() => setOracleDisclosure(current => ({ ...current, loaded: true, accepted: true }))}
+      />
       <div className="flex min-h-screen overflow-hidden">
         {/* Sidebar */}
         <Sidebar />
@@ -911,6 +929,7 @@ const GPTChatPage: React.FC = () => {
                                 >
                                   {message.content}
                                 </ReactMarkdown>
+                                {message.oracle_metadata && <OraclePredictionCard metadata={message.oracle_metadata} />}
                               </div>
                             )}
 
@@ -991,6 +1010,13 @@ const GPTChatPage: React.FC = () => {
               {/* Suggestions */}
               {messages.length === 0 && !isLoading && (
                 <div className="mb-6 max-w-3xl mx-auto w-full">
+                  {oracleFeed?.prediction && (
+                    <div className="mb-4 rounded-2xl border border-fuchsia-400/20 bg-black/20 p-4">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-fuchsia-300">Hope’s {new Date().getHours() < 17 ? 'morning signal' : 'evening reflection'}</p>
+                      <p className="text-sm text-white/75">{oracleFeed.message_text}</p>
+                      <OraclePredictionCard metadata={{ prediction_id: oracleFeed.prediction.prediction_id, status: oracleFeed.prediction.status, prediction_original: oracleFeed.prediction.prediction_original, reused: oracleFeed.reused, recalculated: oracleFeed.recalculated }} />
+                    </div>
+                  )}
                   <p className="text-white/60 text-sm mb-3">Try asking:</p>
                   <div className="flex flex-wrap gap-2">
                     {SUGGESTIONS.map((suggestion) => (
@@ -1011,12 +1037,18 @@ const GPTChatPage: React.FC = () => {
                 onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
                 className="w-full px-4 py-4 md:py-6"
               >
+                <div className="mx-auto mb-2 flex max-w-3xl items-center justify-between gap-3 text-xs text-white/50">
+                  <span>Reading method</span>
+                  <select aria-label="Hope reading method" value={oracleMethod} onChange={event => setOracleMethod(event.target.value)} className="rounded-lg border border-white/15 bg-[#21143d] px-3 py-2 capitalize text-white">
+                    {['astrology', 'tarot', 'numerology', 'palm', 'face', 'coffee'].map(method => <option key={method} value={method}>{method}</option>)}
+                  </select>
+                </div>
                 <div className="max-w-3xl mx-auto relative flex items-end">
                   <AutoResizeTextarea
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Ask AstroAi4u any cosmic question..."
+                    placeholder="Ask Hope a clear question..."
                     maxRows={6}
                     className="w-full bg-purple-900/95 hover:bg-purple-900 focus:bg-purple-900 backdrop-blur-xl border-2 border-white/70 hover:border-white focus:border-white rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-lg text-white placeholder-white/90 focus:outline-none focus:ring-4 focus:ring-purple-400/60 transition-all shadow-xl shadow-purple-500/20"
                   />
@@ -1030,7 +1062,7 @@ const GPTChatPage: React.FC = () => {
                     </svg>
                   </button>
                 </div>
-                <p className="text-center text-white/30 text-xs mt-2">AstroAi4u can make mistakes. Consider checking important information.</p>
+                <p className="text-center text-white/30 text-xs mt-2">Hope predicts for entertainment and self-exploration. You validate what happens.</p>
               </form>
             </div>
           </div>

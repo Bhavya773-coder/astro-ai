@@ -34,6 +34,15 @@ const messageSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
+  oracle_prediction_id: {
+    type: String,
+    required: false,
+    index: true
+  },
+  oracle_metadata: {
+    type: mongoose.Schema.Types.Mixed,
+    required: false
+  },
   // Model used for AI responses
   model: {
     type: String,

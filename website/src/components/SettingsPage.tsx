@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard } from './CosmicUI';
+import OraclePrivacySettings from './OraclePrivacySettings';
 
 type Theme = 'cosmic' | 'midnight' | 'sunset' | 'ocean';
 
@@ -211,6 +212,8 @@ const SettingsPage: React.FC = () => {
                   </div>
                 </div>
               </GlassCard>
+
+              <OraclePrivacySettings />
 
               {/* Data Management */}
               <GlassCard className="p-6" glow="gold">

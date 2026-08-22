@@ -421,53 +421,47 @@ const saveStylePreferences = async (req, res, next) => {
   }
 };
 
+function accountDeletionModels() {
+  return {
+    Profile,
+    User,
+    Report,
+    Chat: require('../models/Chat'),
+    Message: require('../models/Message'),
+    AstroCalendarEvent: require('../models/AstroCalendarEvent'),
+    ImageReading: require('../models/ImageReading'),
+    PushToken: require('../models/PushToken'),
+    OraclePrediction: require('../models/OraclePrediction'),
+    OracleInputSnapshot: require('../models/OracleInputSnapshot'),
+    OracleMemory: require('../models/OracleMemory'),
+    OracleAnalyticsEvent: require('../models/OracleAnalyticsEvent')
+  };
+}
+
+async function deleteAccountData(userId, models = accountDeletionModels()) {
+  await Promise.all([
+    models.Profile.findOneAndDelete({ user_id: userId }),
+    models.Report.deleteMany({ user_id: userId }),
+    models.Chat.deleteMany({ user_id: userId }),
+    models.Message.deleteMany({ user_id: userId }),
+    models.AstroCalendarEvent.deleteMany({ userId }),
+    models.ImageReading.deleteMany({ user_id: userId }),
+    models.PushToken.deleteMany({ user_id: userId }),
+    models.OraclePrediction.deleteMany({ user_id: userId }),
+    models.OracleInputSnapshot.deleteMany({ user_id: userId }),
+    models.OracleMemory.deleteMany({ user_id: userId }),
+    models.OracleAnalyticsEvent.deleteMany({ user_id: userId })
+  ]);
+  await models.User.findByIdAndDelete(userId);
+}
+
 const deleteAccount = async (req, res, next) => {
   try {
     const userId = req.user.userId;
     console.log(`[Profile] Deleting account for user: ${userId}`);
 
-    // 1. Delete user from User collection
-    await User.findByIdAndDelete(userId);
-
-    // 2. Delete user's Profile
-    await Profile.findOneAndDelete({ user_id: userId });
-
-    // 3. Delete user's Reports (birth chart, etc.)
-    await Report.deleteMany({ user_id: userId });
-
-    // 4. Delete user's Chats and Messages
-    try {
-      const Chat = require('../models/Chat');
-      const Message = require('../models/Message');
-      await Chat.deleteMany({ user_id: userId });
-      await Message.deleteMany({ user_id: userId });
-    } catch (e) {
-      console.warn('[Profile] Chat/Message deletion warning:', e.message);
-    }
-
-    // 5. Delete Calendar Events
-    try {
-      const AstroCalendarEvent = require('../models/AstroCalendarEvent');
-      await AstroCalendarEvent.deleteMany({ user_id: userId });
-    } catch (e) {
-      console.warn('[Profile] Calendar Event deletion warning:', e.message);
-    }
-
-    // 6. Delete Image Readings (palm, face, coffee)
-    try {
-      const ImageReading = require('../models/ImageReading');
-      await ImageReading.deleteMany({ user_id: userId });
-    } catch (e) {
-      console.warn('[Profile] ImageReading deletion warning:', e.message);
-    }
-
-    // 7. Delete Push Tokens
-    try {
-      const PushToken = require('../models/PushToken');
-      await PushToken.deleteMany({ user_id: userId });
-    } catch (e) {
-      console.warn('[Profile] PushToken deletion warning:', e.message);
-    }
+    // Delete the user record only after every associated delete succeeds.
+    await deleteAccountData(userId);
 
     console.log(`[Profile] Account ${userId} successfully and completely deleted from database.`);
 
@@ -491,5 +485,6 @@ module.exports = {
   saveLifeContext,
   saveStylePreferences,
   generateInsights,
-  deleteAccount
+  deleteAccount,
+  deleteAccountData
 };

@@ -1,0 +1,6 @@
+# Ignore root secret key files
+*.pem
+astro-ai.pem
+node_modules/
+.expo/
+dist/

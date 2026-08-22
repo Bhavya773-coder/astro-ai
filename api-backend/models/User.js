@@ -25,6 +25,14 @@ const UserSchema = new mongoose.Schema(
     razorpay_payment_id: { type: String },
     processed_payments: [{ type: String }], // Track processed payment IDs to prevent double crediting
     is_believer: { type: Boolean, default: true },
+    oracle_disclosure: {
+      version: { type: String, default: null },
+      accepted_at: { type: Date, default: null }
+    },
+    oracle_preferences: {
+      personalized_learning: { type: Boolean, default: true },
+      contextual_signals: { type: Boolean, default: true }
+    },
     credits: {
       type: Number,
       default: 50,

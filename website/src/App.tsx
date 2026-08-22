@@ -30,6 +30,7 @@ import SignUpPage from './components/SignUpPage';
 import SignupOtpPage from './components/SignupOtpPage';
 import ProtectedRoute from './auth/ProtectedRoute';
 import GPTChatPage from './components/GPTChatPage';
+import OracleHistoryPage from './components/OracleHistoryPage';
 import DressingStylerPage from './components/DressingStylerPage';
 import AdminDashboardPage from './components/AdminDashboardPage';
 import SettingsPage from './components/SettingsPage';
@@ -174,6 +175,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <GPTChatPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/hope-history"
+              element={
+                <ProtectedRoute>
+                  <OracleHistoryPage />
                 </ProtectedRoute>
               }
             />

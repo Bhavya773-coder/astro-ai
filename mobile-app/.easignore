@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Expo & build outputs
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native & keys
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+
+# Parent workspace directories (avoid uploading non-mobile code)
+../website
+../api-backend
+../ad-automation
+../buffer-instagram-automation
+../*.pem
+
+# OS & Logs
+.DS_Store
+*.log

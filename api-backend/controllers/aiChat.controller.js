@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const Chat = require('../models/Chat');
 const Message = require('../models/Message');
-const Profile = require('../models/Profile');
 const User = require('../models/User');
-const aiService = require('../services/aiService');
-const contextBuilder = require('../services/contextBuilder');
 const chatMemory = require('../services/chatMemory');
+const aiService = require('../services/aiService');
+const oracleEngine = require('../services/oracleEngine');
+const { DISCLOSURE_VERSION, DISCLOSURE_TEXT, validatePredictBody } = require('./oracle.controller');
 
 // Helper function to convert string ID to ObjectId (outside class to avoid binding issues)
 const toObjectId = (id) => {
@@ -13,6 +13,28 @@ const toObjectId = (id) => {
     return new mongoose.Types.ObjectId(id);
   }
   return id;
+};
+
+const hasAcceptedOracleDisclosure = (userId) => User.exists({
+  _id: userId,
+  'oracle_disclosure.version': DISCLOSURE_VERSION,
+  'oracle_disclosure.accepted_at': { $ne: null }
+});
+
+const oracleMetadata = (result) => {
+  if (!result?.prediction) return undefined;
+  const prediction = result.prediction.toObject ? result.prediction.toObject() : result.prediction;
+  return {
+    prediction_id: prediction.prediction_id,
+    status: prediction.status,
+    category: prediction.category,
+    horizon: prediction.horizon,
+    methods: prediction.methods,
+    prediction_original: prediction.prediction_original,
+    reused: result.reused,
+    recalculated: result.recalculated,
+    outcome_prompt: result.outcome_prompt || false
+  };
 };
 
 /**
@@ -178,6 +200,10 @@ class AIChatController {
         });
       }
 
+      let oracleInput;
+      try { oracleInput = validatePredictBody(req.body); }
+      catch (error) { return res.status(400).json({ success: false, message: error.message }); }
+
       // Verify chat belongs to user
       const chat = await Chat.findOne({
         _id: chatId,
@@ -188,6 +214,15 @@ class AIChatController {
         return res.status(404).json({
           success: false,
           message: 'Chat not found'
+        });
+      }
+
+      if (!await hasAcceptedOracleDisclosure(userObjectId)) {
+        return res.status(428).json({
+          success: false,
+          code: 'ORACLE_DISCLOSURE_REQUIRED',
+          message: DISCLOSURE_TEXT,
+          version: DISCLOSURE_VERSION
         });
       }
 
@@ -224,41 +259,23 @@ class AIChatController {
       }
       console.log(`[AIChatController] 1 credit deducted. Remaining: ${updatedUser.credits}`);
 
-      // Get user and profile for astrology context
-      const [user, profile] = await Promise.all([
-        User.findById(userObjectId).lean(),
-        Profile.findOne({ user_id: userObjectId }).lean()
-      ]);
-      console.log('[AIChatController] User found:', !!user, 'Profile found:', !!profile);
-      console.log('[AIChatController] User isBeliever:', user?.is_believer);
-
-      // Build system prompt with kundli context
-      const systemPrompt = await contextBuilder.buildSystemPrompt(profile);
-
-      // Get conversation history
-      const history = await chatMemory.getContextWindow(chatId);
-      console.log('[AIChatController] History length:', history.length);
-
-      // Build messages array for AI with kundli context and user belief type
-      const messages = await contextBuilder.buildMessagesArray(
-        systemPrompt,
-        history,
-        message.trim(),
-        profile,
-        user
-      );
-
-      // Generate AI response (refund the credit if the AI call fails)
-      console.log('[AIChatController] Calling AI service...');
-      let aiContent;
+      let oracleResult;
       try {
-        aiContent = await aiService.generateCompletion(messages);
+        oracleResult = await oracleEngine.respond({
+          userId: userObjectId,
+          chatId,
+          message: message.trim(),
+          method: oracleInput.method,
+          category: oracleInput.category,
+          horizon: oracleInput.horizon
+        });
       } catch (aiErr) {
         await User.findByIdAndUpdate(userObjectId, { $inc: { credits: 1 } }).catch(() => {});
         throw aiErr;
       }
 
-      console.log('[AIChatController] AI response received, length:', aiContent.length);
+      const aiContent = oracleResult.message_text;
+      const metadata = oracleMetadata(oracleResult);
 
       // Save AI response
       const aiMessage = await chatMemory.saveMessage({
@@ -266,7 +283,9 @@ class AIChatController {
         userId: userObjectId,
         role: 'assistant',
         content: aiContent,
-        tags: ['astrology', 'ai-response']
+        tags: ['hope', 'oracle-response'],
+        oraclePredictionId: metadata?.prediction_id,
+        oracleMetadata: metadata
       });
 
       // Update chat message count
@@ -336,6 +355,10 @@ class AIChatController {
         });
       }
 
+      let oracleInput;
+      try { oracleInput = validatePredictBody(req.body); }
+      catch (error) { return res.status(400).json({ success: false, message: error.message }); }
+
       // Verify chat belongs to user
       const chat = await Chat.findOne({
         _id: chatId,
@@ -346,6 +369,15 @@ class AIChatController {
         return res.status(404).json({
           success: false,
           message: 'Chat not found'
+        });
+      }
+
+      if (!await hasAcceptedOracleDisclosure(userObjectId)) {
+        return res.status(428).json({
+          success: false,
+          code: 'ORACLE_DISCLOSURE_REQUIRED',
+          message: DISCLOSURE_TEXT,
+          version: DISCLOSURE_VERSION
         });
       }
 
@@ -372,95 +404,61 @@ class AIChatController {
         'Connection': 'keep-alive'
       });
 
-      // Save user message
-      const userMessage = await chatMemory.saveMessage({
-        chatId,
-        userId: userObjectId,
-        role: 'user',
-        content: message.trim()
-      });
-
-      // Update chat preview
-      if (!chat.preview) {
-        chat.preview = message.trim().substring(0, 100);
-      }
-
-      // Get user and profile and build context
-      const [user, profile] = await Promise.all([
-        User.findById(userObjectId).lean(),
-        Profile.findOne({ user_id: userObjectId }).lean()
-      ]);
-      const systemPrompt = await contextBuilder.buildSystemPrompt(profile);
-      const history = await chatMemory.getContextWindow(chatId);
-      const messages = contextBuilder.buildMessagesArray(
-        systemPrompt,
-        history,
-        message.trim(),
-        profile,
-        user
-      );
-
-      let fullResponse = '';
       const messageId = new mongoose.Types.ObjectId();
-
-      // Stream callback
-      const onToken = ({ token, fullResponse: currentResponse, done }) => {
-        fullResponse = currentResponse;
-        
-        const eventData = {
-          type: 'token',
-          token,
-          messageId: messageId.toString()
-        };
-        
-        res.write(`data: ${JSON.stringify(eventData)}\n\n`);
-
-        if (done) {
-          // Save final response
-          const aiMessage = new Message({
-            _id: messageId,
-            chat_id: chatId,
-            user_id: userObjectId,
-            role: 'assistant',
-            content: fullResponse,
-            ai_analysis_tags: ['astrology', 'ai-response', 'streamed'],
-            created_at: new Date()
-          });
-
-          aiMessage.save().then(() => {
-            // Update chat
-            chat.message_count = chat.message_count + 2; // user + assistant
-            chat.save();
-
-            // Send completion event
-            res.write(`data: ${JSON.stringify({
-              type: 'complete',
-              messageId: messageId.toString(),
-              content: fullResponse,
-              remaining_credits: updatedUser.credits
-            })}\n\n`);
-            res.end();
-          }).catch(err => {
-            console.error('[AIChatController] Error saving streamed message:', err);
-            res.write(`data: ${JSON.stringify({
-              type: 'error',
-              error: 'Failed to save message'
-            })}\n\n`);
-            res.end();
-          });
-        }
-      };
-
-      // Generate streaming response (refund the credit if the AI call fails)
+      let oracleResult;
       try {
-        await aiService.generateCompletion(messages, {
-          stream: true,
-          onToken
+        oracleResult = await oracleEngine.respond({
+          userId: userObjectId,
+          chatId,
+          message: message.trim(),
+          method: oracleInput.method,
+          category: oracleInput.category,
+          horizon: oracleInput.horizon
         });
+        await chatMemory.saveMessage({
+          chatId,
+          userId: userObjectId,
+          role: 'user',
+          content: message.trim()
+        });
+        if (!chat.preview) chat.preview = message.trim().substring(0, 100);
       } catch (aiErr) {
         await User.findByIdAndUpdate(userObjectId, { $inc: { credits: 1 } }).catch(() => {});
         throw aiErr;
       }
+
+      const fullResponse = oracleResult.message_text;
+      const metadata = oracleMetadata(oracleResult);
+      res.write(`data: ${JSON.stringify({
+        type: 'token',
+        token: fullResponse,
+        messageId: messageId.toString()
+      })}\n\n`);
+
+      await new Message({
+        _id: messageId,
+        chat_id: chatId,
+        conversation_id: chatId,
+        user_id: userObjectId,
+        role: 'assistant',
+        content: fullResponse,
+        ai_analysis_tags: ['hope', 'oracle-response', 'validated-before-stream'],
+        oracle_prediction_id: metadata?.prediction_id,
+        oracle_metadata: metadata,
+        created_at: new Date()
+      }).save();
+
+      chat.message_count = await chatMemory.getMessageCount(chatId);
+      await chat.save();
+      res.write(`data: ${JSON.stringify({
+        type: 'complete',
+        messageId: messageId.toString(),
+        content: fullResponse,
+        oracle_prediction_id: metadata?.prediction_id,
+        oracle_metadata: metadata,
+        remaining_credits: updatedUser.credits
+      })}\n\n`);
+      res.end();
 
     } catch (error) {
       console.error('[AIChatController] Streaming error:', error);

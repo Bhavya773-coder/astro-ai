@@ -42,6 +42,7 @@ const contactRoutes = require('./routes/contact.routes');
 const tarotReadingRoutes = require('./routes/tarotReading.routes');
 const livekitRoutes = require('./routes/livekit.routes');
 const calendarRoutes = require('./routes/calendar.routes');
+const oracleRoutes = require('./routes/oracle.routes');
 
 const app = express();
 
@@ -154,6 +155,7 @@ app.use(['/api/contact', '/contact'], contactRoutes);
 app.use(['/api/tarot-reading', '/tarot-reading'], tarotReadingRoutes);
 app.use(['/api/livekit', '/livekit'], livekitRoutes);
 app.use(['/api/calendar', '/calendar'], calendarRoutes);
+app.use(['/api/oracle', '/oracle'], oracleRoutes);
 
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../website/build')));

@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "dev:full": "node start-with-ollama.js",
-    "worker:email": "node workers/emailWorker.js"
+    "worker:email": "node workers/emailWorker.js",
+    "test": "node --test tests/*.test.js"
   },
   "dependencies": {
     "@swisseph/node": "^1.2.2",

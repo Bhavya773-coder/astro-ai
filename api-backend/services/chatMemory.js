@@ -60,7 +60,9 @@ class ChatMemory {
       role: msg.role,
       content: msg.content,
       created_at: msg.created_at,
-      ai_analysis_tags: msg.ai_analysis_tags || []
+      ai_analysis_tags: msg.ai_analysis_tags || [],
+      oracle_prediction_id: msg.oracle_prediction_id,
+      oracle_metadata: msg.oracle_metadata
     }));
   }
 
@@ -70,7 +72,7 @@ class ChatMemory {
    * @returns {Promise<Object>} - Saved message
    */
   async saveMessage(messageData) {
-    const { chatId, userId, role, content, tags = [] } = messageData;
+    const { chatId, userId, role, content, tags = [], oraclePredictionId, oracleMetadata } = messageData;
     
     const message = new Message({
       chat_id: chatId,        // Required by schema
@@ -79,6 +81,8 @@ class ChatMemory {
       role: role,
       content: content,
       ai_analysis_tags: tags,
+      oracle_prediction_id: oraclePredictionId,
+      oracle_metadata: oracleMetadata,
       created_at: new Date()
     });
 
@@ -88,7 +92,9 @@ class ChatMemory {
       _id: message._id.toString(),
       role: message.role,
       content: message.content,
-      created_at: message.created_at
+      created_at: message.created_at,
+      oracle_prediction_id: message.oracle_prediction_id,
+      oracle_metadata: message.oracle_metadata
     };
   }
 

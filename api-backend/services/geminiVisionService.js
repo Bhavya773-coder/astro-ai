@@ -7,7 +7,7 @@ class GeminiVisionService {
     this.baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`;
     
     console.log(`[GeminiVisionService] Initialized with model: ${this.model}`);
-    console.log(`[GeminiVisionService] API Key present: ${this.apiKey ? 'Yes (first 10 chars: ' + this.apiKey.substring(0, 10) + '...)' : 'NO - MISSING!'}`);
+    console.log(`[GeminiVisionService] API Key present: ${this.apiKey ? 'Yes' : 'NO - MISSING!'}`);
   }
 
   buildPrompt(readingType, userProfile) {
