@@ -143,3 +143,32 @@ test('an invalid generated response is not persisted as a new prediction', async
   );
   assert.equal(h.predictions.length, 0);
 });
+
+test('Hope uses the configured AI provider instead of forcing local Ollama', async () => {
+  const aiService = require('../services/aiService');
+  const originalGenerateCompletion = aiService.generateCompletion;
+  let completionOptions;
+  aiService.generateCompletion = async (_messages, options) => {
+    completionOptions = options;
+    return 'Here is your guidance.';
+  };
+
+  try {
+    const engine = createOracleEngine({
+      store: {
+        async findRecent() { return null; },
+        async findByQuestion() { return null; }
+      },
+      classify: () => ({ intent: 'conversation' }),
+      canonicalize: () => ({ canonicalQuestion: '', canonicalQuestionKey: '' }),
+      buildContext: async () => ({ material_hash: 'h1', sources: {} }),
+      validate: () => ({ valid: true, violations: [] }),
+      track: async () => {}
+    });
+
+    await engine.respond({ userId: 'u1', chatId: 'c1', message: 'Tell me something helpful.' });
+    assert.notEqual(completionOptions?.localOnly, true);
+  } finally {
+    aiService.generateCompletion = originalGenerateCompletion;
+  }
+});

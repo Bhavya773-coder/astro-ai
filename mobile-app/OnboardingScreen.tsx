@@ -93,6 +93,46 @@ const QUESTIONS: OnboardingQuestion[] = [
   { id: '11', field: 'primary_life_problem', question: "Finally, is there a specific challenge or goal you'd like the stars to guide you through?", type: 'textarea' }
 ];
 
+function parseDayAndMonth(dob: string): { day: number; month: number } | null {
+  if (!dob || typeof dob !== 'string') return null;
+  const trimmed = dob.trim();
+  if (!trimmed) return null;
+
+  // 1. Check ISO / YYYY-MM-DD / YYYY/MM/DD
+  const ymdMatch = trimmed.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (ymdMatch) {
+    const month = parseInt(ymdMatch[2], 10);
+    const day = parseInt(ymdMatch[3], 10);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return { day, month };
+    }
+  }
+
+  // 2. Check DD/MM/YYYY or DD-MM-YYYY or MM/DD/YYYY
+  const dmyMatch = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+  if (dmyMatch) {
+    let day = parseInt(dmyMatch[1], 10);
+    let month = parseInt(dmyMatch[2], 10);
+    if (day > 12 && month <= 12) {
+      return { day, month };
+    }
+    if (month > 12 && day <= 12) {
+      return { day: month, month: day };
+    }
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return { day, month };
+    }
+  }
+
+  // 3. Fallback to standard Date parsing
+  const parsed = new Date(trimmed);
+  if (!isNaN(parsed.getTime())) {
+    return { day: parsed.getUTCDate(), month: parsed.getUTCMonth() + 1 };
+  }
+
+  return null;
+}
+
 function getZodiacInfo(day: number, month: number): { name: string; index: number; description: string } {
   if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) {
     return { name: "Aries", index: 1, description: "Your spirit is pioneering, courageous, and full of vital fire energy." };
@@ -238,13 +278,9 @@ export default function OnboardingScreen({ onBack, onComplete }: OnboardingScree
     // Check if this was the date of birth, so we can calculate and attach zodiac reveal
     let zodiacInfo: { name: string; index: number; description: string } | undefined = undefined;
     if (currentQuestion.type === 'date') {
-      const parts = rawVal.split('/');
-      if (parts.length === 3) {
-        const d = parseInt(parts[0], 10);
-        const m = parseInt(parts[1], 10);
-        if (!isNaN(d) && !isNaN(m)) {
-          zodiacInfo = getZodiacInfo(d, m);
-        }
+      const parsedDm = parseDayAndMonth(rawVal);
+      if (parsedDm) {
+        zodiacInfo = getZodiacInfo(parsedDm.day, parsedDm.month);
       }
     }
 

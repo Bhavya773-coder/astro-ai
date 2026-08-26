@@ -111,7 +111,7 @@ function createOracleEngine(dependencies = {}) {
   const calculate = dependencies.calculate || calculatePrediction;
   const track = dependencies.track || trackOracleEvent;
   let validate = dependencies.validate || validateOracleOutput;
-  const generateHope = dependencies.generateHope || (async input => aiService.generateCompletion(buildHopeMessages(input), { temperature: 0.65, localOnly: true }));
+  const generateHope = dependencies.generateHope || (async input => aiService.generateCompletion(buildHopeMessages(input), { temperature: 0.65 }));
 
   async function safeTrack(event) {
     try { await track(event); } catch (error) { console.error('[OracleAnalytics]', error.message); }

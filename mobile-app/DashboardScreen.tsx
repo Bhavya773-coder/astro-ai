@@ -12,10 +12,10 @@ import {
   TextInput,
   FlatList,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   Animated,
   Easing,
-  Keyboard,
   ActivityIndicator,
   BackHandler,
   ToastAndroid,
@@ -80,7 +80,6 @@ const GoldCoin = ({ size = 18, style }: { size?: number; style?: any }) => (
 import {
   ArrowLeft,
   Sparkles,
-  ChevronUp,
   Compass,
   Calendar,
   LogOut,
@@ -127,6 +126,7 @@ import type StyleForecasterScreenComp from './StyleForecasterScreen';
 import type TarotReadingScreenComp from './TarotReadingScreen';
 import type AstroCalendarScreenComp from './AstroCalendarScreen';
 import type Astrology8BallScreenComp from './Astrology8BallScreen';
+import type VastuConsultantScreenComp from './VastuConsultantScreen';
 import { ShareCardModal } from './ShareCardModal';
 import { ShareCardData } from './shareUtils';
 import { haptic } from './haptics';
@@ -159,6 +159,10 @@ const AstroCalendarScreen = (props: React.ComponentProps<typeof AstroCalendarScr
 };
 const Astrology8BallScreen = (props: React.ComponentProps<typeof Astrology8BallScreenComp>) => {
   const Screen = require('./Astrology8BallScreen').default;
+  return <Screen {...props} />;
+};
+const VastuConsultantScreen = (props: React.ComponentProps<typeof VastuConsultantScreenComp>) => {
+  const Screen = require('./VastuConsultantScreen').default;
   return <Screen {...props} />;
 };
 
@@ -199,6 +203,46 @@ const ZODIAC_ICONS: Record<number, any> = {
   11: require('./assets/icons/astro_icon_11.png'), // Aquarius
   12: require('./assets/icons/astro_icon_12.png'), // Pisces
 };
+
+function parseDayAndMonth(dob: string): { day: number; month: number } | null {
+  if (!dob || typeof dob !== 'string') return null;
+  const trimmed = dob.trim();
+  if (!trimmed) return null;
+
+  // 1. Check ISO / YYYY-MM-DD / YYYY/MM/DD
+  const ymdMatch = trimmed.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (ymdMatch) {
+    const month = parseInt(ymdMatch[2], 10);
+    const day = parseInt(ymdMatch[3], 10);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return { day, month };
+    }
+  }
+
+  // 2. Check DD/MM/YYYY or DD-MM-YYYY or MM/DD/YYYY
+  const dmyMatch = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+  if (dmyMatch) {
+    let day = parseInt(dmyMatch[1], 10);
+    let month = parseInt(dmyMatch[2], 10);
+    if (day > 12 && month <= 12) {
+      return { day, month };
+    }
+    if (month > 12 && day <= 12) {
+      return { day: month, month: day };
+    }
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return { day, month };
+    }
+  }
+
+  // 3. Fallback to standard Date parsing
+  const parsed = new Date(trimmed);
+  if (!isNaN(parsed.getTime())) {
+    return { day: parsed.getUTCDate(), month: parsed.getUTCMonth() + 1 };
+  }
+
+  return null;
+}
 
 function getZodiacInfo(day: number, month: number): { name: string; index: number; element: string; elementIcon: any; planet: string } {
   if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) {
@@ -346,10 +390,6 @@ const DEMO_PLACEMENT: Record<string, { house: number; degree: number; retro: boo
 // 0-based rashi (sign) index occupying a given house for a given ascendant (whole-sign houses)
 function signForHouse(ascIndex0: number, house: number): number {
   return (ascIndex0 + house - 1) % 12;
-}
-
-function buildDemoChart(): PlanetMeta[] {
-  return PLANET_BASE.map(p => ({ ...p, ...DEMO_PLACEMENT[p.key] }));
 }
 
 // ── North Indian diamond kundli (SVG) ──
@@ -1007,7 +1047,6 @@ interface ChatMessage {
   id: string;
   sender: 'ai' | 'user';
   text: string;
-  oracleMetadata?: any;
 }
 
 interface ChatTabProps {
@@ -1015,7 +1054,6 @@ interface ChatTabProps {
   zodiacIndex: number;
   insets: any;
   chatMessages: ChatMessage[];
-  oracleFeed?: any;
   isAiTyping: boolean;
   chatInput: string;
   setChatInput: (text: string) => void;
@@ -1029,7 +1067,6 @@ function ChatTab({
   zodiacIndex,
   insets,
   chatMessages,
-  oracleFeed,
   isAiTyping,
   chatInput,
   setChatInput,
@@ -1037,56 +1074,88 @@ function ChatTab({
   chatListRef,
   onShareMessage,
 }: ChatTabProps) {
-  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
-  const [oracleMethod, setOracleMethod] = useState('astrology');
-  const [controlsOpen, setControlsOpen] = useState(false);
-  // On edge-to-edge Android (Expo SDK 54) adjustResize is ignored, so we
-  // manually lift the input by the keyboard height. iOS keeps padding behavior.
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const baseBottomPadding = (insets.bottom || 0) > 0 ? insets.bottom + 8 : 12;
+  const bottomPaddingAnim = useRef(new Animated.Value(baseBottomPadding)).current;
+  const [inputHeight, setInputHeight] = useState(44);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
   useEffect(() => {
-    const showSubscription = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      (e) => {
-        setKeyboardVisible(true);
-        setKeyboardHeight(e.endCoordinates?.height ?? 0);
-      }
-    );
-    const hideSubscription = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => {
-        setKeyboardVisible(false);
-        setKeyboardHeight(0);
-      }
-    );
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
+    if (!isKeyboardOpen) {
+      bottomPaddingAnim.setValue((insets.bottom || 0) > 0 ? insets.bottom + 8 : 12);
+    }
+  }, [insets.bottom, isKeyboardOpen]);
 
-  const bottomPadding = isKeyboardVisible
-    ? 8
-    : (Platform.OS === 'ios' ? (insets.bottom > 0 ? insets.bottom + 8 : 16) : 12);
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const onShow = (e: any) => {
+      setIsKeyboardOpen(true);
+      const keyboardHeight = e.endCoordinates ? e.endCoordinates.height : 300;
+      const targetPadding = keyboardHeight + 8;
+
+      Animated.timing(bottomPaddingAnim, {
+        toValue: targetPadding,
+        duration: Platform.OS === 'ios' ? (e.duration || 250) : 200,
+        easing: Platform.OS === 'ios' ? Easing.bezier(0.17, 0.59, 0.4, 0.77) : Easing.out(Easing.ease),
+        useNativeDriver: false,
+      }).start(() => {
+        chatListRef.current?.scrollToEnd({ animated: true });
+      });
+    };
+
+    const onHide = (e: any) => {
+      setIsKeyboardOpen(false);
+      const restPadding = (insets.bottom || 0) > 0 ? insets.bottom + 8 : 12;
+
+      Animated.timing(bottomPaddingAnim, {
+        toValue: restPadding,
+        duration: Platform.OS === 'ios' ? (e.duration || 250) : 200,
+        easing: Platform.OS === 'ios' ? Easing.bezier(0.17, 0.59, 0.4, 0.77) : Easing.out(Easing.ease),
+        useNativeDriver: false,
+      }).start();
+    };
+
+    const showSub = Keyboard.addListener(showEvent, onShow);
+    const hideSub = Keyboard.addListener(hideEvent, onHide);
+
+    let androidWillShowSub: any;
+    let androidWillHideSub: any;
+    if (Platform.OS === 'android') {
+      androidWillShowSub = Keyboard.addListener('keyboardWillShow', onShow);
+      androidWillHideSub = Keyboard.addListener('keyboardWillHide', onHide);
+    }
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+      androidWillShowSub?.remove?.();
+      androidWillHideSub?.remove?.();
+    };
+  }, [insets.bottom]);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 76 : 0}
+    <Animated.View
       style={[
         styles.tabContainer,
-        Platform.OS === 'android' && { paddingBottom: keyboardHeight + 12 },
+        {
+          paddingBottom: bottomPaddingAnim,
+        },
       ]}
     >
-      <HopeControlsModal visible={controlsOpen} onClose={() => setControlsOpen(false)} />
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 8 }}>
-        <View><Text style={{ fontSize: 17, fontWeight: '700', color: '#2C2B3D' }}>Hope</Text><Text style={{ fontSize: 11, color: '#726F8D' }}>Predictions stay on the record</Text></View>
-        <TouchableOpacity onPress={() => setControlsOpen(true)} style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: 'rgba(114,9,183,0.08)' }}><Text style={{ color: '#7209B7', fontSize: 12, fontWeight: '700' }}>History & privacy</Text></TouchableOpacity>
+      {/* Clean Astrologer Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(114, 9, 183, 0.08)', marginBottom: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(114, 9, 183, 0.1)', alignItems: 'center', justifyContent: 'center' }}>
+            <Sparkles size={20} color="#7209B7" />
+          </View>
+          <View>
+            <Text style={{ fontSize: 18, fontFamily: 'Cinzel-Bold', color: '#2C2B3D' }}>Hope</Text>
+            <Text style={{ fontSize: 11.5, fontFamily: 'SourceSerif4', color: '#726F8D' }}>Your Personal Astrologer & Guide</Text>
+          </View>
+        </View>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 14, gap: 7, paddingBottom: 7 }}>
-        {['astrology', 'tarot', 'numerology', 'palm', 'face', 'coffee'].map(method => <TouchableOpacity key={method} onPress={() => setOracleMethod(method)} style={{ borderRadius: 14, paddingHorizontal: 11, paddingVertical: 7, backgroundColor: oracleMethod === method ? '#7209B7' : 'rgba(114,9,183,0.07)' }}><Text style={{ textTransform: 'capitalize', color: oracleMethod === method ? '#fff' : '#5B5266', fontSize: 11 }}>{method}</Text></TouchableOpacity>)}
-      </ScrollView>
-      {oracleFeed?.prediction && <View style={{ marginHorizontal: 14, marginBottom: 8, borderRadius: 16, padding: 12, backgroundColor: 'rgba(114,9,183,0.06)' }}><Text style={{ color: '#7209B7', fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>HOPE’S {new Date().getHours() < 17 ? 'MORNING SIGNAL' : 'EVENING REFLECTION'}</Text><Text style={{ color: '#4B4455', fontSize: 13, lineHeight: 19, marginTop: 6 }}>{oracleFeed.message_text}</Text><HopePredictionCard metadata={{ prediction_id: oracleFeed.prediction.prediction_id, status: oracleFeed.prediction.status, prediction_original: oracleFeed.prediction.prediction_original, reused: oracleFeed.reused, recalculated: oracleFeed.recalculated }} /></View>}
+
       {/* Chat Feed */}
       <View style={styles.chatArea}>
         <FlatList
@@ -1094,6 +1163,10 @@ function ChatTab({
           data={chatMessages}
           keyExtractor={item => item.id}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          onContentSizeChange={() => chatListRef.current?.scrollToEnd({ animated: true })}
+          onLayout={() => chatListRef.current?.scrollToEnd({ animated: true })}
           contentContainerStyle={styles.chatListContent}
           renderItem={({ item }) => {
             const isAi = item.sender === 'ai';
@@ -1102,7 +1175,7 @@ function ChatTab({
                 {isAi && (
                   <View style={styles.avatarContainer}>
                     <Image
-                      source={ZODIAC_ICONS[zodiacIndex + 1]}
+                      source={ZODIAC_ICONS[zodiacIndex + 1] || ZODIAC_ICONS[1]}
                       style={styles.avatarImage}
                     />
                   </View>
@@ -1111,7 +1184,6 @@ function ChatTab({
                   <Text style={[styles.msgText, isAi ? styles.msgTextAi : styles.msgTextUser]}>
                     {item.text}
                   </Text>
-                  {isAi && item.oracleMetadata && <HopePredictionCard metadata={item.oracleMetadata} />}
                   {isAi && onShareMessage && (
                     <TouchableOpacity
                       style={{ marginTop: 6, alignSelf: 'flex-end', opacity: 0.85, padding: 4 }}
@@ -1128,59 +1200,78 @@ function ChatTab({
         />
         {isAiTyping && (
           <View style={[styles.msgRow, styles.msgRowAi, { paddingLeft: 36, marginBottom: 12 }]}>
-            <Text style={styles.typingText}>✦ Hope is calculating...</Text>
+            <Text style={styles.typingText}>✦ Hope is consulting the stars...</Text>
           </View>
         )}
       </View>
 
       {/* Quick Action Chips */}
-      {!isKeyboardVisible && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }} contentContainerStyle={{ paddingHorizontal: 12, gap: 10 }}>
+      {!isKeyboardOpen && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8, maxHeight: 42 }} contentContainerStyle={{ paddingHorizontal: 2, gap: 8 }}>
           {['🔮 Today\'s vibe?', '💼 Career move?', '❤️ Love forecast', '⚡ Lucky color', '🌙 Moon phase'].map((chip) => (
             <TouchableOpacity
               key={chip}
-              onPress={() => { haptic.tap(); handleChatSend(oracleMethod, chip); }}
+              onPress={() => { haptic.tap(); handleChatSend('astrology', chip); }}
               activeOpacity={0.8}
               style={{
                 backgroundColor: '#FFFFFF',
                 borderRadius: 20,
-                paddingHorizontal: 16,
-                paddingVertical: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 8,
                 borderWidth: 1,
                 borderColor: 'rgba(114, 9, 183, 0.14)',
-                marginRight: 10,
+                marginRight: 6,
                 shadowColor: '#7209B7',
                 shadowOffset: { width: 0, height: 1 },
                 shadowOpacity: 0.06,
-                shadowRadius: 4,
+                shadowRadius: 3,
                 elevation: 2,
               }}
             >
-              <Text style={{ fontFamily: 'SourceSerif4', fontSize: 13, color: '#2C2B3D' }}>{chip}</Text>
+              <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12.5, color: '#2C2B3D' }}>{chip}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       )}
 
       {/* Input Bar */}
-      <View style={[styles.chatInputContainer, { paddingBottom: bottomPadding }]}>
+      <View style={styles.chatInputContainer}>
         <TextInput
-          style={styles.chatTextInput}
-          placeholder="Ask anything about your alignment..."
+          style={[
+            styles.chatTextInput,
+            {
+              height: Math.min(Math.max(44, inputHeight), 120),
+            }
+          ]}
+          placeholder="Ask Hope anything about your alignment..."
           placeholderTextColor="#9E9BB3"
           value={chatInput}
           onChangeText={setChatInput}
-          onSubmitEditing={() => handleChatSend(oracleMethod)}
+          multiline
+          scrollEnabled={inputHeight >= 120}
+          returnKeyType="default"
+          blurOnSubmit={false}
+          textAlignVertical={inputHeight > 50 ? "top" : "center"}
+          onContentSizeChange={(e) => {
+            const h = e.nativeEvent.contentSize.height;
+            if (h && Math.abs(h - inputHeight) > 2) {
+              setInputHeight(h + (Platform.OS === 'ios' ? 16 : 8));
+            }
+          }}
         />
         <TouchableOpacity
           style={[styles.chatSendBtn, !chatInput.trim() && styles.chatSendBtnDisabled]}
-          onPress={() => handleChatSend(oracleMethod)}
+          onPress={() => {
+            handleChatSend('astrology');
+            setInputHeight(44);
+          }}
           disabled={!chatInput.trim()}
+          activeOpacity={0.8}
         >
-          <Send size={16} color="#FFF" />
+          <Send size={18} color="#FFF" />
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </Animated.View>
   );
 }
 
@@ -1256,7 +1347,18 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
   // Today card-deck swiper: measured page height + current card index
   const [todayDeckH, setTodayDeckH] = useState(0);
   const [todayCard, setTodayCard] = useState(0);
-  const todayScrollX = useRef(new Animated.Value(0)).current; // drives the coverflow arc
+  const todayScrollX = useRef(new Animated.Value(0)).current;
+  const todayScrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (activeTab === 'today') {
+      const targetOffset = todayCard * (Math.round(width * 0.74) + 12);
+      todayScrollX.setValue(targetOffset);
+      setTimeout(() => {
+        (todayScrollRef.current as any)?.scrollTo?.({ x: targetOffset, animated: false });
+      }, 50);
+    }
+  }, [activeTab]);
 
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [feedbackRating, setFeedbackRating] = useState(0);
@@ -1296,22 +1398,13 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
   // Parse birthdate to calculate zodiac info
   const userName = profileAnswers.full_name || 'User';
   const birthdate = profileAnswers.date_of_birth || '';
-  let zodiacIndex = 0; // Default to Aries if no birthdate
 
-  const dateParts = birthdate.split('/');
-  if (dateParts.length === 3) {
-    const d = parseInt(dateParts[0], 10);
-    const m = parseInt(dateParts[1], 10);
-    if (!isNaN(d) && !isNaN(m)) {
-      const zInfo = getZodiacInfo(d, m);
-      zodiacIndex = zInfo.index - 1; // Convert 1-based index to 0-based
-    }
-  }
+  const parsedDm = parseDayAndMonth(birthdate);
+  const zodiac = parsedDm
+    ? getZodiacInfo(parsedDm.day, parsedDm.month)
+    : getZodiacInfo(21, 3); // Default to Aries (index 1) if no DOB set
 
-  const zodiac = getZodiacInfo(
-    dateParts.length === 3 ? parseInt(dateParts[0], 10) : 16,
-    dateParts.length === 3 ? parseInt(dateParts[1], 10) : 8
-  );
+  const zodiacIndex = Math.max(0, (zodiac?.index || 1) - 1); // 0-based index for glyphs/arrays (0=Aries, 1=Taurus...)
 
   useEffect(() => {
     if (token) {
@@ -1362,7 +1455,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
     return () => {
       active = false;
     };
-  }, [token, currentView, activeTab]);
+  }, [token, activeTab]);
 
   // Streak tracking: load from storage and update on app open
   useEffect(() => {
@@ -1711,26 +1804,9 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
     springTo(tabNumerologyScale, activeTab === 'numerology' ? 1 : 0);
     springTo(tabChartsScale, activeTab === 'charts' ? 1 : 0);
   }, [activeTab]);
-  const pagerRef = useRef<ScrollView>(null);
-
-  const TABS = ['today', 'readings', 'chat', 'numerology', 'charts', 'profile'] as const;
-  type TabType = typeof TABS[number];
-
-  const changeTab = (tab: TabType, animated = true) => {
+  const changeTab = (tab: typeof activeTab) => {
     haptic.tab();
     setActiveTab(tab);
-    const index = TABS.indexOf(tab);
-    if (index !== -1) {
-      pagerRef.current?.scrollTo({ x: index * width, animated });
-    }
-  };
-
-  const handleScrollEnd = (e: any) => {
-    const contentOffset = e.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffset / width);
-    if (index >= 0 && index < TABS.length) {
-      setActiveTab(TABS[index]);
-    }
   };
 
   // Dashboard Focus state
@@ -1746,7 +1822,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
   const [styleForecasterOpen, setStyleForecasterOpen] = useState(false);
   const [styleForecasterIntroOpen, setStyleForecasterIntroOpen] = useState(false);
   const [dontShowIntroChecked, setDontShowIntroChecked] = useState(false);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'palm-reading' | 'face-reading' | 'coffee-reading' | 'style-forecaster' | 'tarot-reading' | 'astro-calendar' | 'astrology-8ball'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'palm-reading' | 'face-reading' | 'coffee-reading' | 'style-forecaster' | 'tarot-reading' | 'astro-calendar' | 'astrology-8ball' | 'vastu-consultant'>('dashboard');
 
   const handleOpenStyleForecaster = () => {
     const seen = styleStorage.getItem('dontShowStyleIntro');
@@ -1757,18 +1833,6 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
     }
   };
 
-  useEffect(() => {
-    if (currentView === 'dashboard') {
-      const index = TABS.indexOf(activeTab);
-      if (index !== -1) {
-        pagerRef.current?.scrollTo({ x: index * width, animated: false });
-        const timer = setTimeout(() => {
-          pagerRef.current?.scrollTo({ x: index * width, animated: false });
-        }, 60);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [currentView]);
   useEffect(() => {
     const handleBackButton = () => {
       if (currentView !== 'dashboard') {
@@ -1913,7 +1977,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
     {
       id: 'welcome',
       sender: 'ai',
-      text: `Hi, ${profileAnswers.full_name || 'Seeker'}. I’m Hope. Ask me a clear question and I’ll make a call, keep it on the record, and learn from what you confirm.`
+      text: `Hello ${profileAnswers.full_name || 'there'}! I'm Hope, your personal astrologer and cosmic guide. Ask me anything about your horoscope, love life, career, or daily alignment.`
     }
   ]);
   const [isAiTyping, setIsAiTyping] = useState(false);
@@ -2070,7 +2134,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
   // Real AI Chat Send Handler
   const handleChatSend = async (method = 'astrology', explicitText?: string) => {
     const pendingText = (explicitText || chatInput).trim();
-    if (!pendingText || !oracleDisclosure.accepted) return;
+    if (!pendingText) return;
     const userMsgId = `user_${Date.now()}`;
     const userText = pendingText;
 
@@ -2091,22 +2155,21 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
         if (response && typeof response.remaining_credits === 'number') {
           setCredits(response.remaining_credits);
         }
-        const aiMessageText = response?.data?.aiMessage?.content || response?.data?.content || response?.message || response?.reply || response?.content || response?.data?.message || "Cosmic guidance received.";
+        const aiMessageText = response?.data?.aiMessage?.content || response?.data?.content || response?.message || response?.reply || response?.content || response?.data?.message;
+        if (!aiMessageText) {
+          throw new Error('Empty AI response');
+        }
         setChatMessages(prev => [
           ...prev,
           {
             id: `ai_${Date.now()}`,
             sender: 'ai',
-            text: aiMessageText,
-            oracleMetadata: response?.data?.aiMessage?.oracle_metadata
+            text: aiMessageText
           }
         ]);
       }
     } catch (err: any) {
       console.log('Real Chat API send error:', err);
-      if (err?.code === 'ORACLE_DISCLOSURE_REQUIRED' || err?.status === 428) {
-        setOracleDisclosure(current => ({ ...current, loaded: true, accepted: false }));
-      }
       setChatMessages(prev => [
         ...prev,
         {
@@ -2144,34 +2207,31 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
     // Horizontal peek carousel: active card centered, ~30% of the previous card
     // showing on the left and the next on the right. Reserve room for the nav.
     const NAV_SPACE = 84 + insets.bottom;
-    const usableH = Math.max(todayDeckH - NAV_SPACE, 320);
+    const usableH = Math.max((todayDeckH || (height - NAV_SPACE - 24)), 320);
     const GAP = 12;
     const CW = Math.round(width * 0.74);            // card width → ~18% neighbor peek each side
     const SNAP = CW + GAP;
     const sidePad = Math.round((width - CW) / 2);   // centers the active card
     const pageStyle = { width: CW, height: usableH, marginRight: GAP } as const;
     const sheetStyle = { flex: 1, borderRadius: 28, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(114,111,141,0.10)', shadowColor: '#726F8D', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.06, shadowRadius: 14, elevation: 2 } as const;
-    // Coverflow arc: side cards tilt + drop + shrink + dim so they sit on a
-    // circle behind the active card. Extra midpoints keep the curve smooth.
+    // Coverflow arc: clean modern scale + depth elevation without any tilting/rotation
     const cardArc = (i: number) => {
       const c = i * SNAP;
       const inputRange = [c - SNAP, c - SNAP / 2, c, c + SNAP / 2, c + SNAP];
       const opts = { extrapolate: 'clamp' as const };
       return {
-        opacity: todayScrollX.interpolate({ inputRange, outputRange: [0.55, 0.82, 1, 0.82, 0.55], ...opts }),
+        opacity: todayScrollX.interpolate({ inputRange, outputRange: [0.65, 0.85, 1, 0.85, 0.65], ...opts }),
         transform: [
-          { perspective: 1000 },
-          { scale: todayScrollX.interpolate({ inputRange, outputRange: [0.88, 0.95, 1, 0.95, 0.88], ...opts }) },
-          { rotate: todayScrollX.interpolate({ inputRange, outputRange: ['10deg', '5deg', '0deg', '-5deg', '-10deg'], ...opts }) },
-          { translateY: todayScrollX.interpolate({ inputRange, outputRange: [30, 9, 0, 9, 30], ...opts }) },
+          { scale: todayScrollX.interpolate({ inputRange, outputRange: [0.92, 0.96, 1, 0.96, 0.92], ...opts }) },
+          { translateY: todayScrollX.interpolate({ inputRange, outputRange: [12, 4, 0, 4, 12], ...opts }) },
         ],
       };
     };
 
     return (
       <View style={{ flex: 1, paddingTop: 8 }} onLayout={e => { const h = e.nativeEvent.layout.height; if (h && Math.abs(h - todayDeckH) > 1) setTodayDeckH(h); }}>
-        {todayDeckH > 0 && (
         <Animated.ScrollView
+          ref={todayScrollRef as any}
           horizontal
           showsHorizontalScrollIndicator={false}
           snapToInterval={SNAP}
@@ -2189,7 +2249,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
               style={{ flex: 1, borderRadius: 28, overflow: 'hidden', padding: 24, justifyContent: 'space-between' }}
             >
-              <Image source={ZODIAC_ICONS[zodiacIndex]} style={{ position: 'absolute', width: 300, height: 300, right: -80, top: -50, opacity: 0.08, tintColor: '#FFFFFF' }} resizeMode="contain" />
+              <Image source={ZODIAC_ICONS[zodiac?.index || 1] || ZODIAC_ICONS[1]} style={{ position: 'absolute', width: 300, height: 300, right: -80, top: -50, opacity: 0.08, tintColor: '#FFFFFF' }} resizeMode="contain" />
 
               {/* Top: greeting + streak + share */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -2212,7 +2272,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
                       subtitle: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                       readingText: dailyDecision?.rationale || dailyDecision?.hook || `Cosmic alignment is active for ${activeFocus}. Harness your inner potential today!`,
                       highlights: [
-                        { label: 'Zodiac', value: zodiac?.name || 'Scorpio' },
+                        { label: 'Zodiac', value: zodiac?.name || 'Unavailable' },
                         { label: 'Focus Area', value: activeFocus },
                         { label: 'Power Window', value: activeData?.powerWindow || 'Morning' },
                         { label: 'Mood Signal', value: dailyDecision?.signals?.emotion || 'Balanced' },
@@ -2249,8 +2309,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
                     <Sparkles size={20} color="#FFFFFF" />
                   </View>
                 </View>
-                <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 11, color: '#FFFFFF', letterSpacing: 1.5, marginTop: 12 }}>SWIPE UP TO REVEAL ✦</Text>
-                <ChevronUp size={20} color="rgba(255,255,255,0.85)" style={{ marginTop: 2 }} />
+                <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 11, color: '#FFFFFF', letterSpacing: 1.5, marginTop: 12 }}>← SWIPE LEFT FOR MORE</Text>
               </View>
             </LinearGradient>
           </Animated.View>
@@ -2427,7 +2486,6 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
             </View>
           </Animated.View>
         </Animated.ScrollView>
-        )}
 
         {/* Pagination dots */}
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: NAV_SPACE - 22, flexDirection: 'row', justifyContent: 'center', gap: 6 }} pointerEvents="none">
@@ -2448,7 +2506,6 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
         zodiacIndex={zodiacIndex}
         insets={insets}
         chatMessages={chatMessages}
-        oracleFeed={oracleFeed}
         isAiTyping={isAiTyping}
         chatInput={chatInput}
         setChatInput={setChatInput}
@@ -2460,7 +2517,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
 
   // 3. Explore View (StyleForecaster, Palm, Face, Coffee, and History)
   const renderExploreView = () => {
-    const specials = ['astrology-8ball', 'tarot-reading', 'palm-reading', 'face-reading', 'coffee-reading', 'style-forecaster'];
+    const specials = ['vastu-consultant', 'astrology-8ball', 'tarot-reading', 'palm-reading', 'face-reading', 'coffee-reading', 'style-forecaster'];
     const todaySpecial = specials[new Date().getDate() % specials.length];
     const specialNames: Record<string, string> = {
       'tarot-reading': 'Tarot Arcana',
@@ -2469,6 +2526,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
       'coffee-reading': 'Coffee Reading',
       'style-forecaster': 'StyleForecaster',
       'astrology-8ball': 'Astrology 8 Ball',
+      'vastu-consultant': 'Vastu Consultant',
     };
     const specialDesc: Record<string, string> = {
       'tarot-reading': 'Draw three cards to decode your cosmic energies',
@@ -2477,6 +2535,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
       'coffee-reading': 'Interpret cup sediment patterns',
       'style-forecaster': 'Get outfit & color recommendations',
       'astrology-8ball': 'Ask a yes/no question and shake the cosmic ball',
+      'vastu-consultant': 'Upload a 2D house plan for Vastu guidance',
     };
     const specialColors: Record<string, string[]> = {
       'tarot-reading': ['#D9730D', '#F72585'],
@@ -2485,6 +2544,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
       'coffee-reading': ['#B3A2E7', '#7209B7'],
       'style-forecaster': ['#7209B7', '#F72585'],
       'astrology-8ball': ['#080614', '#7209B7'],
+      'vastu-consultant': ['#7209B7', '#3A0CA3'],
     };
     const specialIcons: Record<string, any> = {
       'tarot-reading': 'cards-outline',
@@ -2493,6 +2553,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
       'coffee-reading': 'coffee-outline',
       'style-forecaster': 'hanger',
       'astrology-8ball': 'circle-slice-8',
+      'vastu-consultant': 'home-city-outline',
     };
     const specialActions: Record<string, () => void> = {
       'tarot-reading': () => setCurrentView('tarot-reading'),
@@ -2501,6 +2562,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
       'coffee-reading': () => setCurrentView('coffee-reading'),
       'style-forecaster': () => handleOpenStyleForecaster(),
       'astrology-8ball': () => setCurrentView('astrology-8ball'),
+      'vastu-consultant': () => setCurrentView('vastu-consultant'),
     };
 
     const gridItems = [
@@ -2508,6 +2570,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
       { key: 'face-reading', label: 'Face Reading', icon: 'face-recognition', color: '#F72585', action: () => setCurrentView('face-reading') },
       { key: 'coffee-reading', label: 'Coffee', icon: 'coffee-outline', color: '#B3A2E7', action: () => setCurrentView('coffee-reading') },
       { key: 'tarot-reading', label: 'Tarot', icon: 'cards-outline', color: '#D9730D', action: () => setCurrentView('tarot-reading') },
+      { key: 'vastu-consultant', label: 'Vastu', icon: 'home-city-outline', color: '#7209B7', action: () => setCurrentView('vastu-consultant') },
       { key: 'astrology-8ball', label: '8 Ball', icon: 'circle-slice-8', color: '#3A0CA3', action: () => setCurrentView('astrology-8ball') },
       { key: 'astro-calendar', label: 'Calendar', icon: 'calendar-month', color: '#3A0CA3', action: () => setCurrentView('astro-calendar') },
       { key: 'style-forecaster', label: 'Style', icon: 'hanger', color: '#F72585', action: () => handleOpenStyleForecaster() },
@@ -2524,7 +2587,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
           onPress={() => { haptic.press(); specialActions[todaySpecial](); }}
         >
           <LinearGradient
-            colors={specialColors[todaySpecial]}
+            colors={specialColors[todaySpecial] as [string, string, ...string[]]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={{ padding: 22 }}
@@ -3151,8 +3214,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
     // Convert API planets to array for SVG chart rendering
     const svgPlanets = (() => {
       if (Object.keys(planetsObj).length === 0) {
-        // Show demo chart only as placeholder while API loads, never as final data
-        return buildDemoChart();
+        return [] as PlanetMeta[];
       }
       const PLANET_META: Record<string, { label: string; abbr: string; color: string }> = {
         sun: { label: 'Sun', abbr: 'SU', color: '#E8A200' },
@@ -3222,13 +3284,13 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
               triggerShareCard({
                 category: chartsSubTab === 'birthChart' ? 'BIRTH CHART' : 'KUNDLI CHART',
                 title: `${userName}'s ${chartsSubTab === 'birthChart' ? 'Natal Chart' : 'Lagna Kundli'}`,
-                subtitle: `Ascendant: ${chartData?.ascendant || RASHIS[ascIndex0]} ${RASHI_GLYPHS[ascIndex0]}`,
-                readingText: interpretation?.summary || `Natal alignment indicates strong influence from ${chartData?.ascendant || 'Ascendant'}. Explore deep house positions and planetary placements.`,
+                subtitle: `Ascendant: ${chartData?.ascendant || 'Unavailable'} ${chartData?.ascendant ? RASHI_GLYPHS[ascIndex0] : ''}`,
+                readingText: interpretation?.summary || `Natal alignment indicates strong influence from ${chartData?.ascendant || 'Unavailable'}. Explore deep house positions and planetary placements.`,
                 highlights: [
-                  { label: 'Ascendant', value: chartData?.ascendant || RASHIS[ascIndex0] },
-                  { label: 'Sun Sign', value: zodiac?.name || 'Scorpio' },
-                  { label: 'Moon Sign', value: chartData?.planets?.Moon?.sign || 'Vedic' },
-                  { label: 'Nakshatra', value: birthDetails?.nakshatra || 'Magha' },
+                  { label: 'Ascendant', value: chartData?.ascendant || 'Unavailable' },
+                  { label: 'Sun Sign', value: zodiac?.name || 'Unavailable' },
+                  { label: 'Moon Sign', value: chartData?.planets?.Moon?.sign || 'Unavailable' },
+                  { label: 'Nakshatra', value: birthDetails?.nakshatra || 'Unavailable' },
                 ],
               });
             }}
@@ -3256,10 +3318,16 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
 
         {/* Chart / Kundli SVG */}
         <View style={styles.amChartContainer}>
-          {chartsSubTab === 'birthChart' ? (
-            <BirthChartWheel size={chartSize} ascIndex0={ascIndex0} planets={svgPlanets} selectedKey={selectedPlanet} />
+          {chartData ? (
+            chartsSubTab === 'birthChart' ? (
+              <BirthChartWheel size={chartSize} ascIndex0={ascIndex0} planets={svgPlanets} selectedKey={selectedPlanet} />
+            ) : (
+              <KundliDiamond size={chartSize} ascIndex0={ascIndex0} planets={svgPlanets} selectedKey={selectedPlanet} houses={housesObj} />
+            )
           ) : (
-            <KundliDiamond size={chartSize} ascIndex0={ascIndex0} planets={svgPlanets} selectedKey={selectedPlanet} houses={housesObj} />
+            <View style={{ alignItems: 'center', justifyContent: 'center', minHeight: chartSize }}>
+              <Text style={{ color: '#726F8D', fontFamily: 'SourceSerif4', fontSize: 14 }}>Chart data unavailable</Text>
+            </View>
           )}
         </View>
 
@@ -3693,7 +3761,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                   <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: 'bold' }}>{bundle.name}</Text>
-                  <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: 'extrabold' }}>{bundle.price}</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '800' }}>{bundle.price}</Text>
                 </View>
 
                 <Text style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: 12, marginBottom: 12 }}>Equivalent to {bundle.priceUSD}</Text>
@@ -4340,6 +4408,13 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
           zodiacIndex={zodiacIndex}
           onBack={() => setCurrentView('dashboard')}
         />
+      : currentView === 'vastu-consultant' ?
+        <VastuConsultantScreen
+          answers={profileAnswers}
+          zodiacIndex={zodiacIndex}
+          onBack={() => setCurrentView('dashboard')}
+          onUpdateCredits={(newBalance) => setCredits(newBalance)}
+        />
       :
         <LinearGradient
           colors={theme.gradient as any}
@@ -4406,35 +4481,14 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
           {/* Welcome card removed on Today — the redesigned hero in renderTodayView
               already shows greeting + name + streak (was duplicated here). */}
 
-          {/* Horizontal Paging ScrollView for Instagram-like swipe navigation */}
-          <ScrollView
-            ref={pagerRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            bounces={false}
-            onMomentumScrollEnd={handleScrollEnd}
-            style={styles.pagerScrollView}
-          >
-            <View style={{ width, flex: 1 }}>
-              {renderTodayView()}
-            </View>
-            <View style={{ width, flex: 1 }}>
-              {renderExploreView()}
-            </View>
-            <View style={{ width, flex: 1 }}>
-              {renderChatView()}
-            </View>
-            <View style={{ width, flex: 1 }}>
-              {renderNumerologyView()}
-            </View>
-            <View style={{ width, flex: 1 }}>
-              {renderChartsView()}
-            </View>
-            <View style={{ width, flex: 1 }}>
-              {renderProfileView()}
-            </View>
-          </ScrollView>
+          <View style={styles.pagerScrollView}>
+            {activeTab === 'today' ? renderTodayView()
+              : activeTab === 'readings' ? renderExploreView()
+              : activeTab === 'chat' ? renderChatView()
+              : activeTab === 'numerology' ? renderNumerologyView()
+              : activeTab === 'charts' ? renderChartsView()
+              : renderProfileView()}
+          </View>
         </View>
 
         {/* Custom Bottom Tab Bar with Elevated Center Circle */}
@@ -5098,6 +5152,9 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
   },
+  pagerScrollView: {
+    flex: 1,
+  },
   welcomeHeaderContainer: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -5241,16 +5298,16 @@ const styles = StyleSheet.create({
   },
   chatArea: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
     borderWidth: 1,
     borderColor: 'rgba(114, 111, 141, 0.08)',
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: 'hidden',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   chatListContent: {
     padding: 12,
-    paddingBottom: 24,
+    paddingBottom: 16,
   },
   msgRow: {
     flexDirection: 'row',
@@ -5318,35 +5375,48 @@ const styles = StyleSheet.create({
   },
   chatInputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    paddingTop: 4,
   },
   chatTextInput: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 22,
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 13,
+    paddingTop: Platform.OS === 'ios' ? 12 : 10,
+    paddingBottom: Platform.OS === 'ios' ? 12 : 10,
+    fontSize: 13.5,
+    lineHeight: 19,
     color: '#2C2B3D',
     fontFamily: 'SourceSerif4',
-    maxHeight: 80,
-    shadowColor: '#000000',
+    minHeight: 44,
+    maxHeight: 120,
+    borderWidth: 1,
+    borderColor: 'rgba(114, 9, 183, 0.15)',
+    shadowColor: '#7209B7',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowRadius: 3,
     elevation: 2,
   },
   chatSendBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#7209B7',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
+    shadowColor: '#7209B7',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   chatSendBtnDisabled: {
     backgroundColor: '#E8E7ED',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   sensorCard: {
     borderRadius: 16,

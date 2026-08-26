@@ -3,12 +3,12 @@ const ImageReading = require('../models/ImageReading');
 const getReadingHistory = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    const { type } = req.params; // 'palm', 'coffee', or 'face'
+    const { type } = req.params; // 'palm', 'coffee', 'face', or 'vastu'
 
-    if (!['palm', 'coffee', 'face'].includes(type)) {
+    if (!['palm', 'coffee', 'face', 'vastu'].includes(type)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid reading type. Must be palm, coffee, or face.'
+        message: 'Invalid reading type. Must be palm, coffee, face, or vastu.'
       });
     }
 

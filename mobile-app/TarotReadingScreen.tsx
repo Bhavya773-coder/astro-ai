@@ -517,6 +517,41 @@ interface TarotReadingScreenProps {
 }
 
 type TarotStep = 'intro' | 'shuffling' | 'spread' | 'reading';
+type TarotSpreadId = 'past-present-future' | 'situation-action-outcome' | 'love-connection';
+
+const TAROT_SPREADS: Record<TarotSpreadId, {
+  id: TarotSpreadId;
+  title: string;
+  subtitle: string;
+  icon: string;
+  positions: [string, string, string];
+  meanings: [string, string, string];
+}> = {
+  'past-present-future': {
+    id: 'past-present-future',
+    title: 'Past • Present • Future',
+    subtitle: 'Classic timeline spread for where you came from, what is active now, and what is forming next.',
+    icon: 'timeline-clock-outline',
+    positions: ['Past', 'Present', 'Future'],
+    meanings: ['Root pattern behind the situation', 'Current energy and lesson', 'Likely direction if the path continues'],
+  },
+  'situation-action-outcome': {
+    id: 'situation-action-outcome',
+    title: 'Situation • Action • Outcome',
+    subtitle: 'Decision spread for a real choice: what is happening, what to do, and what follows.',
+    icon: 'compass-outline',
+    positions: ['Situation', 'Action', 'Outcome'],
+    meanings: ['The true shape of the problem', 'The clean next move', 'The likely result of that move'],
+  },
+  'love-connection': {
+    id: 'love-connection',
+    title: 'You • Them • Connection',
+    subtitle: 'Relationship spread for your energy, their energy, and the bond between you.',
+    icon: 'heart-outline',
+    positions: ['You', 'Them', 'Connection'],
+    meanings: ['Your emotional pattern', 'Their visible/hidden energy', 'How the connection behaves right now'],
+  },
+};
 
 export default function TarotReadingScreen({
   answers,
@@ -529,6 +564,7 @@ export default function TarotReadingScreen({
   const [step, setStep] = useState<TarotStep>('intro');
   const [shuffledDeck, setShuffledDeck] = useState<TarotCard[]>([]);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]); // Indices in the fanned deck
+  const [selectedSpreadId, setSelectedSpreadId] = useState<TarotSpreadId>('past-present-future');
   const [activeDetailTab, setActiveDetailTab] = useState<number>(1); // 0: Past, 1: Present, 2: Future (default to Present)
   const [revealedCards, setRevealedCards] = useState<boolean[]>([false, false, false]); // Flips
 
@@ -561,6 +597,7 @@ export default function TarotReadingScreen({
   ]).current;
 
   const [shuffleStatus, setShuffleStatus] = useState('Concentrate on your query...');
+  const selectedSpread = TAROT_SPREADS[selectedSpreadId];
 
   useEffect(() => {
     resetReading();
@@ -583,7 +620,7 @@ export default function TarotReadingScreen({
 
   const startShuffling = async () => {
     setStep('shuffling');
-    setShuffleStatus('Aligning deck with your cosmic signature...');
+    setShuffleStatus(`Aligning the ${selectedSpread.title} spread...`);
 
     // Start fetching cards in parallel with shuffle animation
     let fetchedCards: TarotCard[] | null = null;
@@ -700,7 +737,7 @@ export default function TarotReadingScreen({
       }
     });
 
-    setTimeout(() => setShuffleStatus('Dividing cards into timeline channels...'), 650);
+    setTimeout(() => setShuffleStatus('Assigning meaning to each position...'), 650);
     setTimeout(() => setShuffleStatus('Spreading the Arcana deck...'), 1300);
   };
 
@@ -814,27 +851,23 @@ export default function TarotReadingScreen({
     const selectedCardsList = selectedIndices.map(idx => shuffledDeck[idx]);
     if (selectedCardsList.length < 3) return;
 
-    const pastCard = selectedCardsList[0];
     const presentCard = selectedCardsList[1];
-    const futureCard = selectedCardsList[2];
+    const spreadLines = selectedCardsList.map((card, idx) =>
+      `- ${positionLabels[idx]} (${positionMeanings[idx]}): ${card.name} (${card.numeral}) ${card.is_reversed ? '(Reversed)' : ''}`
+    );
 
-    const promptText = `I drew a Tarot Spread:\n` +
-      `- Past: ${pastCard.name} (${pastCard.numeral}) ${pastCard.is_reversed ? '(Reversed)' : ''}\n` +
-      `- Present: ${presentCard.name} (${presentCard.numeral}) ${presentCard.is_reversed ? '(Reversed)' : ''}\n` +
-      `- Future: ${futureCard.name} (${futureCard.numeral}) ${futureCard.is_reversed ? '(Reversed)' : ''}\n` +
-      `Can you give me a personalized celestial reading of this spread based on my zodiac profile?`;
+    const promptText = `I drew a ${selectedSpread.title} Tarot spread:\n` +
+      spreadLines.join('\n') +
+      `\nCan you give me a personalized celestial reading of this spread based on my zodiac profile?`;
 
-    const initialResponseText = `✦ Celestial Tarot Reading Analysis ✦\n\n` +
-      `Your 3-card Tarot spread contains powerful cosmic messages:\n\n` +
-      `1. PAST: ${pastCard.name} (${pastCard.numeral}) ${pastCard.is_reversed ? '(Reversed)' : ''}\n` +
-      `   *Cosmic Energy:* ${pastCard.keywords.join(', ')}\n` +
-      `   *Influence:* ${pastCard.pastReading}\n\n` +
-      `2. PRESENT: ${presentCard.name} (${presentCard.numeral}) ${presentCard.is_reversed ? '(Reversed)' : ''}\n` +
-      `   *Cosmic Energy:* ${presentCard.keywords.join(', ')}\n` +
-      `   *Influence:* ${presentCard.presentReading}\n\n` +
-      `3. FUTURE: ${futureCard.name} (${futureCard.numeral}) ${futureCard.is_reversed ? '(Reversed)' : ''}\n` +
-      `   *Cosmic Energy:* ${futureCard.keywords.join(', ')}\n` +
-      `   *Influence:* ${futureCard.futureReading}`;
+    const initialResponseText = `✦ ${selectedSpread.title} Tarot Reading ✦\n\n` +
+      `${selectedSpread.subtitle}\n\n` +
+      selectedCardsList.map((card, idx) =>
+        `${idx + 1}. ${positionLabels[idx].toUpperCase()}: ${card.name} (${card.numeral}) ${card.is_reversed ? '(Reversed)' : ''}\n` +
+        `   *Position meaning:* ${positionMeanings[idx]}\n` +
+        `   *Cosmic Energy:* ${card.keywords.join(', ')}\n` +
+        `   *Influence:* ${getPositionReading(card, idx)}`
+      ).join('\n\n');
 
     onSendToChat(
       { id: Date.now().toString(), sender: 'user', text: promptText },
@@ -848,9 +881,16 @@ export default function TarotReadingScreen({
         is_reversed: presentCard.is_reversed || false,
         meaning_up: presentCard.meaning_up || presentCard.keywords.join(', '),
         meaning_rev: presentCard.meaning_rev || '',
-        desc: presentCard.presentReading,
-        position: 'Present',
-        all_cards: selectedCardsList.map(c => ({ name: c.name, is_reversed: c.is_reversed || false })),
+        desc: getPositionReading(presentCard, 1),
+        spread_id: selectedSpread.id,
+        spread_title: selectedSpread.title,
+        position: positionLabels[1],
+        all_cards: selectedCardsList.map((c, idx) => ({
+          name: c.name,
+          is_reversed: c.is_reversed || false,
+          position: positionLabels[idx],
+          position_meaning: positionMeanings[idx],
+        })),
         skipDeduction: true
       });
       const aiText = cardRes?.interpretation || cardRes?.message || cardRes?.data?.interpretation;
@@ -867,6 +907,14 @@ export default function TarotReadingScreen({
 
   const selectedCardsList = selectedIndices.map(idx => shuffledDeck[idx]);
   const activeDetailCard = selectedCardsList[activeDetailTab];
+  const positionLabels = selectedSpread.positions;
+  const positionMeanings = selectedSpread.meanings;
+  const getPositionReading = (card: TarotCard | undefined, idx: number) => {
+    if (!card) return '';
+    if (idx === 0) return card.pastReading;
+    if (idx === 1) return card.presentReading;
+    return card.futureReading;
+  };
 
   // Helper to render fanned out cards back face
   const renderFannedCards = () => {
@@ -1094,7 +1142,7 @@ export default function TarotReadingScreen({
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerTitle}>TAROT ARCANA</Text>
-            <Text style={styles.headerSubtitle}>✦ Past, Present & Future Reading ✦</Text>
+            <Text style={styles.headerSubtitle}>✦ {selectedSpread.title} ✦</Text>
           </View>
           <TouchableOpacity onPress={resetReading} style={styles.resetBtn}>
             <RotateCcw size={18} color="#FFFFFF" />
@@ -1112,8 +1160,31 @@ export default function TarotReadingScreen({
                 <Sparkles size={28} color="#7209B7" style={styles.decorIcon} />
                 <Text style={styles.introTitle}>Consult the Sacred Cards</Text>
                 <Text style={styles.introDesc}>
-                  Unlock cosmic patterns of your timeline. Shuffling aligns the Tarot deck with your present birth chart vibrations.
+                  Choose a spread first. Each spread gives the three cards a different job, so the same card can speak through a different meaning.
                 </Text>
+              </View>
+
+              <View style={styles.spreadSelectorBlock}>
+                <Text style={styles.blockTitle}>Choose your spread</Text>
+                {Object.values(TAROT_SPREADS).map(spread => {
+                  const isActive = spread.id === selectedSpreadId;
+                  return (
+                    <TouchableOpacity
+                      key={spread.id}
+                      activeOpacity={0.86}
+                      onPress={() => setSelectedSpreadId(spread.id)}
+                      style={[styles.spreadChoice, isActive && styles.spreadChoiceActive]}
+                    >
+                      <View style={[styles.spreadChoiceIcon, isActive && styles.spreadChoiceIconActive]}>
+                        <MaterialCommunityIcons name={spread.icon as any} size={20} color={isActive ? '#FFFFFF' : '#7209B7'} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.spreadChoiceTitle, isActive && styles.spreadChoiceTitleActive]}>{spread.title}</Text>
+                        <Text style={styles.spreadChoiceDesc}>{spread.subtitle}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
               {/* Pile of Cards (stacked) */}
@@ -1189,9 +1260,9 @@ export default function TarotReadingScreen({
         {step === 'spread' && (
           <View style={styles.spreadContainer}>
             <View style={styles.drawStatusHeader}>
-              <Text style={styles.drawHeading}>Choose Three Cards</Text>
+              <Text style={styles.drawHeading}>{selectedSpread.title}</Text>
               <Text style={styles.drawSubheading}>
-                Select {3 - selectedIndices.length} cards from the fanned deck for your spread.
+                Select {3 - selectedIndices.length} cards. Positions: {positionLabels.join(' • ')}.
               </Text>
             </View>
 
@@ -1199,9 +1270,9 @@ export default function TarotReadingScreen({
 
             {/* Slots showing drawing progress */}
             <View style={styles.slotsRow}>
-              {renderDrawnSlot(0, 'Past')}
-              {renderDrawnSlot(1, 'Present')}
-              {renderDrawnSlot(2, 'Future')}
+              {renderDrawnSlot(0, positionLabels[0])}
+              {renderDrawnSlot(1, positionLabels[1])}
+              {renderDrawnSlot(2, positionLabels[2])}
             </View>
           </View>
         )}
@@ -1210,9 +1281,9 @@ export default function TarotReadingScreen({
         {step === 'reading' && (
           <View style={styles.readingContainer}>
             <View style={styles.slotsRow}>
-              {renderDrawnSlot(0, 'Past')}
-              {renderDrawnSlot(1, 'Present')}
-              {renderDrawnSlot(2, 'Future')}
+              {renderDrawnSlot(0, positionLabels[0])}
+              {renderDrawnSlot(1, positionLabels[1])}
+              {renderDrawnSlot(2, positionLabels[2])}
             </View>
 
             {/* All cards flipped */}
@@ -1221,7 +1292,7 @@ export default function TarotReadingScreen({
 
                 {/* Detail Tabs selector */}
                 <View style={styles.detailTabsRow}>
-                  {['PAST', 'PRESENT', 'FUTURE'].map((lbl, idx) => (
+                  {positionLabels.map((lbl, idx) => (
                     <TouchableOpacity
                       key={idx}
                       style={[
@@ -1283,14 +1354,10 @@ export default function TarotReadingScreen({
 
                     <View style={styles.timelineInterpretation}>
                       <Text style={styles.blockTitle}>
-                        {activeDetailTab === 0 ? 'Past Foundation' : activeDetailTab === 1 ? 'Present Influence' : 'Future Destination'}
+                        {positionLabels[activeDetailTab]} — {positionMeanings[activeDetailTab]}
                       </Text>
                       <Text style={styles.interpretationBodyText}>
-                        {activeDetailTab === 0
-                          ? activeDetailCard.pastReading
-                          : activeDetailTab === 1
-                          ? activeDetailCard.presentReading
-                          : activeDetailCard.futureReading}
+                        {getPositionReading(activeDetailCard, activeDetailTab)}
                       </Text>
                     </View>
                   </View>
@@ -1318,19 +1385,16 @@ export default function TarotReadingScreen({
                   style={[styles.chatActionBtn, { marginTop: 10 }]}
                   activeOpacity={0.9}
                   onPress={() => {
-                    const pastCard = selectedCardsList[0];
-                    const presentCard = selectedCardsList[1];
-                    const futureCard = selectedCardsList[2];
+                    const centerCard = selectedCardsList[1];
                     setShareModalData({
                       category: 'TAROT READING',
-                      title: `3-Card Tarot Spread Insight`,
-                      subtitle: `${presentCard?.name || 'Present Arcana'} (${presentCard?.numeral || 'Major'})`,
-                      readingText: presentCard?.presentReading || activeDetailCard?.description || 'Your Tarot spread alignment shows strong cosmic shifts across your past, present, and future.',
-                      highlights: [
-                        { label: 'Past Card', value: pastCard?.name || 'Drawn' },
-                        { label: 'Present Card', value: presentCard?.name || 'Drawn' },
-                        { label: 'Future Card', value: futureCard?.name || 'Drawn' },
-                      ],
+                      title: `${selectedSpread.title} Insight`,
+                      subtitle: `${centerCard?.name || positionLabels[1]} (${centerCard?.numeral || 'Arcana'})`,
+                      readingText: getPositionReading(centerCard, 1) || activeDetailCard?.description || selectedSpread.subtitle,
+                      highlights: selectedCardsList.map((card, idx) => ({
+                        label: `${positionLabels[idx]} Card`,
+                        value: card?.name || 'Drawn',
+                      })),
                     });
                     setShareModalVisible(true);
                   }}
@@ -1455,6 +1519,57 @@ const styles = StyleSheet.create({
     color: '#726F8D',
     textAlign: 'center',
     lineHeight: 19,
+  },
+  spreadSelectorBlock: {
+    width: '100%',
+    marginBottom: 22,
+  },
+  spreadChoice: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 16,
+    padding: 13,
+    marginTop: 10,
+    backgroundColor: '#F8F5FF',
+    borderWidth: 1,
+    borderColor: 'rgba(114, 111, 141, 0.10)',
+  },
+  spreadChoiceActive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(114, 9, 183, 0.28)',
+    shadowColor: '#7209B7',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  spreadChoiceIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(114, 9, 183, 0.10)',
+  },
+  spreadChoiceIconActive: {
+    backgroundColor: '#7209B7',
+  },
+  spreadChoiceTitle: {
+    fontFamily: 'Cinzel-Bold',
+    fontSize: 12,
+    color: '#2C2B3D',
+    marginBottom: 3,
+  },
+  spreadChoiceTitleActive: {
+    color: '#7209B7',
+  },
+  spreadChoiceDesc: {
+    fontFamily: 'SourceSerif4',
+    fontSize: 11,
+    lineHeight: 15,
+    color: '#726F8D',
   },
   deckPileContainer: {
     width: 130,

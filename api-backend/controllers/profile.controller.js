@@ -289,7 +289,7 @@ const generateInsights = async (req, res, next) => {
 
     // Save birth chart to reports collection so Birth Chart page loads instantly
     const bc = insights.birth_chart_data;
-    const sunSign = bc?.sun_sign || llmService.getSunSign?.(profile.date_of_birth) || 'Leo';
+    const sunSign = bc?.sun_sign || (profile.date_of_birth ? llmService.getSunSign(profile.date_of_birth) : 'Aries');
     const moonSign = bc?.moon_sign || 'Taurus';
     const ascendant = bc?.ascendant || sunSign;
     const dominantPlanet = bc?.dominant_planet || getZodiacProperties(sunSign).ruler;

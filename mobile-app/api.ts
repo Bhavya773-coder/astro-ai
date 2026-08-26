@@ -291,7 +291,14 @@ export const getFaceReading = (imageBase64: string, mimeType: string, forceRegen
   });
 };
 
-export const getReadingHistory = (type: 'palm' | 'coffee' | 'face') => {
+export const getVastuConsultation = (imageBase64: string, mimeType: string) => {
+  return apiFetch('/api/vastu-consultant', {
+    method: 'POST',
+    body: JSON.stringify({ imageBase64, mimeType }),
+  });
+};
+
+export const getReadingHistory = (type: 'palm' | 'coffee' | 'face' | 'vastu') => {
   return apiFetch(`/api/reading-history/${type}`, { method: 'GET' });
 };
 
@@ -453,8 +460,11 @@ export const interpretTarotCard = (cardData: {
   meaning_up: string;
   meaning_rev: string;
   desc: string;
+  spread_id?: string;
+  spread_title?: string;
   position?: string;
-  all_cards?: { name: string; is_reversed: boolean }[];
+  all_cards?: { name: string; is_reversed: boolean; position?: string; position_meaning?: string }[];
+  skipDeduction?: boolean;
 }) => {
   return apiFetch('/api/tarot-reading/interpret', {
     method: 'POST',

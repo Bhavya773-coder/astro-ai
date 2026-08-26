@@ -485,9 +485,34 @@ class LLMService {
   }
 
   getSunSign(dateOfBirth) {
-    const date = new Date(dateOfBirth);
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
+    if (!dateOfBirth) return "Aries";
+    let day, month;
+    if (typeof dateOfBirth === 'string') {
+      const ymd = dateOfBirth.trim().match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+      const dmy = dateOfBirth.trim().match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+      if (ymd) {
+        month = parseInt(ymd[2], 10);
+        day = parseInt(ymd[3], 10);
+      } else if (dmy) {
+        day = parseInt(dmy[1], 10);
+        month = parseInt(dmy[2], 10);
+        if (day > 12 && month <= 12) {
+          // day is day, month is month
+        } else if (month > 12 && day <= 12) {
+          const temp = day;
+          day = month;
+          month = temp;
+        }
+      }
+    }
+    if (!day || !month || isNaN(day) || isNaN(month)) {
+      const date = new Date(dateOfBirth);
+      if (!isNaN(date.getTime())) {
+        month = date.getUTCMonth() + 1;
+        day = date.getUTCDate();
+      }
+    }
+    if (!day || !month || isNaN(day) || isNaN(month)) return "Aries";
 
     if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "Aries";
     if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "Taurus";
@@ -504,17 +529,18 @@ class LLMService {
   }
 
   calculateLifePathNumber(dateOfBirth) {
-    const date = new Date(dateOfBirth);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    const sum = day + month + year;
+    if (!dateOfBirth) return "1";
+    const digits = String(dateOfBirth).replace(/\D/g, '');
+    if (!digits) return "1";
+    let sum = 0;
+    for (let i = 0; i < digits.length; i++) {
+      sum += parseInt(digits[i], 10);
+    }
     
-    // Reduce to single digit
+    // Reduce to single digit or master number (11, 22, 33)
     let lifePath = sum;
     while (lifePath > 9 && lifePath !== 11 && lifePath !== 22 && lifePath !== 33) {
-      lifePath = lifePath.toString().split('').reduce(function(a, b) { return a + parseInt(b); }, 0);
+      lifePath = lifePath.toString().split('').reduce(function(a, b) { return a + parseInt(b, 10); }, 0);
     }
 
     return lifePath.toString();

@@ -478,23 +478,27 @@ MONEY_LUCK: [time]`
    */
   generateDailyDecisionData = async (req, res) => {
     try {
-      const { zodiac } = req.body;
+      let { zodiac } = req.body;
       const user_id = req.user.userId;
       const today = new Date().toISOString().split('T')[0];
 
-      // 1. Check for stable daily data
-      const existing = await DailyDecision.findOne({ user_id, date: today });
-      if (existing) {
-        return res.json({ success: true, data: existing.data });
-      }
-
       const profile = await Profile.findOne({ user_id });
+
+      const targetZodiac = zodiac || profile?.birth_chart_data?.sun_sign || (profile?.date_of_birth ? llmService.getSunSign(profile.date_of_birth) : 'Aries');
+
+      // 1. Check for stable daily data for this specific zodiac
+      const existing = await DailyDecision.findOne({ user_id, date: today });
+      if (existing && existing.data) {
+        if (!existing.zodiac || existing.zodiac === targetZodiac) {
+          return res.json({ success: true, data: existing.data });
+        }
+      }
 
       let contextPrompt = 'USER CONTEXT:\n';
       if (profile) {
-        contextPrompt += `- Focus Style: ${profile.life_context?.personality_style}\n`;
-        contextPrompt += `- Current Stage: ${profile.life_context?.career_stage}\n`;
-        contextPrompt += `- Sun Sign: ${profile.birth_chart_data?.sun_sign || zodiac}\n`;
+        contextPrompt += `- Focus Style: ${profile.life_context?.personality_style || 'Balanced'}\n`;
+        contextPrompt += `- Current Stage: ${profile.life_context?.career_stage || 'Growth'}\n`;
+        contextPrompt += `- Sun Sign: ${targetZodiac}\n`;
       }
 
       // 2. Generate multi-focus package (All 4 quadrants)
@@ -508,7 +512,7 @@ MONEY_LUCK: [time]`
         },
         {
           role: 'user',
-          content: `Generate a decision-driven horoscope for ${zodiac}.
+          content: `Generate a decision-driven horoscope for ${targetZodiac}.
           Return EXACTLY in this JSON format (no other text):
           {
             "hook": "A single shared high-tension curiosity hook for the day",
@@ -549,21 +553,13 @@ MONEY_LUCK: [time]`
 
       // 3. Save for stability
       try {
-        await DailyDecision.create({
-          user_id,
-          date: today,
-          zodiac,
-          data: parsedData
-        });
+        await DailyDecision.findOneAndUpdate(
+          { user_id, date: today },
+          { zodiac: targetZodiac, data: parsedData },
+          { upsert: true, new: true }
+        );
       } catch (dbError) {
-        if (dbError.code === 11000 || (dbError.name === 'MongoServerError' && dbError.message.includes('E11000'))) {
-          console.warn('[DecisionEngine] Duplicate key (concurrent request) error caught. Fetching existing daily decision.');
-          const existingDoc = await DailyDecision.findOne({ user_id, date: today });
-          if (existingDoc) {
-            return res.json({ success: true, data: existingDoc.data });
-          }
-        }
-        throw dbError;
+        console.warn('[DecisionEngine] Error saving daily decision to DB:', dbError.message);
       }
 
       res.json({ success: true, data: parsedData });
@@ -634,12 +630,11 @@ MONEY_LUCK: [time]`
 
       // Save the fallback data for today so we don't query LLM repeatedly and spike load
       try {
-        await DailyDecision.create({
-          user_id,
-          date: today,
-          zodiac,
-          data: fallbackData
-        });
+        await DailyDecision.findOneAndUpdate(
+          { user_id, date: today },
+          { zodiac: targetZodiac, data: fallbackData },
+          { upsert: true, new: true }
+        );
       } catch (saveError) {
         console.error('[DecisionEngine] Failed to save fallback data to DB:', saveError);
       }

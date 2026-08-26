@@ -1,4 +1,6 @@
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 
 class GeminiVisionService {
   constructor() {
@@ -26,6 +28,12 @@ class GeminiVisionService {
 
       case 'face':
         return `You are a master physiognomist with expertise in Chinese Mian Xiang and Western physiognomy. Analyze this face image. User: Sun Sign: ${sunSign}, Ascendant: ${ascendant}, DOB: ${dateOfBirth}. Respond ONLY with valid JSON: { face_shape, element_type, overall_aura, forehead_reading, eyes_reading, nose_reading, mouth_reading, chin_reading, dominant_strength, hidden_trait, life_purpose_hint, compatible_with, personality_scores: { leadership (int), creativity (int), empathy (int), ambition (int), spirituality (int) }, special_marking (string or null) }`;
+
+      case 'vastu': {
+        const skillPath = path.join(__dirname, '..', 'skills', 'vastu-consultant', 'SKILL.md');
+        const skill = fs.readFileSync(skillPath, 'utf8');
+        return `${skill}\n\nUser context: Sun Sign: ${sunSign}, Moon Sign: ${moonSign}, Ascendant: ${ascendant}, DOB: ${dateOfBirth}. Analyze the attached 2D house/floor-plan image.`;
+      }
 
       default:
         throw new Error(`Unknown reading type: ${readingType}`);
