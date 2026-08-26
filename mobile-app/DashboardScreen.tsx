@@ -1648,11 +1648,14 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
     setEditBirthplace(curPlace);
 
     // Parse date
-    const dParts = curDate.split('/');
-    if (dParts.length === 3) {
-      setSelectedDay(parseInt(dParts[0], 10) || 16);
-      setSelectedMonth(parseInt(dParts[1], 10) || 8);
-      setSelectedYear(parseInt(dParts[2], 10) || 2005);
+    const parsedDate = parseDayAndMonth(curDate);
+    if (parsedDate) {
+      setSelectedDay(parsedDate.day);
+      setSelectedMonth(parsedDate.month);
+      const yMatch = curDate.match(/\b(19\d{2}|20\d{2})\b/);
+      if (yMatch) {
+        setSelectedYear(parseInt(yMatch[1], 10));
+      }
     }
 
     // Parse time

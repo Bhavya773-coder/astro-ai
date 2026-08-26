@@ -78,6 +78,46 @@ function formatShortLabel(title: string): string {
   return clean.length > 8 ? clean.substring(0, 7) + '..' : clean;
 }
 
+function parseDayAndMonth(dob: string): { day: number; month: number } | null {
+  if (!dob || typeof dob !== 'string') return null;
+  const trimmed = dob.trim();
+  if (!trimmed) return null;
+
+  // 1. Check ISO / YYYY-MM-DD / YYYY/MM/DD
+  const ymdMatch = trimmed.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (ymdMatch) {
+    const month = parseInt(ymdMatch[2], 10);
+    const day = parseInt(ymdMatch[3], 10);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return { day, month };
+    }
+  }
+
+  // 2. Check DD/MM/YYYY or DD-MM-YYYY or MM/DD/YYYY
+  const dmyMatch = trimmed.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+  if (dmyMatch) {
+    let day = parseInt(dmyMatch[1], 10);
+    let month = parseInt(dmyMatch[2], 10);
+    if (day > 12 && month <= 12) {
+      return { day, month };
+    }
+    if (month > 12 && day <= 12) {
+      return { day: month, month: day };
+    }
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return { day, month };
+    }
+  }
+
+  // 3. Fallback to standard Date parsing
+  const parsed = new Date(trimmed);
+  if (!isNaN(parsed.getTime())) {
+    return { day: parsed.getUTCDate(), month: parsed.getUTCMonth() + 1 };
+  }
+
+  return null;
+}
+
 function hashDate(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -211,21 +251,9 @@ function calculateMoonCycleEvents(year: number, month: number, birthdateStr?: st
 
   // 2. User Birthday Event Sync ONLY
   if (birthdateStr) {
-    let bDay = 0;
-    let bMonth = 0;
-    if (birthdateStr.includes('/')) {
-      const parts = birthdateStr.split('/');
-      if (parts.length >= 2) {
-        bDay = parseInt(parts[0], 10);
-        bMonth = parseInt(parts[1], 10);
-      }
-    } else if (birthdateStr.includes('-')) {
-      const parts = birthdateStr.split('-');
-      if (parts.length === 3) {
-        bMonth = parseInt(parts[1], 10);
-        bDay = parseInt(parts[2], 10);
-      }
-    }
+    const parsedBday = parseDayAndMonth(birthdateStr);
+    const bDay = parsedBday?.day || 0;
+    const bMonth = parsedBday?.month || 0;
 
     if (bDay && bMonth === month) {
       const dayStr = String(bDay).padStart(2, '0');

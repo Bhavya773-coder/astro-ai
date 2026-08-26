@@ -100,6 +100,13 @@ const getBirthChart = async (req, res, next) => {
     // Build birth chart from profile.birth_chart_data - no slow LLM call for initial load
     // Profile already has sun_sign, moon_sign, ascendant, dominant_planet from onboarding
     const birthChartAnalysis = null;
+    const userSunSign = profile.birth_chart_data?.sun_sign || (profile.date_of_birth ? llmService.getSunSign(profile.date_of_birth) : 'Aries');
+    const sunProps = getZodiacProperties(userSunSign);
+    const userMoonSign = profile.birth_chart_data?.moon_sign || 'Taurus';
+    const moonProps = getZodiacProperties(userMoonSign);
+    const userAscendant = profile.birth_chart_data?.ascendant || userSunSign;
+    const ascProps = getZodiacProperties(userAscendant);
+    const userDominantPlanet = profile.birth_chart_data?.dominant_planet || sunProps.ruler;
 
     // Create comprehensive birth chart data from profile
     const birthChart = {
@@ -112,11 +119,11 @@ const getBirthChart = async (req, res, next) => {
               description: `${profile.birth_chart_data.sun_sign} represents your core identity and life purpose. As a ${getZodiacProperties(profile.birth_chart_data.sun_sign).element} sign, you embody ${getZodiacProperties(profile.birth_chart_data.sun_sign).element.toLowerCase()} energy.` 
             }
           : (birthChartAnalysis && birthChartAnalysis.enhanced_birth_chart_data?.sun_sign ? birthChartAnalysis.enhanced_birth_chart_data.sun_sign : {
-              sign: 'Leo',
-              element: 'Fire',
-              quality: 'Fixed',
-              ruler: 'Sun',
-              description: 'Leo represents your core identity and life purpose. As a Fire sign, you embody fire energy and fixed characteristics.'
+              sign: userSunSign,
+              element: sunProps.element,
+              quality: sunProps.quality,
+              ruler: sunProps.ruler,
+              description: `${userSunSign} represents your core identity and life purpose. As a ${sunProps.element} sign, you embody ${sunProps.element.toLowerCase()} energy and ${sunProps.quality.toLowerCase()} characteristics.`
             }),
         moon_sign: typeof profile.birth_chart_data?.moon_sign === 'string'
           ? { 
@@ -125,11 +132,11 @@ const getBirthChart = async (req, res, next) => {
               description: `${profile.birth_chart_data.moon_sign} represents your emotional nature and inner world. Your ${getZodiacProperties(profile.birth_chart_data.moon_sign).element} moon sign influences your feelings and instincts.` 
             }
           : (birthChartAnalysis && birthChartAnalysis.enhanced_birth_chart_data?.moon_sign ? birthChartAnalysis.enhanced_birth_chart_data.moon_sign : {
-              sign: 'Taurus',
-              element: 'Earth',
-              quality: 'Fixed',
-              ruler: 'Venus',
-              description: 'Taurus represents your emotional nature and inner world. Your Earth moon sign provides stability and practicality.'
+              sign: userMoonSign,
+              element: moonProps.element,
+              quality: moonProps.quality,
+              ruler: moonProps.ruler,
+              description: `${userMoonSign} represents your emotional nature and inner world. Your ${moonProps.element} moon sign provides emotional balance.`
             }),
         ascendant: typeof profile.birth_chart_data?.ascendant === 'string'
           ? { 
@@ -138,24 +145,24 @@ const getBirthChart = async (req, res, next) => {
               description: `${profile.birth_chart_data.ascendant} represents how others perceive you and your approach to life. Your ${getZodiacProperties(profile.birth_chart_data.ascendant).element} rising sign shapes your first impressions.` 
             }
           : (birthChartAnalysis && birthChartAnalysis.enhanced_birth_chart_data?.ascendant ? birthChartAnalysis.enhanced_birth_chart_data.ascendant : {
-              sign: 'Leo',
-              element: 'Fire',
-              quality: 'Fixed',
-              ruler: 'Sun',
-              description: 'Leo represents how others perceive you and your approach to life. Your Fire rising sign gives you a charismatic first impression.'
+              sign: userAscendant,
+              element: ascProps.element,
+              quality: ascProps.quality,
+              ruler: ascProps.ruler,
+              description: `${userAscendant} represents how others perceive you and your approach to life. Your ${ascProps.element} rising sign gives you a distinct first impression.`
             }),
         dominant_planet: typeof profile.birth_chart_data?.dominant_planet === 'string'
           ? { 
               planet: profile.birth_chart_data.dominant_planet, 
-              sign: profile.birth_chart_data.sun_sign || 'Leo', 
-              element: getZodiacProperties(profile.birth_chart_data.sun_sign || 'Leo').element,
+              sign: userSunSign, 
+              element: sunProps.element,
               description: `${profile.birth_chart_data.dominant_planet} is your ruling planet, strongly influencing your personality and life path. This planetary energy shapes your core motivations and drives.` 
             }
           : (birthChartAnalysis && birthChartAnalysis.enhanced_birth_chart_data?.dominant_planet ? birthChartAnalysis.enhanced_birth_chart_data.dominant_planet : {
-              planet: 'Sun',
-              sign: 'Leo',
-              element: 'Fire',
-              description: 'The Sun is your ruling planet, strongly influencing your personality and life path. This solar energy shapes your core motivations.'
+              planet: userDominantPlanet,
+              sign: userSunSign,
+              element: sunProps.element,
+              description: `${userDominantPlanet} is your ruling planet, strongly influencing your personality and life path.`
             })
       },
       detailed_analysis: birthChartAnalysis ? birthChartAnalysis.detailed_analysis : {
@@ -239,10 +246,10 @@ const getBirthChart = async (req, res, next) => {
       message: 'Birth chart generated successfully',
       birthChart,
       cached: false,
-      sunSign: birthChart.enhanced_birth_chart_data?.sun_sign?.sign || 'Leo',
-      moonSign: birthChart.enhanced_birth_chart_data?.moon_sign?.sign || 'Taurus',
-      ascendant: birthChart.enhanced_birth_chart_data?.ascendant?.sign || 'Leo',
-      dominantPlanet: birthChart.enhanced_birth_chart_data?.dominant_planet?.planet || 'Sun'
+      sunSign: birthChart.enhanced_birth_chart_data?.sun_sign?.sign || userSunSign,
+      moonSign: birthChart.enhanced_birth_chart_data?.moon_sign?.sign || userMoonSign,
+      ascendant: birthChart.enhanced_birth_chart_data?.ascendant?.sign || userAscendant,
+      dominantPlanet: birthChart.enhanced_birth_chart_data?.dominant_planet?.planet || userDominantPlanet
     });
 
   } catch (error) {
@@ -310,6 +317,14 @@ const refreshBirthChart = async (req, res, next) => {
       });
     }
 
+    const userSunSign = profile.birth_chart_data?.sun_sign || (profile.date_of_birth ? llmService.getSunSign(profile.date_of_birth) : 'Aries');
+    const sunProps = getZodiacProperties(userSunSign);
+    const userMoonSign = profile.birth_chart_data?.moon_sign || 'Taurus';
+    const moonProps = getZodiacProperties(userMoonSign);
+    const userAscendant = profile.birth_chart_data?.ascendant || userSunSign;
+    const ascProps = getZodiacProperties(userAscendant);
+    const userDominantPlanet = profile.birth_chart_data?.dominant_planet || sunProps.ruler;
+
     // Create comprehensive birth chart data
     const birthChart = {
       enhanced_birth_chart_data: {
@@ -320,11 +335,11 @@ const refreshBirthChart = async (req, res, next) => {
               description: `${profile.birth_chart_data.sun_sign} represents your core identity and life purpose. As a ${getZodiacProperties(profile.birth_chart_data.sun_sign).element} sign, you embody ${getZodiacProperties(profile.birth_chart_data.sun_sign).element.toLowerCase()} energy.` 
             }
           : (birthChartAnalysis && birthChartAnalysis.enhanced_birth_chart_data?.sun_sign ? birthChartAnalysis.enhanced_birth_chart_data.sun_sign : {
-              sign: 'Leo',
-              element: 'Fire',
-              quality: 'Fixed',
-              ruler: 'Sun',
-              description: 'Leo represents your core identity and life purpose. As a Fire sign, you embody fire energy and fixed characteristics.'
+              sign: userSunSign,
+              element: sunProps.element,
+              quality: sunProps.quality,
+              ruler: sunProps.ruler,
+              description: `${userSunSign} represents your core identity and life purpose. As a ${sunProps.element} sign, you embody ${sunProps.element.toLowerCase()} energy and ${sunProps.quality.toLowerCase()} characteristics.`
             }),
         moon_sign: typeof profile.birth_chart_data?.moon_sign === 'string'
           ? { 
@@ -333,11 +348,11 @@ const refreshBirthChart = async (req, res, next) => {
               description: `${profile.birth_chart_data.moon_sign} represents your emotional nature and inner world. Your ${getZodiacProperties(profile.birth_chart_data.moon_sign).element} moon sign influences your feelings and instincts.` 
             }
           : (birthChartAnalysis && birthChartAnalysis.enhanced_birth_chart_data?.moon_sign ? birthChartAnalysis.enhanced_birth_chart_data.moon_sign : {
-              sign: 'Taurus',
-              element: 'Earth',
-              quality: 'Fixed',
-              ruler: 'Venus',
-              description: 'Taurus represents your emotional nature and inner world. Your Earth moon sign provides stability and practicality.'
+              sign: userMoonSign,
+              element: moonProps.element,
+              quality: moonProps.quality,
+              ruler: moonProps.ruler,
+              description: `${userMoonSign} represents your emotional nature and inner world. Your ${moonProps.element} moon sign provides emotional balance.`
             }),
         ascendant: typeof profile.birth_chart_data?.ascendant === 'string'
           ? { 
@@ -346,24 +361,24 @@ const refreshBirthChart = async (req, res, next) => {
               description: `${profile.birth_chart_data.ascendant} represents how others perceive you and your approach to life. Your ${getZodiacProperties(profile.birth_chart_data.ascendant).element} rising sign shapes your first impressions.` 
             }
           : (birthChartAnalysis && birthChartAnalysis.enhanced_birth_chart_data?.ascendant ? birthChartAnalysis.enhanced_birth_chart_data.ascendant : {
-              sign: 'Leo',
-              element: 'Fire',
-              quality: 'Fixed',
-              ruler: 'Sun',
-              description: 'Leo represents how others perceive you and your approach to life. Your Fire rising sign gives you a charismatic first impression.'
+              sign: userAscendant,
+              element: ascProps.element,
+              quality: ascProps.quality,
+              ruler: ascProps.ruler,
+              description: `${userAscendant} represents how others perceive you and your approach to life. Your ${ascProps.element} rising sign gives you a distinct first impression.`
             }),
         dominant_planet: typeof profile.birth_chart_data?.dominant_planet === 'string'
           ? { 
               planet: profile.birth_chart_data.dominant_planet, 
-              sign: profile.birth_chart_data.sun_sign || 'Leo', 
-              element: getZodiacProperties(profile.birth_chart_data.sun_sign || 'Leo').element,
+              sign: userSunSign, 
+              element: sunProps.element,
               description: `${profile.birth_chart_data.dominant_planet} is your ruling planet, strongly influencing your personality and life path. This planetary energy shapes your core motivations and drives.` 
             }
           : (birthChartAnalysis && birthChartAnalysis.enhanced_birth_chart_data?.dominant_planet ? birthChartAnalysis.enhanced_birth_chart_data.dominant_planet : {
-              planet: 'Sun',
-              sign: 'Leo',
-              element: 'Fire',
-              description: 'The Sun is your ruling planet, strongly influencing your personality and life path. This solar energy shapes your core motivations.'
+              planet: userDominantPlanet,
+              sign: userSunSign,
+              element: sunProps.element,
+              description: `${userDominantPlanet} is your ruling planet, strongly influencing your personality and life path.`
             })
       },
       detailed_analysis: birthChartAnalysis ? birthChartAnalysis.detailed_analysis : {
@@ -447,10 +462,10 @@ const refreshBirthChart = async (req, res, next) => {
       birthChart,
       cached: false,
       refreshed: true,
-      sunSign: birthChart.enhanced_birth_chart_data?.sun_sign?.sign || 'Leo',
-      moonSign: birthChart.enhanced_birth_chart_data?.moon_sign?.sign || 'Taurus',
-      ascendant: birthChart.enhanced_birth_chart_data?.ascendant?.sign || 'Leo',
-      dominantPlanet: birthChart.enhanced_birth_chart_data?.dominant_planet?.planet || 'Sun'
+      sunSign: birthChart.enhanced_birth_chart_data?.sun_sign?.sign || userSunSign,
+      moonSign: birthChart.enhanced_birth_chart_data?.moon_sign?.sign || userMoonSign,
+      ascendant: birthChart.enhanced_birth_chart_data?.ascendant?.sign || userAscendant,
+      dominantPlanet: birthChart.enhanced_birth_chart_data?.dominant_planet?.planet || userDominantPlanet
     });
 
   } catch (error) {
