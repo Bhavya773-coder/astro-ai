@@ -9,7 +9,7 @@ test('numeric model confidence is stored in the prediction schema vocabulary', (
   assert.equal(strengthLabel(0.9), 'strong');
 });
 
-function harness() {
+function harness(overrides = {}) {
   const predictions = [];
   let calculations = 0;
   const store = {
@@ -50,8 +50,8 @@ function harness() {
         text: 'I am leaning yes.', direction: 'leaning_yes', strength: 0.62,
         time_window: { start: '2026-08-18', end: '2026-09-01' },
         manifestations: ['a direct message'], signals: ['renewed contact'],
-        recommended_action: 'Wait without chasing.', valid_until: '2026-09-01',
-        next_reassessment_at: '2026-08-25',
+        recommended_action: 'Wait without chasing.', valid_until: '2026-12-01T00:00:00.000Z',
+        next_reassessment_at: '2026-11-01T00:00:00.000Z',
         statement_tags: { prediction: ['I am leaning yes.'], interpretation: [], advice: ['Wait without chasing.'] }
       };
     },
@@ -59,7 +59,8 @@ function harness() {
       return reused ? `My answer is still ${prediction.direction}.` : prediction.text;
     },
     validate() { return { valid: true, violations: [] }; },
-    async track() {}
+    async track() {},
+    ...overrides
   });
   return { engine, predictions, get calculations() { return calculations; } };
 }
@@ -142,6 +143,112 @@ test('an invalid generated response is not persisted as a new prediction', async
     /validation/i
   );
   assert.equal(h.predictions.length, 0);
+});
+
+test('reconciliation flag gates the new delivery path while retaining output validation', async () => {
+  const originalFlag = process.env.ORACLE_USE_RECONCILIATION;
+  let signalCalls = 0;
+  let reconciliationCalls = 0;
+  let deliveryCalls = 0;
+  let validations = 0;
+  const birthDetails = { date_of_birth: '1990-05-15', time_of_birth: '10:30', latitude: 28.61, longitude: 77.21 };
+  const signal = (module, direction, data_quality) => ({ module, scope: 'macro', direction, confidence: 0.65, data_quality, rationale: `${module} rationale.` });
+  const reconciliation = {
+    overall_direction: 'leaning_yes', overall_confidence: 0.65, agreement: 'full',
+    contributing_signals: [signal('numerology', 'yes', 'medium'), signal('western_astrology', 'leaning_yes', 'high')], hedge_note: ''
+  };
+  const reconciledPrediction = {
+    text: 'I lean yes based on the reconciled signals.', direction: 'leaning_yes', strength: 0.65,
+    time_window: { start: '2026-08-18', end: '2026-09-01' }, manifestations: ['a direct message'], signals: ['renewed contact'],
+    recommended_action: 'Wait without chasing.', valid_until: '2026-12-01T00:00:00.000Z', next_reassessment_at: '2026-11-01T00:00:00.000Z',
+    statement_tags: { prediction: ['I lean yes based on the reconciled signals.'], interpretation: [], advice: ['Wait without chasing.'] }
+  };
+
+  try {
+    delete process.env.ORACLE_USE_RECONCILIATION;
+    const off = harness({
+      createNumerologySignal: () => { signalCalls += 1; return signal('numerology', 'yes', 'medium'); },
+      createWesternSignal: async () => { signalCalls += 1; return signal('western_astrology', 'leaning_yes', 'high'); },
+      reconcile: () => { reconciliationCalls += 1; return reconciliation; },
+      calculateReconciled: async () => { deliveryCalls += 1; return reconciledPrediction; }
+    });
+    await off.engine.respond({ userId: 'u1', chatId: 'c1', message: 'Will he call me?', method: 'astrology' });
+    assert.equal(signalCalls, 0);
+    assert.equal(reconciliationCalls, 0);
+    assert.equal(deliveryCalls, 0);
+    assert.equal(off.calculations, 1);
+
+    process.env.ORACLE_USE_RECONCILIATION = 'true';
+    const on = harness({
+      async buildContext() { return { material_hash: 'h1', sources: { kundli: 'KundliReport' }, kundli: { birth_details: birthDetails } }; },
+      createNumerologySignal: () => { signalCalls += 1; return signal('numerology', 'yes', 'medium'); },
+      createWesternSignal: async () => { signalCalls += 1; return signal('western_astrology', 'leaning_yes', 'high'); },
+      reconcile: inputs => { reconciliationCalls += 1; assert.equal(inputs.length, 2); return reconciliation; },
+      calculateReconciled: async input => { deliveryCalls += 1; assert.deepEqual(input.reconciliation, reconciliation); return reconciledPrediction; },
+      validate() { validations += 1; return { valid: true, violations: [] }; }
+    });
+    const response = await on.engine.respond({ userId: 'u1', chatId: 'c1', message: 'Will he call me?', method: 'astrology' });
+    assert.equal(signalCalls, 2);
+    assert.equal(reconciliationCalls, 1);
+    assert.equal(deliveryCalls, 1);
+    assert.equal(on.calculations, 0);
+    assert.equal(validations, 1);
+    assert.equal(response.message_text, reconciledPrediction.text);
+  } finally {
+    if (originalFlag === undefined) delete process.env.ORACLE_USE_RECONCILIATION;
+    else process.env.ORACLE_USE_RECONCILIATION = originalFlag;
+  }
+});
+
+test('reconciliation falls back to legacy calculation when verified birth details are unavailable', async () => {
+  const originalFlag = process.env.ORACLE_USE_RECONCILIATION;
+  let signalCalls = 0;
+  const originalError = console.error;
+  try {
+    process.env.ORACLE_USE_RECONCILIATION = 'true';
+    console.error = () => {};
+    const h = harness({
+      async buildContext() { return { material_hash: 'h1', sources: { kundli: 'unavailable' } }; },
+      createNumerologySignal: () => { signalCalls += 1; },
+      createWesternSignal: async () => { signalCalls += 1; }
+    });
+    const response = await h.engine.respond({ userId: 'u1', chatId: 'c1', message: 'Will he call me?', method: 'astrology' });
+    assert.equal(signalCalls, 0);
+    assert.equal(h.calculations, 1);
+    assert.equal(response.reconciliation, undefined);
+  } finally {
+    console.error = originalError;
+    if (originalFlag === undefined) delete process.env.ORACLE_USE_RECONCILIATION;
+    else process.env.ORACLE_USE_RECONCILIATION = originalFlag;
+  }
+});
+
+test('reconciliation falls back when delivery contradicts the reconciled direction', async () => {
+  const originalFlag = process.env.ORACLE_USE_RECONCILIATION;
+  const originalError = console.error;
+  try {
+    process.env.ORACLE_USE_RECONCILIATION = 'true';
+    console.error = () => {};
+    const h = harness({
+      async buildContext() { return { material_hash: 'h1', sources: { kundli: 'KundliReport' }, kundli: { birth_details: { date_of_birth: '1990-05-15', time_of_birth: '10:30', latitude: 28.61, longitude: 77.21 } } }; },
+      createNumerologySignal: () => ({ module: 'numerology', scope: 'macro', direction: 'yes', confidence: 0.65, data_quality: 'medium', rationale: 'Numerology.' }),
+      createWesternSignal: async () => ({ module: 'western_astrology', scope: 'macro', direction: 'yes', confidence: 0.65, data_quality: 'high', rationale: 'Western.' }),
+      reconcile: () => ({ overall_direction: 'yes', overall_confidence: 0.65, agreement: 'full', contributing_signals: [], hedge_note: '' }),
+      calculateReconciled: async () => ({
+        text: 'I lean no.', direction: 'leaning_no', strength: 0.65,
+        time_window: { start: '2026-08-18', end: '2026-09-01' }, manifestations: ['silence'], signals: ['no contact'],
+        recommended_action: 'Wait.', valid_until: '2026-12-01T00:00:00.000Z', next_reassessment_at: '2026-11-01T00:00:00.000Z',
+        statement_tags: { prediction: ['I lean no.'], interpretation: [], advice: ['Wait.'] }
+      })
+    });
+    const response = await h.engine.respond({ userId: 'u1', chatId: 'c1', message: 'Will he call me?', method: 'astrology' });
+    assert.equal(h.calculations, 1);
+    assert.equal(response.reconciliation, undefined);
+  } finally {
+    console.error = originalError;
+    if (originalFlag === undefined) delete process.env.ORACLE_USE_RECONCILIATION;
+    else process.env.ORACLE_USE_RECONCILIATION = originalFlag;
+  }
 });
 
 test('Hope uses the configured AI provider instead of forcing local Ollama', async () => {

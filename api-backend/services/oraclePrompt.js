@@ -54,7 +54,27 @@ GUIDANCE:
   ];
 }
 
-function buildHopeMessages({ question, category, horizon, methods, snapshot, prediction, priorPrediction, reused, responseMode = 'short' }) {
+function buildReconciliationDeliveryMessages({ question, category, horizon, reconciliation }) {
+  const today = new Date().toISOString().slice(0, 10);
+  return [
+    {
+      role: 'system',
+      content: `You are Hope's reconciliation delivery layer for predictive entertainment and self-exploration.
+
+Today is ${today}. All prediction dates must be ${today} or later.
+
+${PREDICTION_SCHEMA}
+
+Use only the reconciled signals supplied below. Do not invent deterministic data, planetary positions, or a stronger conclusion than the reconciliation supports. Keep prediction, interpretation, and advice distinct. The returned direction must match the reconciliation's overall_direction, and strength must not exceed overall_confidence. Preserve any hedge in the rationale through appropriately uncertain language.`
+    },
+    {
+      role: 'user',
+      content: JSON.stringify({ question, category, horizon, reconciliation })
+    }
+  ];
+}
+
+function buildHopeMessages({ question, category, horizon, methods, snapshot, prediction, priorPrediction, reused, responseMode = 'short', reconciliation }) {
   const profile = snapshot?.profile || {};
   const profileName = profile.full_name || profile.name || '';
   const numData = profile.numerology_data || {};
@@ -97,6 +117,14 @@ function buildHopeMessages({ question, category, horizon, methods, snapshot, pre
 - Grounded Recommendation: ${prediction.recommended_action || 'N/A'}
 - Valid Until: ${prediction.valid_until || 'N/A'} (Reassessment: ${prediction.next_reassessment_at || 'N/A'})` : '';
 
+  const rec = reconciliation || prediction?.reconciliation;
+  const reconciliationContext = rec && (rec.agreement === 'partial' || rec.agreement === 'none')
+    ? `\nReconciled Signal Disagreement:
+- Signal Agreement: ${rec.agreement}
+- Reason for Disagreement: ${rec.hedge_note || 'The contributing signals point in different directions.'}
+- Tone Instruction: The contributing divination signals point in different directions (${rec.hedge_note || 'differing indications'}). You must explicitly acknowledge this disagreement and reflect this uncertainty honestly in your answer in Hope\'s normal warm voice, rather than sounding fully certain.`
+    : '';
+
   const systemPrompt = `Your name is Hope.
 
 ${HOPE_RUNTIME_PROMPT}
@@ -109,7 +137,7 @@ ${kundliContext}
 ${memoriesContext}
 ${predictionProfileContext}
 ${priorContext}
-${calculatedCall}
+${calculatedCall}${reconciliationContext}
 ${snapshot?.contextual_signals ? 'Contextual signals: ' + JSON.stringify(snapshot.contextual_signals) : ''}
 ${chatContext}`;
 
@@ -125,4 +153,4 @@ ${chatContext}`;
   ];
 }
 
-module.exports = { HOPE_RUNTIME_PROMPT, PREDICTION_SCHEMA, buildCalculationMessages, buildHopeMessages };
+module.exports = { HOPE_RUNTIME_PROMPT, PREDICTION_SCHEMA, buildCalculationMessages, buildReconciliationDeliveryMessages, buildHopeMessages };

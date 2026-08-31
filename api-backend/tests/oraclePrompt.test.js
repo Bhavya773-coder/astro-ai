@@ -1,8 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { HOPE_RUNTIME_PROMPT, buildCalculationMessages, buildHopeMessages } = require('../services/oraclePrompt');
-const { parseStructuredPrediction, calculatePrediction } = require('../services/oracleCalculationService');
+const { HOPE_RUNTIME_PROMPT, buildCalculationMessages, buildHopeMessages, buildReconciliationDeliveryMessages } = require('../services/oraclePrompt');
+const { parseStructuredPrediction, calculatePrediction, calculateReconciledPrediction } = require('../services/oracleCalculationService');
 
 const request = {
   question: 'Will I hear from him?',
@@ -20,6 +20,28 @@ test('calculation prompt requires the complete structured prediction contract', 
   }
   assert.match(prompt, new RegExp(new Date().toISOString().slice(0, 10)));
   assert.match(prompt, /Never invent deterministic data/);
+});
+
+test('reconciliation delivery prompt converts only reconciled signals into the existing prediction contract', () => {
+  const messages = buildReconciliationDeliveryMessages({
+    ...request,
+    reconciliation: {
+      overall_direction: 'leaning_yes',
+      overall_confidence: 0.61,
+      agreement: 'partial',
+      contributing_signals: [
+        { module: 'numerology', scope: 'macro', direction: 'leaning_no', confidence: 0.2, data_quality: 'low', rationale: 'Low-quality context disagrees.' },
+        { module: 'western_astrology', scope: 'macro', direction: 'leaning_yes', confidence: 0.65, data_quality: 'high', rationale: 'Tropical positions support progress.' }
+      ],
+      hedge_note: 'numerology disagrees with western_astrology.'
+    }
+  });
+  const prompt = messages.map(message => message.content).join('\n');
+  assert.match(prompt, /Reconciled signals/i);
+  assert.match(prompt, /leaning_yes/);
+  assert.match(prompt, /overall_confidence/);
+  assert.match(prompt, /statement_tags/);
+  assert.match(prompt, /Do not invent deterministic data/i);
 });
 
 test('Hope prompt uses the fixed identity and preserves prior calls', () => {
@@ -80,6 +102,21 @@ test('calculation uses the existing provider and never substitutes a fake answer
   assert.equal(prediction.direction, 'leaning_no');
 });
 
+test('reconciliation delivery uses the existing structured parser and local provider', async () => {
+  const ai = {
+    async generateCompletion(messages, options) {
+      assert.equal(options.localOnly, true);
+      assert.match(messages.map(message => message.content).join('\n'), /Reconciled signals/i);
+      return '{"text":"I lean yes.","direction":"leaning_yes","strength":0.6,"time_window":{"start":"2026-08-18","end":"2026-09-01"},"manifestations":["steady progress"],"signals":["a completed milestone"],"recommended_action":"Finish one bounded task.","valid_until":"2026-09-01","next_reassessment_at":"2026-08-25","statement_tags":{"prediction":["I lean yes."],"interpretation":[],"advice":["Finish one bounded task."]}}';
+    }
+  };
+  const prediction = await calculateReconciledPrediction({
+    ...request,
+    reconciliation: { overall_direction: 'leaning_yes', overall_confidence: 0.6, agreement: 'full', contributing_signals: [], hedge_note: '' }
+  }, ai);
+  assert.equal(prediction.direction, 'leaning_yes');
+});
+
 test('calculation repairs one invalid local-model response before failing the request', async () => {
   let calls = 0;
   const ai = {
@@ -94,3 +131,37 @@ test('calculation repairs one invalid local-model response before failing the re
   assert.equal(calls, 2);
   assert.equal(prediction.direction, 'leaning_yes');
 });
+
+test('Hope prompt includes explicit disagreement hedge instruction when agreement is partial or none', () => {
+  const partialMessages = buildHopeMessages({
+    ...request,
+    prediction: { direction: 'leaning_yes', strength: 0.65, text: 'I lean yes.' },
+    reconciliation: {
+      overall_direction: 'leaning_yes',
+      overall_confidence: 0.65,
+      agreement: 'partial',
+      hedge_note: 'numerology disagrees with western_astrology.'
+    }
+  });
+  const partialPrompt = partialMessages.map(m => m.content).join('\n');
+  assert.match(partialPrompt, /Reconciled Signal Disagreement/);
+  assert.match(partialPrompt, /Signal Agreement: partial/);
+  assert.match(partialPrompt, /numerology disagrees with western_astrology/);
+  assert.match(partialPrompt, /explicitly acknowledge this disagreement and reflect this uncertainty honestly/);
+
+  const fullMessages = buildHopeMessages({
+    ...request,
+    prediction: { direction: 'leaning_yes', strength: 0.65, text: 'I lean yes.' },
+    reconciliation: {
+      overall_direction: 'leaning_yes',
+      overall_confidence: 0.65,
+      agreement: 'full',
+      hedge_note: ''
+    }
+  });
+  const fullPrompt = fullMessages.map(m => m.content).join('\n');
+  assert.doesNotMatch(fullPrompt, /Reconciled Signal Disagreement/);
+  assert.doesNotMatch(fullPrompt, /Tone Instruction:/);
+});
+
+

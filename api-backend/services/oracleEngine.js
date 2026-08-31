@@ -2,10 +2,17 @@ const aiService = require('./aiService');
 const { classifyMessage } = require('./oracleClassifier');
 const { canonicalizeQuestion } = require('./oracleCanonicalizer');
 const { buildInputSnapshot } = require('./oracleContextService');
-const { calculatePrediction } = require('./oracleCalculationService');
+const { calculatePrediction, calculateReconciledPrediction } = require('./oracleCalculationService');
+const { createNumerologySignal } = require('./signals/numerologySignal');
+const { createWesternSignal } = require('./signals/westernSignal');
+const { reconcile } = require('./reconciliationEngine');
 const { buildHopeMessages } = require('./oraclePrompt');
 const { validateOracleOutput } = require('./oracleValidator');
 const { trackOracleEvent } = require('./oracleAnalytics');
+
+function useReconciliation() {
+  return process.env.ORACLE_USE_RECONCILIATION === 'true';
+}
 
 function flattenStatementTags(tags = {}) {
   return ['prediction', 'interpretation', 'advice'].flatMap(tag =>
@@ -109,6 +116,10 @@ function createOracleEngine(dependencies = {}) {
   const canonicalize = dependencies.canonicalize || canonicalizeQuestion;
   const buildContext = dependencies.buildContext || buildInputSnapshot;
   const calculate = dependencies.calculate || calculatePrediction;
+  const calculateReconciled = dependencies.calculateReconciled || calculateReconciledPrediction;
+  const createNumerology = dependencies.createNumerologySignal || createNumerologySignal;
+  const createWestern = dependencies.createWesternSignal || createWesternSignal;
+  const reconcileSignals = dependencies.reconcile || reconcile;
   const track = dependencies.track || trackOracleEvent;
   let validate = dependencies.validate || validateOracleOutput;
   const generateHope = dependencies.generateHope || (async input => aiService.generateCompletion(buildHopeMessages(input), { temperature: 0.65 }));
@@ -232,14 +243,52 @@ function createOracleEngine(dependencies = {}) {
       return { message_text: messageText, intent: classification.intent, prediction: prior, reused: true, recalculated: false };
     }
 
-    const predictionOriginal = await calculate({
-      question: canonical.canonicalQuestion || message,
-      category: category || defaultCategory(message),
-      horizon: horizon || (classification.nearTermPrediction ? 'near_term' : 'unspecified'),
-      methods: methods || [method],
-      snapshot,
-      priorPrediction: prior
-    });
+    let reconciliation;
+    let predictionOriginal;
+    if (useReconciliation()) {
+      try {
+        const birthDetails = snapshot.kundli?.birth_details;
+        if (!birthDetails?.date_of_birth || !birthDetails?.time_of_birth || !Number.isFinite(birthDetails?.latitude) || !Number.isFinite(birthDetails?.longitude)) {
+          throw new Error('verified Kundli birth date, time, latitude, and longitude are required');
+        }
+        const signalQuestion = canonical.canonicalQuestion || message;
+        reconciliation = reconcileSignals([
+          createNumerology(birthDetails, signalQuestion),
+          await createWestern(birthDetails, signalQuestion)
+        ]);
+        predictionOriginal = await calculateReconciled({
+          question: signalQuestion,
+          category: category || defaultCategory(message),
+          horizon: horizon || (classification.nearTermPrediction ? 'near_term' : 'unspecified'),
+          reconciliation,
+          snapshot,
+          priorPrediction: prior
+        });
+        if (predictionOriginal.direction !== reconciliation.overall_direction || predictionOriginal.strength > reconciliation.overall_confidence) {
+          throw new Error('reconciliation delivery contradicted the reconciled direction or confidence');
+        }
+      } catch (error) {
+        console.error(`[OracleReconciliation] ${error.message}; falling back to the legacy calculation for this request.`);
+        reconciliation = undefined;
+        predictionOriginal = await calculate({
+          question: canonical.canonicalQuestion || message,
+          category: category || defaultCategory(message),
+          horizon: horizon || (classification.nearTermPrediction ? 'near_term' : 'unspecified'),
+          methods: methods || [method],
+          snapshot,
+          priorPrediction: prior
+        });
+      }
+    } else {
+      predictionOriginal = await calculate({
+        question: canonical.canonicalQuestion || message,
+        category: category || defaultCategory(message),
+        horizon: horizon || (classification.nearTermPrediction ? 'near_term' : 'unspecified'),
+        methods: methods || [method],
+        snapshot,
+        priorPrediction: prior
+      });
+    }
     const messageText = await generateHope({
       question: message,
       category: category || defaultCategory(message),
@@ -249,7 +298,8 @@ function createOracleEngine(dependencies = {}) {
       prediction: predictionOriginal,
       priorPrediction: prior,
       reused: false,
-      responseMode
+      responseMode,
+      reconciliation
     });
     const validation = validate({ userMessage: message, responseText: messageText, prediction: predictionOriginal, previousPrediction: prior, snapshot });
     if (!validation.valid) throw new Error(`Oracle response validation failed: ${validation.violations.join(', ')}`);
@@ -278,7 +328,14 @@ function createOracleEngine(dependencies = {}) {
       }
     });
     await safeTrack({ userId, event: prior ? 'prediction_recalculated' : 'prediction_created', predictionId: created.prediction_id });
-    return { message_text: messageText, intent: classification.intent, prediction: created, reused: false, recalculated: Boolean(prior) };
+    return {
+      message_text: messageText,
+      intent: classification.intent,
+      prediction: created,
+      reused: false,
+      recalculated: Boolean(prior),
+      ...(reconciliation && { reconciliation })
+    };
   }
 
   return { respond, setValidator(next) { validate = next; } };

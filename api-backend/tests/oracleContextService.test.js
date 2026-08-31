@@ -61,6 +61,12 @@ test('material hash is stable across request timestamps and changes with materia
     preferences: {},
     now: new Date('2026-08-18T12:05:00Z')
   });
+  const questionChanged = assembleSnapshot({
+    ...base,
+    question: 'Will he text me instead?',
+    preferences: {},
+    now: new Date('2026-08-18T12:05:00Z')
+  });
   const afterChatSave = assembleSnapshot({
     ...base,
     chatHistory: [...base.chatHistory, { role: 'user', content: base.question }],
@@ -72,6 +78,7 @@ test('material hash is stable across request timestamps and changes with materia
   assert.equal(first.material_hash, later.material_hash);
   assert.equal(first.material_hash, afterChatSave.material_hash);
   assert.notEqual(first.material_hash, moved.material_hash);
+  assert.notEqual(first.material_hash, questionChanged.material_hash);
 });
 
 test('chat context is scoped to the active chat instead of mixing other conversations', async () => {

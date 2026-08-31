@@ -1,5 +1,5 @@
 const aiService = require('./aiService');
-const { buildCalculationMessages } = require('./oraclePrompt');
+const { buildCalculationMessages, buildReconciliationDeliveryMessages } = require('./oraclePrompt');
 
 const REQUIRED = [
   'text',
@@ -54,13 +54,16 @@ function parseStructuredPrediction(raw) {
   if (typeof value.text !== 'string' || !value.text.trim() || value.text.length > 2000) {
     throw new Error('Oracle calculation has invalid text');
   }
+  if (value.time_window === null) {
+    value.time_window = { start: null, end: null };
+  }
   if (!value.time_window || typeof value.time_window !== 'object') {
     throw new Error('Oracle calculation has invalid time_window');
   }
   const validUntil = Date.parse(value.valid_until);
   const reassessmentAt = Date.parse(value.next_reassessment_at);
   if (!Number.isFinite(validUntil)) throw new Error('Oracle calculation has invalid valid_until');
-  if (validUntil < Date.parse(new Date().toISOString().slice(0, 10))) {
+  if (validUntil < Date.now()) {
     throw new Error('Oracle calculation valid_until is in the past');
   }
   if (!Number.isFinite(reassessmentAt)) {
@@ -80,8 +83,7 @@ function parseStructuredPrediction(raw) {
   return value;
 }
 
-async function calculatePrediction(request, provider = aiService) {
-  const messages = buildCalculationMessages(request);
+async function calculateFromMessages(messages, provider) {
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const raw = await provider.generateCompletion(messages, { temperature: attempt ? 0 : 0.2, localOnly: true });
     try {
@@ -93,4 +95,12 @@ async function calculatePrediction(request, provider = aiService) {
   }
 }
 
-module.exports = { parseStructuredPrediction, calculatePrediction };
+async function calculatePrediction(request, provider = aiService) {
+  return calculateFromMessages(buildCalculationMessages(request), provider);
+}
+
+async function calculateReconciledPrediction(request, provider = aiService) {
+  return calculateFromMessages(buildReconciliationDeliveryMessages(request), provider);
+}
+
+module.exports = { parseStructuredPrediction, calculatePrediction, calculateReconciledPrediction };

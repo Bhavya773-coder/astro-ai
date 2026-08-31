@@ -74,6 +74,7 @@ function assembleSnapshot({
   const material = {
     profile: snapshot.profile,
     kundli: snapshot.kundli,
+    question_context: snapshot.question_context,
     reading_history: snapshot.reading_history,
     memories: snapshot.memories,
     prediction_profile: snapshot.prediction_profile,
