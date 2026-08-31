@@ -1,0 +1,73 @@
+name: AstroAi4u CI/CD Auto-Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: api-backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        working-directory: api-backend
+        run: npm ci || npm install
+
+      - name: Run Backend Tests
+        working-directory: api-backend
+        run: npm test
+
+  deploy:
+    name: Deploy to Server
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          passphrase: ${{ secrets.SERVER_SSH_PASSPHRASE }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -e
+            echo "🚀 [CI/CD] Starting Deployment on $(hostname)..."
+            cd /var/www/astroai4u
+
+            echo "📥 [CI/CD] Pulling latest code from origin/main..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "📦 [CI/CD] Installing backend dependencies..."
+            cd /var/www/astroai4u/api-backend
+            npm install --omit=dev
+
+            echo "🧪 [CI/CD] Running backend tests on server..."
+            npm test
+
+            echo "🔄 [CI/CD] Reloading PM2 processes..."
+            pm2 reload all || pm2 restart all || pm2 restart astroai4u-api || pm2 restart astroai4u
+
+            if [ -d "/var/www/astroai4u/website" ]; then
+              echo "🌐 [CI/CD] Updating website frontend..."
+              cd /var/www/astroai4u/website
+              npm install
+              npm run build || true
+            fi
+
+            echo "🎉 [CI/CD] Deployment completed successfully!"
