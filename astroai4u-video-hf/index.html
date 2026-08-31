@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: radial-gradient(ellipse at center, #1a0d2e 0%, #0a0520 100%);
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: white;
+      }
+
+      /* Background stars */
+      .star {
+        position: absolute;
+        background: white;
+        border-radius: 50%;
+      }
+
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(40px);
+        pointer-events: none;
+      }
+
+      /* Scene 1 */
+      #scene1 {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: radial-gradient(ellipse at center, #1a0d2e 0%, #0a0520 100%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      #scene1-text {
+        font-size: 56px;
+        font-weight: 700;
+        line-height: 1.2;
+        text-shadow: 0 0 20px rgba(168, 85, 247, 0.8);
+        text-align: center;
+        padding: 0 40px;
+        letter-spacing: -1px;
+      }
+
+      /* Scene 2 */
+      #scene2 {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: radial-gradient(ellipse at center, #1a0d2e 0%, #0a0520 100%);
+        padding: 40px;
+      }
+
+      .chart-container {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        margin-bottom: 40px;
+      }
+
+      .chart {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+
+      .circle {
+        position: absolute;
+        border-radius: 50%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .circle-1 {
+        width: 280px;
+        height: 280px;
+        border: 2px solid rgba(168, 85, 247, 0.6);
+      }
+
+      .circle-2 {
+        width: 200px;
+        height: 200px;
+        border: 2px solid rgba(59, 130, 246, 0.5);
+      }
+
+      .circle-3 {
+        width: 120px;
+        height: 120px;
+        border: 2px solid rgba(236, 72, 153, 0.5);
+      }
+
+      .circle-4 {
+        width: 40px;
+        height: 40px;
+        border: 2px solid rgba(251, 191, 36, 0.7);
+        background: rgba(251, 191, 36, 0.3);
+      }
+
+      .planet {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .planet-1 {
+        background: #fbbf24;
+        width: 10px;
+        height: 10px;
+        top: 15%;
+      }
+
+      .planet-2 {
+        background: #ec4899;
+        width: 8px;
+        height: 8px;
+        top: 25%;
+        left: 75%;
+      }
+
+      .planet-3 {
+        background: #3b82f6;
+        width: 9px;
+        height: 9px;
+        top: 75%;
+        left: 75%;
+      }
+
+      .planet-4 {
+        background: #a855f7;
+        width: 7px;
+        height: 7px;
+        top: 75%;
+        left: 25%;
+      }
+
+      #scene2-text {
+        font-size: 48px;
+        font-weight: 700;
+        line-height: 1.2;
+        text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        text-align: center;
+      }
+
+      /* Scene 3 */
+      #scene3 {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: radial-gradient(ellipse at center, #1a0d2e 0%, #0a0520 100%);
+        padding: 40px 30px;
+      }
+
+      #scene3-title {
+        font-size: 48px;
+        font-weight: 700;
+        line-height: 1.2;
+        text-align: center;
+        text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        margin-bottom: 60px;
+      }
+
+      .cards-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        max-width: 500px;
+      }
+
+      .card {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+        border: 2px solid rgba(168, 85, 247, 0.3);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+      }
+
+      /* Scene 4 */
+      #scene4 {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: radial-gradient(ellipse at center, #1a0d2e 0%, #0a0520 100%);
+      }
+
+      .phone-mockup {
+        position: relative;
+        width: 300px;
+        height: 620px;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border-radius: 40px;
+        border: 3px solid rgba(168, 85, 247, 0.3);
+        overflow: hidden;
+        box-shadow: 0 0 40px rgba(168, 85, 247, 0.2);
+      }
+
+      .notch {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 150px;
+        height: 28px;
+        background: #000;
+        border-radius: 0 0 20px 20px;
+        z-index: 10;
+      }
+
+      .screen {
+        width: 100%;
+        height: 100%;
+        padding: 40px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .screen-content {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .feature {
+        background: rgba(168, 85, 247, 0.1);
+        border: 1px solid rgba(168, 85, 247, 0.2);
+        border-radius: 12px;
+        padding: 16px;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        backdrop-filter: blur(10px);
+      }
+
+      .feature h3 {
+        font-size: 16px;
+        margin-bottom: 8px;
+        color: #fbbf24;
+      }
+
+      /* Scene 5 */
+      #scene5 {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: radial-gradient(ellipse at center, #1a0d2e 0%, #0a0520 100%);
+        padding: 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .glow-bg {
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%);
+        border-radius: 50%;
+        filter: blur(60px);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 0;
+      }
+
+      .cta-content {
+        position: relative;
+        z-index: 10;
+      }
+
+      #scene5 h1 {
+        font-size: 56px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        text-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+      }
+
+      #scene5 p {
+        font-size: 32px;
+        font-weight: 600;
+        margin-bottom: 40px;
+        color: #fbbf24;
+        text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+      }
+
+      .cta-button {
+        background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+        border: none;
+        color: white;
+        padding: 18px 48px;
+        font-size: 18px;
+        font-weight: 700;
+        border-radius: 12px;
+        cursor: pointer;
+        box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="16" data-width="1080" data-height="1920">
+      <!-- Scene 1: Cosmic Background (0-3s) -->
+      <div id="scene1" class="clip" data-start="0" data-duration="3" data-track-index="1">
+        <div id="scene1-text">Confused About Your Next Move?</div>
+      </div>
+
+      <!-- Scene 2: Birth Chart (3-7s) -->
+      <div id="scene2" class="clip" data-start="3" data-duration="4" data-track-index="1">
+        <div class="chart-container">
+          <div class="chart" id="chart">
+            <div class="circle circle-1"></div>
+            <div class="circle circle-2"></div>
+            <div class="circle circle-3"></div>
+            <div class="circle circle-4"></div>
+            <div class="planet planet-1"></div>
+            <div class="planet planet-2"></div>
+            <div class="planet planet-3"></div>
+            <div class="planet planet-4"></div>
+          </div>
+        </div>
+        <div id="scene2-text">Your Birth Chart<br>Holds More Than<br>Predictions</div>
+      </div>
+
+      <!-- Scene 3: Decision Cards (7-11s) -->
+      <div id="scene3" class="clip" data-start="7" data-duration="4" data-track-index="1">
+        <div id="scene3-title">Get Personalized<br>Cosmic Guidance</div>
+        <div class="cards-container">
+          <div class="card card-1" id="card1">💼 Career</div>
+          <div class="card card-2" id="card2">💕 Relationships</div>
+          <div class="card card-3" id="card3">⭐ Important Decisions</div>
+        </div>
+      </div>
+
+      <!-- Scene 4: Mobile App Mockup (11-14s) -->
+      <div id="scene4" class="clip" data-start="11" data-duration="3" data-track-index="1">
+        <div class="phone-mockup" id="phone-mockup">
+          <div class="notch"></div>
+          <div class="screen">
+            <div class="screen-content">
+              <div class="feature">
+                <h3>📊 Kundli & Birth Chart</h3>
+                Decoded for you
+              </div>
+              <div class="feature">
+                <h3>🎯 Cosmic Decision Engine</h3>
+                Know when to act
+              </div>
+              <div class="feature">
+                <h3>✨ Daily Guidance</h3>
+                Personalized just for you
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scene 5: CTA (14-16s) -->
+      <div id="scene5" class="clip" data-start="14" data-duration="2" data-track-index="1">
+        <div class="glow-bg"></div>
+        <div class="cta-content">
+          <h1>Know When to Act</h1>
+          <p>Explore AstroAI4U</p>
+          <button class="cta-button">Get Started Free</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Scene 1: Cosmic fade in with glow
+      tl.from("#scene1-text", { opacity: 0, textShadow: "0 0 0px rgba(168, 85, 247, 0)" }, 0);
+      tl.to("#scene1-text", { textShadow: "0 0 30px rgba(168, 85, 247, 0.8)" }, 0);
+
+      // Scene 2: Chart rotation and text fade in
+      tl.from("#chart", { opacity: 0, rotation: -90 }, 3);
+      tl.to("#chart", { rotation: 360, duration: 4 }, 3);
+      tl.from("#scene2-text", { opacity: 0 }, 3.5);
+
+      // Scene 3: Cards cascading in
+      tl.from("#scene3-title", { opacity: 0 }, 7);
+      tl.from("#card1", { opacity: 0, y: 20 }, 7.2);
+      tl.from("#card2", { opacity: 0, y: 20 }, 7.5);
+      tl.from("#card3", { opacity: 0, y: 20 }, 7.8);
+
+      // Scene 4: Phone mockup sliding up
+      tl.from("#phone-mockup", { opacity: 0, y: 100 }, 11);
+      tl.to("#phone-mockup", { y: 0 }, 11);
+
+      // Scene 5: CTA fade in and button scale
+      tl.from("#scene5 h1", { opacity: 0, textShadow: "0 0 0px rgba(168, 85, 247, 0)" }, 14);
+      tl.from("#scene5 p", { opacity: 0 }, 14.3);
+      tl.from(".cta-button", { opacity: 0, scale: 0.8 }, 14.6);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -90,6 +90,13 @@ test_*.js
 *.test.js
 __tests__/
 
-# Mobile App
-mobile-app/
+# Python
+__pycache__/
+*.pyc
+
+# Archives & Hermes
+*.tar.gz
+.hermes/
+
+
 

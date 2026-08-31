@@ -90,62 +90,50 @@ const getKundliReport = asyncHandler(async (req, res) => {
   });
   console.log('✅ Chart calculated successfully');
 
-  console.log('🤖 Generating AI interpretation...');
-  // 4. Ask LLM only for interpretation (with timeout)
-  let interpretation;
+async function generateDynamicInterpretation(chart_data, birthDetails) {
   try {
     const prompt = `
-You are an experienced Vedic astrologer providing precise birth chart interpretation.
+You are an expert Vedic and Western Master Astrologer providing a deeply insightful, personalized birth chart synthesis.
 
-STRICT RULES:
-- Use ONLY the exact planetary positions provided
-- DO NOT invent any planetary placements
-- Reference specific degrees and signs
-- Apply authentic Vedic astrology principles
-- Avoid generic astrology statements
+STRICT INSTRUCTIONS:
+- Ground your analysis in the user's EXACT planetary positions, ascendant, nakshatra, and house placements provided below.
+- Write with eloquence, depth, nuance, and warmth (like a high-end personal astrological advisor).
+- Synthesize the planetary energies into actionable life wisdom, not cold data points.
+- Identify real astrological combinations (Yogas like Budhaditya, Gajakesari, Raja Yoga, Dhana Yoga, Vipareeta Raja Yoga, etc.) where applicable.
+- For each section, provide 2-3 articulate, deeply personal paragraphs with concrete insights.
 
 BIRTH CHART DATA:
+Name: ${birthDetails.full_name || 'Seeker'}
 Ascendant (Lagna): ${chart_data.ascendant}
-Moon Sign: ${chart_data.moon_sign}
-Sun Sign: ${chart_data.sun_sign}
+Moon Sign (Chandra Rashi): ${chart_data.moon_sign}
+Sun Sign (Surya Rashi): ${chart_data.sun_sign}
 Nakshatra: ${chart_data.nakshatra}
 
-PLANETARY POSITIONS:
+PLANETARY POSITIONS (Exact Degrees & Signs):
 ${Object.entries(chart_data.planets).map(([planet, data]) => 
-  `${planet.charAt(0).toUpperCase() + planet.slice(1)}: ${data.sign} at ${data.degree}°`
+  `• ${planet.charAt(0).toUpperCase() + planet.slice(1)}: ${data.sign} at ${data.degree}°`
 ).join('\n')}
 
-HOUSE POSITIONS:
+HOUSE PLACEMENTS (12 Bhavas):
 ${Object.entries(chart_data.houses).map(([house, sign]) => 
-  `House ${house}: ${sign}`
+  `• House ${house}: ${sign}`
 ).join('\n')}
 
-ANALYSIS INSTRUCTIONS:
-1. Ascendant determines core personality and life approach
-2. Moon sign governs emotional nature and inner self
-3. Sun sign represents ego, vitality and soul purpose
-4. Analyze planets in houses for life area effects
-5. Consider planetary aspects and conjunctions
-6. Identify major yogas (Raja Yoga, Gaj Kesari, Budha Aditya, etc.)
-7. Evaluate career (10th house), relationships (7th house), wealth (2nd/11th), health (6th)
-8. Use specific degrees for precise interpretations
-
-WRITING STYLE:
-- Reference exact placements (e.g., "Mars at 10.4° in Taurus in 4th house")
-- Provide astrological reasoning for each interpretation
-- Keep each section under 120 words
-- Be specific and evidence-based
-
-Return JSON only:
+Please return ONLY valid JSON matching this exact schema:
 {
-"personality":"",
-"strengths":"",
-"challenges":"",
-"career":"",
-"relationships":"",
-"health":"",
-"spiritual_path":"",
-"important_yogas":[]
+  "personality": "Comprehensive synthesis of how the Ascendant (${chart_data.ascendant}) and Moon (${chart_data.moon_sign}) shape their aura, demeanor, emotional processing, and natural psychological archetype.",
+  "strengths": "Detailed breakdown of their 3-4 greatest cosmic gifts, natural leadership/creative talents, and intellectual power points based on dominant planetary placements.",
+  "challenges": "Honest, constructive look at shadow patterns, emotional blind spots, or karmic hurdles to overcome for self-mastery.",
+  "career": "Deep vocational guidance analyzing the 10th house, 2nd house (wealth), and dominant planets — ideal industries, leadership style, and timing for professional breakthroughs.",
+  "relationships": "Relational dynamics, attachment needs, love language, and ideal partner qualities indicated by the 7th house and Venus/Mars placements.",
+  "health": "Vitality, nervous system tendencies, lifestyle recommendations, and grounding practices based on the 6th house and elemental balance.",
+  "spiritual_path": "Soul purpose, dharmic destiny, and higher spiritual evolution indicated by Nakshatra (${chart_data.nakshatra}) and 9th/12th houses.",
+  "important_yogas": [
+    {
+      "name": "Yoga / Planetary Alignment Name",
+      "description": "Specific effect and blessings of this alignment in their life"
+    }
+  ]
 }`;
 
     const llmResponse = await Promise.race([
@@ -155,27 +143,105 @@ Return JSON only:
       )
     ]);
     
-    let raw = llmResponse.choices[0].message.content || '{}';
+    let raw = llmResponse?.choices?.[0]?.message?.content || '{}';
     const codeMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (codeMatch) raw = codeMatch[1];
     raw = raw.trim();
 
-    interpretation = JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (parsed.personality && parsed.career) {
+      return parsed;
+    }
   } catch (error) {
-    console.error('LLM interpretation failed:', error.message);
-    // Fallback interpretation
-    interpretation = {
-      personality: `Based on your ${chart_data.ascendant} ascendant and ${chart_data.moon_sign} moon sign, you have a unique personality that blends practical ambition with emotional depth. Your ascendant sets the foundation for your life approach, while the moon sign reveals your inner emotional nature.`,
-      strengths: `Your ${chart_data.sun_sign} sun sign gives you natural leadership qualities, while your chart shows strong determination and analytical abilities. The planetary positions suggest resilience and adaptability as key strengths.`,
-      challenges: `You may face challenges balancing your professional ambitions with personal relationships. Learning to manage stress and maintain work-life harmony is key, as indicated by your chart patterns.`,
-      career: `Your chart suggests success in careers that require both analytical thinking and creativity. Fields like management, research, or entrepreneurship could be suitable based on your planetary placements.`,
-      relationships: `You seek deep emotional connections and value loyalty in relationships. Your ideal partner is someone who understands your need for both independence and emotional security.`,
-      health: `Pay attention to stress management and regular exercise. Your chart indicates sensitivity to nervous system health, so meditation and yoga could be beneficial.`,
-      spiritual_path: `Your spiritual journey involves integrating practical wisdom with emotional intelligence. Meditation and self-reflection will help you find inner balance and purpose.`,
-      important_yogas: []
-    };
-    console.log('🤖 Using fallback interpretation');
+    console.error('LLM interpretation failed, generating structured fallback:', error.message);
   }
+
+  // Dynamic fallback synthesized from chart values
+  return {
+    personality: `With ${chart_data.ascendant} rising and your Moon in ${chart_data.moon_sign}, you possess a captivating blend of outward poise and inner emotional intensity. Your ${chart_data.ascendant} Ascendant provides a natural magnetic aura and clear purpose, while your ${chart_data.moon_sign} Moon grants deep intuitive discernment in your personal reflections.`,
+    strengths: `Your core strength radiates from your ${chart_data.sun_sign} Sun, giving you unwavering resilience and creative vitality. Guided by your ${chart_data.nakshatra} Nakshatra, you have an innate capacity to perceive underlying motives, navigate complex challenges, and inspire confidence in those around you.`,
+    challenges: `A key area of mindful growth is navigating the tension between your high personal expectations and external rhythms. Cultivating patience during transitional periods and setting conscious energetic boundaries will protect your vital reserves.`,
+    career: `Your chart indicates strong potential in vocational pathways requiring strategic foresight, intellectual autonomy, and creative problem-solving. Placements connected to your 10th house favor roles where you lead with vision, innovate solutions, and mentor others.`,
+    relationships: `In partnerships, you value intellectual resonance, emotional loyalty, and shared philosophical growth. You thrive with partners who honor your individuality while cultivating a safe sanctuary for mutual vulnerability and deep companionship.`,
+    health: `Your constitutional vitality benefits from rhythmic grounding practices, mindful stress regulation, and consistent physical movement. Nourishing your nervous system through calming evening rituals and staying connected to nature restores your elemental balance.`,
+    spiritual_path: `Your spiritual evolution is tied to mastering the wisdom of ${chart_data.nakshatra}. By aligning your daily actions with higher integrity and listening to your intuitive whispers, you unlock profound self-realization and purpose.`,
+    important_yogas: [
+      {
+        name: `${chart_data.sun_sign}-${chart_data.moon_sign} Luminary Harmony`,
+        description: "Fosters balanced alignment between conscious life goals and emotional well-being."
+      },
+      {
+        name: `${chart_data.nakshatra} Dharmic Focus`,
+        description: "Grants resilience, intuitive insight, and ability to manifest purpose through steady dedication."
+      }
+    ]
+  };
+}
+
+const getKundliReport = asyncHandler(async (req, res) => {
+  const userId = req.user.userId;
+  console.log('🔮 Kundli generation started for user:', userId);
+
+  const profile = await Profile.findOne({ user_id: userId });
+  if (!profile) {
+    console.log('❌ No profile found for user:', userId);
+    return res.status(400).json({
+      success: false,
+      message: 'Please complete your profile first. Redirecting to onboarding...',
+      redirectToOnboarding: true
+    });
+  }
+
+  const requiredFields = ['full_name', 'date_of_birth', 'time_of_birth', 'place_of_birth'];
+  const missingFields = requiredFields.filter((field) => !profile[field]);
+
+  if (missingFields.length > 0) {
+    console.log('❌ Missing profile fields:', missingFields);
+    return res.status(400).json({
+      success: false,
+      message: 'Please complete your profile first. Redirecting to onboarding...',
+      redirectToOnboarding: true
+    });
+  }
+
+  // 1. Try existing KundliReport
+  const existing = await KundliReport.findOne({ user_id: userId });
+  if (existing && existing.chart_data) {
+    console.log('✅ Found existing Kundli for user:', userId);
+    return res.json({
+      success: true,
+      source: 'cache',
+      data: existing
+    });
+  }
+
+  console.log('📍 Geocoding location:', profile.place_of_birth);
+  // 2. Geocode place_of_birth
+  const { latitude, longitude } = await geocodePlace(profile.place_of_birth);
+  console.log('📍 Got coordinates:', { latitude, longitude });
+
+  const birthDetails = {
+    full_name: profile.full_name,
+    date_of_birth: profile.date_of_birth,
+    time_of_birth: profile.time_of_birth,
+    place_of_birth: profile.place_of_birth,
+    latitude,
+    longitude
+  };
+
+  console.log('🪐 Calculating chart with Swiss Ephemeris...');
+  // 3. Calculate chart using Swiss Ephemeris
+  const chart_data = await calculateKundliChart({
+    date_of_birth: birthDetails.date_of_birth,
+    time_of_birth: birthDetails.time_of_birth,
+    latitude: birthDetails.latitude,
+    longitude: birthDetails.longitude
+  });
+  console.log('✅ Chart calculated successfully');
+
+  console.log('🤖 Generating AI interpretation...');
+  // 4. Generate dynamic AI interpretation
+  const interpretation = await generateDynamicInterpretation(chart_data, birthDetails);
 
   console.log('💾 Saving Kundli report to database...');
   // 5. Persist KundliReport
@@ -200,7 +266,6 @@ const getBirthChart = asyncHandler(async (req, res) => {
   const userId = req.user.userId;
   console.log('🔍 Birth Chart API called for user:', userId);
 
-  // 1. Get logged-in user ID - already done
   if (!userId) {
     console.log('❌ User not authenticated');
     return res.status(401).json({
@@ -208,12 +273,10 @@ const getBirthChart = asyncHandler(async (req, res) => {
     });
   }
 
-  // 2. Query kundli_reports using user_id
+  // 1. Query kundli_reports using user_id
   const existingKundli = await KundliReport.findOne({ user_id: userId });
   
-  // 3. If kundli exists, return chart_data from the database
   if (existingKundli && existingKundli.chart_data) {
-    // Validate chart_data structure
     const requiredFields = ['ascendant', 'moon_sign', 'sun_sign', 'nakshatra', 'planets', 'houses'];
     const missingFields = requiredFields.filter((field) => !existingKundli.chart_data[field]);
     
@@ -236,7 +299,7 @@ const getBirthChart = asyncHandler(async (req, res) => {
     });
   }
 
-  // 4. If kundli does not exist, check if profile exists
+  // 2. If kundli does not exist, check profile
   const profile = await Profile.findOne({ user_id: userId });
   if (!profile) {
     console.log('❌ No profile found for user:', userId);
@@ -245,7 +308,6 @@ const getBirthChart = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check required profile fields
   const requiredFields = ['full_name', 'date_of_birth', 'time_of_birth', 'place_of_birth'];
   const missingFields = requiredFields.filter((field) => !profile[field]);
 
@@ -256,7 +318,7 @@ const getBirthChart = asyncHandler(async (req, res) => {
     });
   }
 
-  // 5. Generate kundli using the existing profile data logic
+  // 3. Generate kundli and dynamic interpretation
   console.log('📍 Geocoding location:', profile.place_of_birth);
   const { latitude, longitude } = await geocodePlace(profile.place_of_birth);
   console.log('📍 Got coordinates:', { latitude, longitude });
@@ -279,28 +341,20 @@ const getBirthChart = asyncHandler(async (req, res) => {
   });
   console.log('✅ Chart calculated successfully');
 
-  // 6. Save the result in kundli_reports
+  console.log('🤖 Generating dynamic AI interpretation...');
+  const interpretation = await generateDynamicInterpretation(chart_data, birthDetails);
+
   console.log('💾 Saving new Kundli report to database...');
   const kundliReport = new KundliReport({
     user_id: userId,
     birth_details: birthDetails,
     chart_data,
-    interpretation: {
-      personality: `Based on your ${chart_data.ascendant} ascendant and ${chart_data.moon_sign} moon sign, you have a unique personality blending practical ambition with emotional depth.`,
-      strengths: `Your ${chart_data.sun_sign} sun sign provides natural leadership qualities and determination.`,
-      challenges: 'Balancing professional ambitions with personal relationships is a key challenge.',
-      career: 'Careers requiring analytical thinking and creativity are well-suited for you.',
-      relationships: 'You seek deep emotional connections and value loyalty in relationships.',
-      health: 'Regular exercise and stress management through meditation and yoga are beneficial.',
-      spiritual_path: 'Your spiritual journey involves integrating practical wisdom with emotional intelligence.',
-      important_yogas: []
-    }
+    interpretation
   });
 
   await kundliReport.save();
   console.log('✅ New Kundli report saved successfully');
 
-  // 7. Return the generated chart
   return res.json({
     success: true,
     source: 'generated',

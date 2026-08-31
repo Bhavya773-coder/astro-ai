@@ -3,6 +3,7 @@ const Profile = require('../models/Profile');
 const User = require('../models/User');
 const Report = require('../models/Report');
 const llmService = require('../services/llmService');
+const { calculateNumerology } = require('../utils/numerology');
 
 const getZodiacProperties = (sign) => {
   const zodiacData = {
@@ -25,26 +26,17 @@ const getZodiacProperties = (sign) => {
 // Check if user has generated insights
 const getInsightStatus = async (req, res, next) => {
   try {
-    console.log('Profile API - getInsightStatus called');
-    console.log('User ID from token:', req.user);
-    
     const userId = req.user.userId;
-
-    // Find user's profile
     const profile = await Profile.findOne({ user_id: userId });
-    console.log('Profile found:', !!profile);
 
     if (!profile) {
-      console.log('No profile found for user');
       return res.json({
         success: false,
         message: 'No profile found'
       });
     }
 
-    // Check if insights have been generated
     const insightsGenerated = profile.insights_generated || false;
-    console.log('Insights generated flag:', insightsGenerated);
 
     res.json({
       success: true,
@@ -58,7 +50,6 @@ const getInsightStatus = async (req, res, next) => {
         insights_generated: insightsGenerated
       }
     });
-
   } catch (error) {
     console.error('Error checking insight status:', error);
     res.status(500).json({
@@ -71,9 +62,7 @@ const getInsightStatus = async (req, res, next) => {
 // Get user profile
 const getProfile = async (req, res, next) => {
   try {
-    console.log('Profile API - getProfile called');
     const userId = req.user.userId;
-
     const profile = await Profile.findOne({ user_id: userId });
     
     if (!profile) {
@@ -99,10 +88,6 @@ const getProfile = async (req, res, next) => {
 // Save basic profile information
 const saveBasicProfile = async (req, res, next) => {
   try {
-    console.log('Profile API - saveBasicProfile called');
-    console.log('User ID from token:', req.user);
-    console.log('Request body:', req.body);
-    
     const userId = req.user.userId;
     const {
       full_name,
@@ -115,28 +100,43 @@ const saveBasicProfile = async (req, res, next) => {
 
     // Validate required fields
     if (!full_name || !date_of_birth || !place_of_birth) {
-      console.log('Validation failed: missing required fields');
       return res.status(400).json({
         success: false,
         message: 'Full name, date of birth, and place of birth are required'
       });
     }
 
+    // Calculate real deterministic numerology immediately
+    const numerologyData = calculateNumerology({
+      full_name,
+      date_of_birth
+    });
+
     // Check if profile already exists
     let profile = await Profile.findOne({ user_id: userId });
-    console.log('Existing profile found:', !!profile);
 
     if (profile) {
-      // Update existing profile
+      // If birth date, time, name or location changed, invalidate stale insights flag to trigger full recalculation
+      const isChanged = profile.full_name !== full_name ||
+        profile.date_of_birth !== date_of_birth ||
+        profile.time_of_birth !== time_of_birth ||
+        profile.place_of_birth !== place_of_birth ||
+        profile.current_location !== current_location;
+
       profile.full_name = full_name;
       profile.date_of_birth = date_of_birth;
       profile.time_of_birth = time_of_birth;
       profile.place_of_birth = place_of_birth;
       profile.gender = gender;
       profile.current_location = current_location;
+      profile.numerology_data = numerologyData;
+      if (isChanged) {
+        profile.insights_generated = false;
+        // Invalidate old birth chart report cache so new birth details take effect immediately
+        await Report.deleteMany({ user_id: userId, type: 'birth_chart' });
+      }
       profile.updated_at = new Date();
       await profile.save();
-      console.log('Profile updated successfully');
     } else {
       // Create new profile
       profile = await Profile.create({
@@ -147,10 +147,11 @@ const saveBasicProfile = async (req, res, next) => {
         place_of_birth,
         gender,
         current_location,
+        numerology_data: numerologyData,
+        insights_generated: false,
         created_at: new Date(),
         updated_at: new Date()
       });
-      console.log('Profile created successfully');
     }
 
     res.json({
@@ -158,7 +159,6 @@ const saveBasicProfile = async (req, res, next) => {
       message: 'Basic profile saved successfully',
       profile
     });
-
   } catch (error) {
     console.error('Error saving basic profile:', error);
     res.status(500).json({
@@ -228,7 +228,8 @@ const saveLifeContext = async (req, res, next) => {
 const generateInsights = async (req, res, next) => {
   try {
     const userId = req.user.userId;
-    console.log('Generate insights called for user:', userId);
+    const force = req.body?.forceRegenerate || req.body?.force || req.query?.force === 'true';
+    console.log('Generate insights called for user:', userId, 'force:', force);
 
     // Get user profile
     const profile = await Profile.findOne({ user_id: userId });
@@ -240,8 +241,8 @@ const generateInsights = async (req, res, next) => {
       });
     }
 
-    // Check if insights are already generated
-    if (profile.insights_generated) {
+    // Check if insights are already generated (unless force recalculate requested)
+    if (profile.insights_generated && !force) {
       console.log('Insights already generated for user:', userId);
       return res.json({
         success: true,

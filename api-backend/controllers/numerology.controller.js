@@ -1,16 +1,11 @@
 const Profile = require('../models/Profile');
+const { calculateNumerology } = require('../utils/numerology');
 
 // Get numerology data for the authenticated user
 const getNumerology = async (req, res, next) => {
   try {
-    console.log('Numerology API - getNumerology called');
-    console.log('User ID from token:', req.user);
-    
     const userId = req.user.userId;
-
-    // Find user's profile
     const profile = await Profile.findOne({ user_id: userId });
-    console.log('Profile found:', !!profile);
 
     if (!profile) {
       return res.status(404).json({
@@ -19,24 +14,22 @@ const getNumerology = async (req, res, next) => {
       });
     }
 
-    // Check if insights have been generated
-    if (!profile.insights_generated || !profile.numerology_data) {
-      return res.json({
-        success: true,
-        message: 'Generate your insights to unlock numerology',
-        numerology: null
+    // Always calculate fresh or load calculated numerology
+    let numerology = profile.numerology_data;
+    if ((!numerology || !numerology.life_path || !numerology.destiny) && profile.full_name && profile.date_of_birth) {
+      numerology = calculateNumerology({
+        full_name: profile.full_name,
+        date_of_birth: profile.date_of_birth
       });
+      profile.numerology_data = numerology;
+      profile.updated_at = new Date();
+      await profile.save();
     }
-
-    // Return numerology data
-    const numerology = profile.numerology_data;
-    console.log('Numerology data found:', numerology);
 
     res.json({
       success: true,
       numerology
     });
-
   } catch (error) {
     console.error('Error fetching numerology data:', error);
     res.status(500).json({

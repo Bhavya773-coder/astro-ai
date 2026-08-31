@@ -1,0 +1,1 @@
+this whole project is to give the astrology to the diffrent customers using ai and in this there is a folder named mobile-app where i want to change the ui into an inresting game so that ppl will spend more time on my app

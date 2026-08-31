@@ -1,0 +1,14 @@
+{
+  "name": "astroai4u-video",
+  "version": "1.0.0",
+  "description": "AstroAI4U Instagram Reel Video",
+  "type": "module",
+  "main": "render.js",
+  "scripts": {
+    "render": "node render.js"
+  },
+  "dependencies": {
+    "hyperframes": "^0.3.0"
+  },
+  "devDependencies": {}
+}

@@ -16,7 +16,9 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Send, Sparkles } from 'lucide-react-native';
+import { ArrowLeft, Send, Sparkles, MapPin } from 'lucide-react-native';
+import { searchPlaces, PlaceItem } from './services/placesService';
+import PlacesAutocompleteModal from './components/common/PlacesAutocompleteModal';
 
 const { width } = Dimensions.get('window');
 
@@ -40,7 +42,7 @@ interface OnboardingQuestion {
   id: string;
   field: string;
   question: string;
-  type: 'text' | 'date' | 'time' | 'select' | 'textarea';
+  type: 'text' | 'date' | 'time' | 'select' | 'textarea' | 'place';
   options?: { value: string; label: string }[];
 }
 
@@ -48,7 +50,7 @@ const QUESTIONS: OnboardingQuestion[] = [
   { id: '1', field: 'full_name', question: "I'm delighted to help you discover your cosmic path. May I ask your full name to address you personally?", type: 'text' },
   { id: '2', field: 'date_of_birth', question: "Wonderful. The stars' positions at the moment of your arrival are key. When was that special day? (DD/MM/YYYY)", type: 'date' },
   { id: '3', field: 'time_of_birth', question: "Precision matters in the cosmic dance. Do you happen to know your birth time? (It's okay to guess if you don't know)", type: 'time' },
-  { id: '4', field: 'place_of_birth', question: "For an accurate celestial reading, kindly share your birthplace — where your destiny first took form. (City, Country)", type: 'text' },
+  { id: '4', field: 'place_of_birth', question: "For an accurate celestial reading, kindly select your birthplace — where your destiny first took form.", type: 'place' },
   {
     id: '5', field: 'gender', question: "To better understand your energy, how do you identify yourself?", type: 'select', options: [
       { value: 'male', label: 'Male' },
@@ -57,7 +59,7 @@ const QUESTIONS: OnboardingQuestion[] = [
       { value: 'prefer_not_to_say', label: 'Prefer not to say' }
     ]
   },
-  { id: '6', field: 'current_location', question: "Where are you based right now? (City, Country)", type: 'text' },
+  { id: '6', field: 'current_location', question: "Where are you based right now? Search & select your current city or location.", type: 'place' },
   {
     id: '7', field: 'career_stage', question: "Let's look at your current life chapter. What best describes your professional stage right now?", type: 'select', options: [
       { value: 'student', label: 'Student' },
@@ -186,6 +188,26 @@ export default function OnboardingScreen({ onBack, onComplete }: OnboardingScree
 
   // Input states
   const [textInputVal, setTextInputVal] = useState('');
+  const [isPlacesModalOpen, setIsPlacesModalOpen] = useState(false);
+  const [placeSuggestions, setPlaceSuggestions] = useState<PlaceItem[]>([]);
+  const placeDebounce = useRef<any>(null);
+
+  const handlePlaceInputChange = (text: string) => {
+    setTextInputVal(text);
+    if (placeDebounce.current) clearTimeout(placeDebounce.current);
+    if (text.trim().length >= 2) {
+      placeDebounce.current = setTimeout(async () => {
+        try {
+          const res = await searchPlaces(text);
+          setPlaceSuggestions(res);
+        } catch (e) {
+          setPlaceSuggestions([]);
+        }
+      }, 250);
+    } else {
+      setPlaceSuggestions([]);
+    }
+  };
 
   // Date states
   const [day, setDay] = useState('');
@@ -608,6 +630,77 @@ export default function OnboardingScreen({ onBack, onComplete }: OnboardingScree
           </View>
         );
 
+      case 'place':
+        return (
+          <View style={{ width: '100%' }}>
+            {placeSuggestions.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ marginBottom: 8, maxHeight: 40 }}
+                contentContainerStyle={{ gap: 8, paddingHorizontal: 4 }}
+              >
+                {placeSuggestions.map((p) => (
+                  <TouchableOpacity
+                    key={p.id}
+                    onPress={() => {
+                      setPlaceSuggestions([]);
+                      handleAnswerSubmit(p.displayName, p.displayName);
+                    }}
+                    activeOpacity={0.8}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: '#FFFFFF',
+                      paddingHorizontal: 12,
+                      paddingVertical: 7,
+                      borderRadius: 14,
+                      borderWidth: 1,
+                      borderColor: 'rgba(114, 9, 183, 0.2)',
+                      shadowColor: '#7209B7',
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.08,
+                      shadowRadius: 3,
+                      elevation: 2,
+                      gap: 6,
+                    }}
+                  >
+                    <MapPin size={12} color="#7209B7" />
+                    <Text style={{ fontFamily: 'SourceSerif4-Bold', fontSize: 12, color: '#2C2B3D' }}>
+                      {p.displayName}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+
+            <View style={styles.textInputWrapper}>
+              <TouchableOpacity
+                onPress={() => setIsPlacesModalOpen(true)}
+                style={{ paddingHorizontal: 6, justifyContent: 'center' }}
+                activeOpacity={0.7}
+              >
+                <MapPin size={18} color="#7209B7" />
+              </TouchableOpacity>
+              <TextInput
+                style={styles.chatTextInput}
+                placeholder="Search city, state, country..."
+                placeholderTextColor="#9E9BB3"
+                value={textInputVal}
+                onChangeText={handlePlaceInputChange}
+                onSubmitEditing={handleTextSend}
+              />
+              <TouchableOpacity
+                style={[styles.sendBtn, !textInputVal.trim() && styles.sendBtnDisabled]}
+                onPress={handleTextSend}
+                disabled={!textInputVal.trim()}
+              >
+                <Send size={18} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        );
+
       case 'select':
         return (
           <View style={styles.selectOptionsContainer}>
@@ -636,6 +729,17 @@ export default function OnboardingScreen({ onBack, onComplete }: OnboardingScree
       style={styles.container}
       edges={Platform.OS === 'ios' ? ['top', 'left', 'right'] : ['top', 'bottom', 'left', 'right']}
     >
+      <PlacesAutocompleteModal
+        visible={isPlacesModalOpen}
+        title={currentQuestion?.field === 'place_of_birth' ? 'Select Birthplace' : 'Select Living Location'}
+        placeholder="Type city or country..."
+        initialValue={textInputVal}
+        onClose={() => setIsPlacesModalOpen(false)}
+        onSelect={(place) => {
+          setPlaceSuggestions([]);
+          handleAnswerSubmit(place.displayName, place.displayName);
+        }}
+      />
       <LinearGradient
         colors={['#F3EFFF', '#E9F3FF', '#FFFDF2']}
         locations={[0, 0.5, 1]}

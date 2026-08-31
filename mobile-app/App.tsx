@@ -432,14 +432,21 @@ export default function App() {
             onComplete={async (answers) => {
               setIsLoading(true);
               try {
-                await saveBasicProfile({
+                const payload = {
                   full_name: answers.full_name,
                   date_of_birth: answers.date_of_birth,
-                  time_of_birth: answers.birthtime,
-                  place_of_birth: answers.birthplace,
-                  gender: answers.gender || 'neutral',
+                  time_of_birth: answers.time_of_birth || answers.birthtime || '',
+                  place_of_birth: answers.place_of_birth || answers.birthplace || '',
+                  current_location: answers.current_location || '',
+                  gender: answers.gender || 'prefer_not_to_say',
+                };
+                await saveBasicProfile(payload);
+                setOnboardingAnswers({
+                  ...answers,
+                  birthplace: payload.place_of_birth,
+                  birthtime: payload.time_of_birth,
+                  current_location: payload.current_location,
                 });
-                setOnboardingAnswers(answers);
                 changeMode('dashboard');
               } catch (err: any) {
                 Alert.alert('Error Saving Profile', err.message || 'Failed to save birth details.');

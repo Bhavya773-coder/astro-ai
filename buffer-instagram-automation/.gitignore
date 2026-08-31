@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+logs/
+posting_timeline.csv
+posting_timeline.html
+buffer_post_state.json
+local_config.json
+.venv/
+venv/
