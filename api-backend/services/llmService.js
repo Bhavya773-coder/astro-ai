@@ -7,108 +7,129 @@ class LLMService {
     this.modelName = process.env.LLM_MODEL_NAME || 'llama3:latest';
 
     this.geminiApiKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : null;
-    this.geminiModel = 'gemini-flash-latest';
+    this.geminiModel = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    this.geminiFallbackModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-flash-latest'];
     this.useGemini = !!this.geminiApiKey;
   }
 
   async callGemini(prompt, streamCallback = null) {
-    if (streamCallback) {
-      console.log('🌊 Starting streaming request to Gemini...');
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:streamGenerateContent?key=${this.geminiApiKey}&alt=sse`;
-      
-      const response = await axios.post(url, {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4096
-        }
-      }, {
-        timeout: 300000,
-        headers: { 'Content-Type': 'application/json' },
-        responseType: 'stream'
-      });
+    const modelsToTry = [this.geminiModel, ...this.geminiFallbackModels.filter(m => m !== this.geminiModel)];
+    let lastError = null;
 
-      return new Promise((resolve, reject) => {
-        let fullResponse = '';
-        let buffer = '';
-
-        response.data.on('data', (chunk) => {
-          buffer += chunk.toString();
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed.startsWith('data:')) {
-              const dataStr = trimmed.substring(5).trim();
-              if (dataStr === '[DONE]') continue;
-              try {
-                const data = JSON.parse(dataStr);
-                const token = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                if (token) {
-                  fullResponse += token;
-                  streamCallback({
-                    token,
-                    fullResponse,
-                    done: false
-                  });
-                }
-              } catch (err) {
-                // Ignore parse errors on partial stream lines
-              }
+    for (const model of modelsToTry) {
+      try {
+        if (streamCallback) {
+          console.log(`🌊 Starting streaming request to Gemini with model: ${model}...`);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${this.geminiApiKey}&alt=sse`;
+          
+          const response = await axios.post(url, {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 4096
             }
-          }
-        });
-
-        response.data.on('end', () => {
-          streamCallback({
-            token: '',
-            fullResponse,
-            done: true
+          }, {
+            timeout: 120000,
+            headers: { 'Content-Type': 'application/json' },
+            responseType: 'stream'
           });
-          resolve({
-            choices: [{
-              message: {
-                content: fullResponse
+
+          return await new Promise((resolve, reject) => {
+            let fullResponse = '';
+            let buffer = '';
+
+            response.data.on('data', (chunk) => {
+              buffer += chunk.toString();
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || '';
+
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('data:')) {
+                  const dataStr = trimmed.substring(5).trim();
+                  if (dataStr === '[DONE]') continue;
+                  try {
+                    const data = JSON.parse(dataStr);
+                    const token = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                    if (token) {
+                      fullResponse += token;
+                      streamCallback({
+                        token,
+                        fullResponse,
+                        done: false
+                      });
+                    }
+                  } catch (err) {
+                    // Ignore parse errors on partial stream lines
+                  }
+                }
               }
-            }]
+            });
+
+            response.data.on('end', () => {
+              streamCallback({
+                token: '',
+                fullResponse,
+                done: true
+              });
+              resolve({
+                choices: [{
+                  message: {
+                    content: fullResponse
+                  }
+                }]
+              });
+            });
+
+            response.data.on('error', (error) => {
+              reject(error);
+            });
           });
-        });
+        } else {
+          console.log(`Calling Gemini (non-stream) with model: ${model}`);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.geminiApiKey}`;
+          
+          const response = await axios.post(url, {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 4096
+            }
+          }, {
+            timeout: 120000,
+            headers: { 'Content-Type': 'application/json' }
+          });
 
-        response.data.on('error', (error) => {
-          console.error('Gemini Stream error:', error);
-          reject(error);
-        });
-      });
-    } else {
-      console.log('Calling Gemini (non-stream) with model:', this.geminiModel);
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:generateContent?key=${this.geminiApiKey}`;
-      
-      const response = await axios.post(url, {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4096
-        }
-      }, {
-        timeout: 300000,
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      return {
-        choices: [{
-          message: {
-            content: text
+          const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          if (text) {
+            return {
+              choices: [{
+                message: {
+                  content: text
+                }
+              }]
+            };
           }
-        }]
-      };
+        }
+      } catch (err) {
+        lastError = err;
+        console.warn(`⚠️ Gemini model ${model} failed (${err.response?.status || err.message}), trying next model...`);
+        // Small pause before retry
+        await new Promise(r => setTimeout(r, 800));
+      }
     }
+
+    // If all Gemini models fail, throw so caller can use structured fallback or local model
+    throw lastError || new Error('All Gemini models failed');
   }
 
   async callLLM(prompt, streamCallback = null) {
     if (this.useGemini) {
-      return this.callGemini(prompt, streamCallback);
+      try {
+        return await this.callGemini(prompt, streamCallback);
+      } catch (err) {
+        console.warn('⚠️ Gemini failed, attempting Ollama fallback...', err.message);
+      }
     }
 
     try {

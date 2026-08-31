@@ -47,6 +47,9 @@ const oracleRoutes = require('./routes/oracle.routes');
 
 const app = express();
 
+// Trust reverse proxy (NGINX/Cloudflare) so express-rate-limit and IP resolution work properly
+app.set('trust proxy', 1);
+
 app.use(helmet());
 
 // Proper CORS configuration with preflight handling
