@@ -59,7 +59,7 @@ interface ProfileScreenProps {
   notificationsEnabled: boolean;
   setNotificationsEnabled: (val: boolean) => void;
   startEditing: () => void;
-  saveProfileDetails: () => void;
+  saveProfileDetails: (isBirthRecalc?: boolean) => void;
   currentProfileSubView: 'profile' | 'help' | 'privacy' | 'credits' | 'terms';
   setCurrentProfileSubView: (view: 'profile' | 'help' | 'privacy' | 'credits' | 'terms') => void;
   previousProfileSubView: 'profile' | 'credits';
@@ -656,14 +656,34 @@ export function ProfileScreen({
             </TouchableOpacity>
           </View>
 
-          <View style={styles.editActionsRow}>
-            <TouchableOpacity style={[styles.editActionBtn, styles.editCancelBtn]} onPress={() => setIsEditingProfile(false)}>
-              <Text style={styles.editCancelBtnText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.editActionBtn, styles.editSaveBtn]} onPress={saveProfileDetails}>
-              <Text style={styles.editSaveBtnText}>Save & Recalculate All</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Save / Cancel Action Row */}
+          {(() => {
+            const isBirthDataChanged =
+              editBirthdate !== birthdate ||
+              editBirthtime !== (profileAnswers.birthtime || profileAnswers.time_of_birth || '') ||
+              editBirthplace !== (profileAnswers.birthplace || profileAnswers.place_of_birth || '');
+
+            return (
+              <View style={styles.editActionsRow}>
+                <TouchableOpacity style={[styles.editActionBtn, styles.editCancelBtn]} onPress={() => setIsEditingProfile(false)}>
+                  <Text style={styles.editCancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.editActionBtn, styles.editSaveBtn, isBirthDataChanged && { backgroundColor: '#7209B7' }]}
+                  onPress={() => saveProfileDetails(isBirthDataChanged)}
+                >
+                  {isBirthDataChanged ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Sparkles size={13} color="#FFD700" />
+                      <Text style={styles.editSaveBtnText}>Save & Recalculate</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.editSaveBtnText}>Save</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            );
+          })()}
         </View>
       )}
 

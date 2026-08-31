@@ -45,6 +45,7 @@ import {
   deleteAccount,
 } from './api';
 import HopeDisclosureModal from './HopeDisclosureModal';
+import RecalculationProgressModal from './components/common/RecalculationProgressModal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -199,6 +200,12 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
   const [shareModalData, setShareModalData] = useState<ShareCardData | null>(null);
 
   const [styleForecasterOpen, setStyleForecasterOpen] = useState(false);
+
+  // Recalculation Progress state
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const [recalcProgress, setRecalcProgress] = useState(0);
+  const [recalcStepText, setRecalcStepText] = useState('Updating profile...');
+  const [recalcComplete, setRecalcComplete] = useState(false);
 
   // Chat Tab states
   const [chatInput, setChatInput] = useState('');
@@ -437,7 +444,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
     setIsEditingProfile(true);
   };
 
-  const saveProfileDetails = async () => {
+  const saveProfileDetails = async (isBirthRecalc = false) => {
     try {
       const updated = {
         ...profileAnswers,
@@ -454,30 +461,64 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
       setProfileAnswers(updated);
       setIsEditingProfile(false);
 
-      await saveBasicProfile({
-        full_name: editFullName,
-        date_of_birth: editBirthdate,
-        time_of_birth: editBirthtime,
-        place_of_birth: editBirthplace,
-        current_location: editCurrentLocation,
-      });
+      if (isBirthRecalc) {
+        setIsRecalculating(true);
+        setRecalcProgress(15);
+        setRecalcStepText('Saving updated birth details...');
+        setRecalcComplete(false);
 
-      // Recalculate whole-app personalized data
-      try {
-        await generateInsights(true);
-      } catch (e) {}
+        await saveBasicProfile({
+          full_name: editFullName,
+          date_of_birth: editBirthdate,
+          time_of_birth: editBirthtime,
+          place_of_birth: editBirthplace,
+          current_location: editCurrentLocation,
+        });
 
-      // Refresh birth chart and numerology
-      fetchBirthChart()
-        .then(res => { if (res?.data) setApiBirthChart(res.data); })
-        .catch(() => {});
+        setRecalcProgress(45);
+        setRecalcStepText('Aligning planetary coordinates & ephemeris...');
 
-      getNumerologyData()
-        .then(res => { if (res?.numerology) setApiNumerology(res.numerology); })
-        .catch(() => {});
+        try {
+          await generateInsights(true);
+        } catch (e) {}
 
-      haptic.success();
+        setRecalcProgress(75);
+        setRecalcStepText('Computing 12 Houses, Kundli & Western charts...');
+
+        // Refresh birth chart and numerology
+        const [bcRes, numRes] = await Promise.allSettled([
+          fetchBirthChart(),
+          getNumerologyData(),
+        ]);
+
+        if (bcRes.status === 'fulfilled' && bcRes.value?.data) {
+          setApiBirthChart(bcRes.value.data);
+        }
+        if (numRes.status === 'fulfilled' && numRes.value?.numerology) {
+          setApiNumerology(numRes.value.numerology);
+        }
+
+        setRecalcProgress(100);
+        setRecalcComplete(true);
+        setRecalcStepText('Cosmic alignment successfully updated!');
+        haptic.success();
+
+        setTimeout(() => {
+          setIsRecalculating(false);
+        }, 1100);
+      } else {
+        // Direct save for Full Name / Current Location without heavy recalculations
+        await saveBasicProfile({
+          full_name: editFullName,
+          date_of_birth: editBirthdate,
+          time_of_birth: editBirthtime,
+          place_of_birth: editBirthplace,
+          current_location: editCurrentLocation,
+        });
+        haptic.success();
+      }
     } catch (e) {
+      setIsRecalculating(false);
       Alert.alert('Save Error', 'Failed to save updated profile details.');
     }
   };
@@ -930,6 +971,14 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
               data={shareModalData}
             />
           )}
+
+          {/* Astrological Recalculation Progress Modal */}
+          <RecalculationProgressModal
+            visible={isRecalculating}
+            progress={recalcProgress}
+            stepText={recalcStepText}
+            isComplete={recalcComplete}
+          />
 
           {/* Date Picker Modal */}
           <Modal
