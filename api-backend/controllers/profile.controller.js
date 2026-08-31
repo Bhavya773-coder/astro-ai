@@ -130,10 +130,19 @@ const saveBasicProfile = async (req, res, next) => {
       profile.place_of_birth = place_of_birth;
       profile.gender = gender;
       profile.current_location = current_location;
-      profile.numerology_data = numerologyData;
+      profile.numerology_data = {
+        life_path: String(numerologyData.life_path || ''),
+        destiny: String(numerologyData.destiny || numerologyData.destiny_number || ''),
+        personal_year: String(numerologyData.personal_year || '')
+      };
       if (isChanged) {
         profile.insights_generated = false;
-        profile.birth_chart_data = null;
+        profile.birth_chart_data = {
+          sun_sign: '',
+          moon_sign: '',
+          ascendant: '',
+          dominant_planet: ''
+        };
         // Invalidate old birth chart and Kundli reports so new birth details take effect immediately
         await Report.deleteMany({ user_id: userId, type: 'birth_chart' });
         await KundliReport.deleteMany({ user_id: userId });

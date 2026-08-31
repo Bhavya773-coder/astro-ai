@@ -10,36 +10,23 @@ const ProfileSchema = new mongoose.Schema(
     gender: { type: String },
     current_location: { type: String },
     life_context: {
-      career_stage: { type: String },
-      relationship_status: { type: String },
-      main_life_focus: { type: String },
-      personality_style: { type: String },
-      primary_life_problem: { type: String }
+      type: mongoose.Schema.Types.Mixed
     },
     birth_chart_data: {
-      sun_sign: { type: String },
-      moon_sign: { type: String },
-      ascendant: { type: String },
-      dominant_planet: { type: String }
+      type: mongoose.Schema.Types.Mixed
     },
     numerology_data: {
-      life_path: { type: String },
-      destiny: { type: String },
-      personal_year: { type: String }
+      type: mongoose.Schema.Types.Mixed
     },
     style_preferences: {
-      work_setting: { type: String },
-      style_vibe: { type: String },
-      fit_preference: { type: String },
-      accessory_level: { type: String },
-      avoid_colors: { type: String }
+      type: mongoose.Schema.Types.Mixed
     },
     insights_generated: { type: Boolean, default: false },
     insights_generated_at: { type: Date },
     created_at: { type: Date, required: true, default: Date.now },
     updated_at: { type: Date }
   },
-  { collection: 'profiles' }
+  { collection: 'profiles', strict: false }
 );
 
 module.exports = mongoose.model('Profile', ProfileSchema);

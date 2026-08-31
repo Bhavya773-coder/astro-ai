@@ -46,6 +46,7 @@ import {
 } from './api';
 import HopeDisclosureModal from './HopeDisclosureModal';
 import RecalculationProgressModal from './components/common/RecalculationProgressModal';
+import { CosmicDatePickerModal, CosmicTimePickerModal } from './components/common/CosmicDateTimePickerModal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -980,97 +981,37 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
             isComplete={recalcComplete}
           />
 
-          {/* Date Picker Modal */}
-          <Modal
-            transparent
+          {/* Cosmic Date Picker Modal */}
+          <CosmicDatePickerModal
             visible={isDatePickerVisible}
-            animationType="fade"
-            onRequestClose={() => setIsDatePickerVisible(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.pickerModalContent}>
-                <Text style={styles.pickerModalTitle}>Select Birth Date</Text>
-                <View style={styles.pickerWheelsRow}>
-                  <ScrollView style={styles.pickerCol} showsVerticalScrollIndicator={false}>
-                    {DAYS.map(d => (
-                      <TouchableOpacity key={d} onPress={() => setSelectedDay(d)} style={[styles.pickerItem, selectedDay === d && styles.pickerItemActive]}>
-                        <Text style={[styles.pickerItemText, selectedDay === d && styles.pickerItemTextActive]}>{d}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                  <ScrollView style={styles.pickerCol} showsVerticalScrollIndicator={false}>
-                    {MONTHS.map(m => (
-                      <TouchableOpacity key={m.value} onPress={() => setSelectedMonth(m.value)} style={[styles.pickerItem, selectedMonth === m.value && styles.pickerItemActive]}>
-                        <Text style={[styles.pickerItemText, selectedMonth === m.value && styles.pickerItemTextActive]}>{m.label}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                  <ScrollView style={styles.pickerCol} showsVerticalScrollIndicator={false}>
-                    {YEARS.map(y => (
-                      <TouchableOpacity key={y} onPress={() => setSelectedYear(y)} style={[styles.pickerItem, selectedYear === y && styles.pickerItemActive]}>
-                        <Text style={[styles.pickerItemText, selectedYear === y && styles.pickerItemTextActive]}>{y}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-                <TouchableOpacity
-                  style={styles.pickerConfirmBtn}
-                  onPress={() => {
-                    setEditBirthdate(`${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`);
-                    setIsDatePickerVisible(false);
-                  }}
-                >
-                  <Text style={styles.pickerConfirmBtnText}>Confirm Date</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
+            selectedDay={selectedDay}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            onSelectDay={setSelectedDay}
+            onSelectMonth={setSelectedMonth}
+            onSelectYear={setSelectedYear}
+            onConfirm={() => {
+              setEditBirthdate(`${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`);
+              setIsDatePickerVisible(false);
+            }}
+            onCancel={() => setIsDatePickerVisible(false)}
+          />
 
-          {/* Time Picker Modal */}
-          <Modal
-            transparent
+          {/* Cosmic Time Picker Modal */}
+          <CosmicTimePickerModal
             visible={isTimePickerVisible}
-            animationType="fade"
-            onRequestClose={() => setIsTimePickerVisible(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.pickerModalContent}>
-                <Text style={styles.pickerModalTitle}>Select Birth Time</Text>
-                <View style={styles.pickerWheelsRow}>
-                  <ScrollView style={styles.pickerCol} showsVerticalScrollIndicator={false}>
-                    {HOURS.map(h => (
-                      <TouchableOpacity key={h} onPress={() => setSelectedHour(h)} style={[styles.pickerItem, selectedHour === h && styles.pickerItemActive]}>
-                        <Text style={[styles.pickerItemText, selectedHour === h && styles.pickerItemTextActive]}>{h}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                  <ScrollView style={styles.pickerCol} showsVerticalScrollIndicator={false}>
-                    {MINUTES.map(m => (
-                      <TouchableOpacity key={m} onPress={() => setSelectedMinute(m)} style={[styles.pickerItem, selectedMinute === m && styles.pickerItemActive]}>
-                        <Text style={[styles.pickerItemText, selectedMinute === m && styles.pickerItemTextActive]}>{String(m).padStart(2, '0')}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                  <View style={styles.pickerCol}>
-                    {(['AM', 'PM'] as const).map(p => (
-                      <TouchableOpacity key={p} onPress={() => setSelectedPeriod(p)} style={[styles.pickerItem, selectedPeriod === p && styles.pickerItemActive]}>
-                        <Text style={[styles.pickerItemText, selectedPeriod === p && styles.pickerItemTextActive]}>{p}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-                <TouchableOpacity
-                  style={styles.pickerConfirmBtn}
-                  onPress={() => {
-                    setEditBirthtime(`${selectedHour}:${String(selectedMinute).padStart(2, '0')} ${selectedPeriod}`);
-                    setIsTimePickerVisible(false);
-                  }}
-                >
-                  <Text style={styles.pickerConfirmBtnText}>Confirm Time</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
+            selectedHour={selectedHour}
+            selectedMinute={selectedMinute}
+            selectedPeriod={selectedPeriod}
+            onSelectHour={setSelectedHour}
+            onSelectMinute={setSelectedMinute}
+            onSelectPeriod={setSelectedPeriod}
+            onConfirm={() => {
+              setEditBirthtime(`${selectedHour}:${String(selectedMinute).padStart(2, '0')} ${selectedPeriod}`);
+              setIsTimePickerVisible(false);
+            }}
+            onCancel={() => setIsTimePickerVisible(false)}
+          />
         </LinearGradient>
       )}
     </View>

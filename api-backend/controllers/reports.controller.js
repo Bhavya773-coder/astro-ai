@@ -203,7 +203,12 @@ const getKundliReport = asyncHandler(async (req, res) => {
     });
   }
 
-  profile.birth_chart_data = chart_data;
+  profile.birth_chart_data = {
+    sun_sign: String(chart_data.sun_sign || ''),
+    moon_sign: String(chart_data.moon_sign || ''),
+    ascendant: String(chart_data.ascendant || ''),
+    dominant_planet: chart_data.planets?.sun ? 'Sun' : ''
+  };
   await profile.save();
 
   console.log('✅ Kundli report saved successfully');
@@ -314,7 +319,12 @@ const getBirthChart = asyncHandler(async (req, res) => {
     });
   }
 
-  profile.birth_chart_data = chart_data;
+  profile.birth_chart_data = {
+    sun_sign: String(chart_data.sun_sign || ''),
+    moon_sign: String(chart_data.moon_sign || ''),
+    ascendant: String(chart_data.ascendant || ''),
+    dominant_planet: chart_data.planets?.sun ? 'Sun' : ''
+  };
   await profile.save();
 
   console.log('✅ New Kundli report saved successfully');
