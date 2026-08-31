@@ -29,67 +29,6 @@ async function geocodePlace(place) {
   };
 }
 
-const getKundliReport = asyncHandler(async (req, res) => {
-  const userId = req.user.userId;
-  console.log('🔮 Kundli generation started for user:', userId);
-
-  const profile = await Profile.findOne({ user_id: userId });
-  if (!profile) {
-    console.log('❌ No profile found for user:', userId);
-    return res.status(400).json({
-      success: false,
-      message: 'Please complete your profile first. Redirecting to onboarding...',
-      redirectToOnboarding: true
-    });
-  }
-
-  const requiredFields = ['full_name', 'date_of_birth', 'time_of_birth', 'place_of_birth'];
-  const missingFields = requiredFields.filter((field) => !profile[field]);
-
-  if (missingFields.length > 0) {
-    console.log('❌ Missing profile fields:', missingFields);
-    return res.status(400).json({
-      success: false,
-      message: 'Please complete your profile first. Redirecting to onboarding...',
-      redirectToOnboarding: true
-    });
-  }
-
-  // 1. Try existing KundliReport
-  const existing = await KundliReport.findOne({ user_id: userId });
-  if (existing) {
-    console.log('✅ Found existing Kundli for user:', userId);
-    return res.json({
-      success: true,
-      source: 'cache',
-      data: existing
-    });
-  }
-
-  console.log('📍 Geocoding location:', profile.place_of_birth);
-  // 2. Geocode place_of_birth
-  const { latitude, longitude } = await geocodePlace(profile.place_of_birth);
-  console.log('📍 Got coordinates:', { latitude, longitude });
-
-  const birthDetails = {
-    full_name: profile.full_name,
-    date_of_birth: profile.date_of_birth,
-    time_of_birth: profile.time_of_birth,
-    place_of_birth: profile.place_of_birth,
-    latitude,
-    longitude
-  };
-
-  console.log('🪐 Calculating chart with Swiss Ephemeris...');
-  // 3. Calculate chart using Swiss Ephemeris (no LLM here)
-  const chart_data = await calculateKundliChart({
-    date_of_birth: birthDetails.date_of_birth,
-    time_of_birth: birthDetails.time_of_birth,
-    latitude: birthDetails.latitude,
-    longitude: birthDetails.longitude
-  });
-  console.log('✅ Chart calculated successfully');
-
 async function generateDynamicInterpretation(chart_data, birthDetails) {
   try {
     const prompt = `
