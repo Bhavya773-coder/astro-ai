@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Profile = require('../models/Profile');
 const User = require('../models/User');
 const Report = require('../models/Report');
+const KundliReport = require('../models/KundliReport');
 const llmService = require('../services/llmService');
 const { calculateNumerology } = require('../utils/numerology');
 
@@ -132,8 +133,10 @@ const saveBasicProfile = async (req, res, next) => {
       profile.numerology_data = numerologyData;
       if (isChanged) {
         profile.insights_generated = false;
-        // Invalidate old birth chart report cache so new birth details take effect immediately
+        profile.birth_chart_data = null;
+        // Invalidate old birth chart and Kundli reports so new birth details take effect immediately
         await Report.deleteMany({ user_id: userId, type: 'birth_chart' });
+        await KundliReport.deleteMany({ user_id: userId });
       }
       profile.updated_at = new Date();
       await profile.save();

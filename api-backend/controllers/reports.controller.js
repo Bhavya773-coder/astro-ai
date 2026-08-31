@@ -143,10 +143,18 @@ const getKundliReport = asyncHandler(async (req, res) => {
     });
   }
 
-  // 1. Try existing KundliReport
+  const force = req.query?.force === 'true' || req.body?.force === true || req.body?.forceRegenerate === true;
+
+  // Check existing KundliReport and ensure it matches the user's latest profile data
   const existing = await KundliReport.findOne({ user_id: userId });
-  if (existing && existing.chart_data) {
-    console.log('✅ Found existing Kundli for user:', userId);
+  const isBirthMatch = existing && existing.birth_details &&
+    existing.birth_details.place_of_birth === profile.place_of_birth &&
+    existing.birth_details.date_of_birth === profile.date_of_birth &&
+    existing.birth_details.time_of_birth === profile.time_of_birth &&
+    existing.birth_details.full_name === profile.full_name;
+
+  if (isBirthMatch && !force && existing.chart_data) {
+    console.log('✅ Found matching existing Kundli for user:', userId);
     return res.json({
       success: true,
       source: 'cache',
@@ -155,7 +163,6 @@ const getKundliReport = asyncHandler(async (req, res) => {
   }
 
   console.log('📍 Geocoding location:', profile.place_of_birth);
-  // 2. Geocode place_of_birth
   const { latitude, longitude } = await geocodePlace(profile.place_of_birth);
   console.log('📍 Got coordinates:', { latitude, longitude });
 
@@ -169,7 +176,6 @@ const getKundliReport = asyncHandler(async (req, res) => {
   };
 
   console.log('🪐 Calculating chart with Swiss Ephemeris...');
-  // 3. Calculate chart using Swiss Ephemeris
   const chart_data = await calculateKundliChart({
     date_of_birth: birthDetails.date_of_birth,
     time_of_birth: birthDetails.time_of_birth,
@@ -179,19 +185,27 @@ const getKundliReport = asyncHandler(async (req, res) => {
   console.log('✅ Chart calculated successfully');
 
   console.log('🤖 Generating AI interpretation...');
-  // 4. Generate dynamic AI interpretation
   const interpretation = await generateDynamicInterpretation(chart_data, birthDetails);
 
   console.log('💾 Saving Kundli report to database...');
-  // 5. Persist KundliReport
-  const kundliReport = new KundliReport({
-    user_id: userId,
-    birth_details: birthDetails,
-    chart_data,
-    interpretation
-  });
+  let kundliReport = await KundliReport.findOne({ user_id: userId });
+  if (kundliReport) {
+    kundliReport.birth_details = birthDetails;
+    kundliReport.chart_data = chart_data;
+    kundliReport.interpretation = interpretation;
+    await kundliReport.save();
+  } else {
+    kundliReport = await KundliReport.create({
+      user_id: userId,
+      birth_details: birthDetails,
+      chart_data,
+      interpretation
+    });
+  }
 
-  await kundliReport.save();
+  profile.birth_chart_data = chart_data;
+  await profile.save();
+
   console.log('✅ Kundli report saved successfully');
 
   return res.json({
@@ -212,33 +226,6 @@ const getBirthChart = asyncHandler(async (req, res) => {
     });
   }
 
-  // 1. Query kundli_reports using user_id
-  const existingKundli = await KundliReport.findOne({ user_id: userId });
-  
-  if (existingKundli && existingKundli.chart_data) {
-    const requiredFields = ['ascendant', 'moon_sign', 'sun_sign', 'nakshatra', 'planets', 'houses'];
-    const missingFields = requiredFields.filter((field) => !existingKundli.chart_data[field]);
-    
-    if (missingFields.length > 0) {
-      console.log('❌ Corrupted chart data detected, missing fields:', missingFields);
-      return res.status(500).json({
-        message: 'Birth chart data unavailable. Please regenerate kundli.'
-      });
-    }
-    
-    console.log('✅ Found existing Kundli for user:', userId);
-    return res.json({
-      success: true,
-      source: 'database',
-      data: {
-        birth_details: existingKundli.birth_details,
-        chart_data: existingKundli.chart_data,
-        interpretation: existingKundli.interpretation
-      }
-    });
-  }
-
-  // 2. If kundli does not exist, check profile
   const profile = await Profile.findOne({ user_id: userId });
   if (!profile) {
     console.log('❌ No profile found for user:', userId);
@@ -257,8 +244,36 @@ const getBirthChart = asyncHandler(async (req, res) => {
     });
   }
 
-  // 3. Generate kundli and dynamic interpretation
-  console.log('📍 Geocoding location:', profile.place_of_birth);
+  const force = req.query?.force === 'true' || req.body?.force === true || req.body?.forceRegenerate === true;
+
+  // Check existing KundliReport and ensure it matches the user's latest profile data
+  const existingKundli = await KundliReport.findOne({ user_id: userId });
+  const isBirthMatch = existingKundli && existingKundli.birth_details &&
+    existingKundli.birth_details.place_of_birth === profile.place_of_birth &&
+    existingKundli.birth_details.date_of_birth === profile.date_of_birth &&
+    existingKundli.birth_details.time_of_birth === profile.time_of_birth &&
+    existingKundli.birth_details.full_name === profile.full_name;
+  
+  if (isBirthMatch && !force && existingKundli.chart_data) {
+    const requiredChartFields = ['ascendant', 'moon_sign', 'sun_sign', 'nakshatra', 'planets', 'houses'];
+    const missingChartFields = requiredChartFields.filter((field) => !existingKundli.chart_data[field]);
+    
+    if (missingChartFields.length === 0) {
+      console.log('✅ Found matching Kundli for user:', userId);
+      return res.json({
+        success: true,
+        source: 'database',
+        data: {
+          birth_details: existingKundli.birth_details,
+          chart_data: existingKundli.chart_data,
+          interpretation: existingKundli.interpretation
+        }
+      });
+    }
+  }
+
+  // Recalculate if no match, corrupted, or force requested
+  console.log('📍 Geocoding location for birth chart:', profile.place_of_birth);
   const { latitude, longitude } = await geocodePlace(profile.place_of_birth);
   console.log('📍 Got coordinates:', { latitude, longitude });
 
@@ -284,14 +299,24 @@ const getBirthChart = asyncHandler(async (req, res) => {
   const interpretation = await generateDynamicInterpretation(chart_data, birthDetails);
 
   console.log('💾 Saving new Kundli report to database...');
-  const kundliReport = new KundliReport({
-    user_id: userId,
-    birth_details: birthDetails,
-    chart_data,
-    interpretation
-  });
+  let kundliReport = await KundliReport.findOne({ user_id: userId });
+  if (kundliReport) {
+    kundliReport.birth_details = birthDetails;
+    kundliReport.chart_data = chart_data;
+    kundliReport.interpretation = interpretation;
+    await kundliReport.save();
+  } else {
+    kundliReport = await KundliReport.create({
+      user_id: userId,
+      birth_details: birthDetails,
+      chart_data,
+      interpretation
+    });
+  }
 
-  await kundliReport.save();
+  profile.birth_chart_data = chart_data;
+  await profile.save();
+
   console.log('✅ New Kundli report saved successfully');
 
   return res.json({
