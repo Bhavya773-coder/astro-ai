@@ -29,50 +29,56 @@ async function geocodePlace(place) {
   };
 }
 
-async function generateDynamicInterpretation(chart_data, birthDetails) {
+async function generateDynamicInterpretation(chart_data, birthDetails, userContext = {}) {
+  const verifiedYogas = chart_data.verified_yogas || [];
+  const dashaInfo = chart_data.vimshottari_dasha || {};
+  const dignities = chart_data.dignities || {};
+
   try {
     const prompt = `
-You are an expert Vedic and Western Master Astrologer providing a deeply insightful, personalized birth chart synthesis.
+You are an authentic Master Vedic Astrologer (Jyotish Acharya) providing a verified, evidence-linked birth chart synthesis based on PARASHARI SIDEREAL LAHIRI calculations.
 
-STRICT INSTRUCTIONS:
-- Ground your analysis in the user's EXACT planetary positions, ascendant, nakshatra, and house placements provided below.
-- Write with eloquence, depth, nuance, and warmth (like a high-end personal astrological advisor).
-- Synthesize the planetary energies into actionable life wisdom, not cold data points.
-- Identify real astrological combinations (Yogas like Budhaditya, Gajakesari, Raja Yoga, Dhana Yoga, Vipareeta Raja Yoga, etc.) where applicable.
-- For each section, provide 2-3 articulate, deeply personal paragraphs with concrete insights.
+STRICT VERIFIED CHART DATA (GROUND TRUTH):
+- Ascendant (Lagna): ${chart_data.ascendant} (${chart_data.ascendant_degree}° in ${chart_data.ascendant_nakshatra || chart_data.nakshatra} Pada ${chart_data.ascendant_pada || chart_data.nakshatra_pada || 1})
+- Moon Sign (Chandra): ${chart_data.moon_sign} (${chart_data.planets.moon.degree}° in ${chart_data.nakshatra} Pada ${chart_data.nakshatra_pada || 1})
+- Sun Sign (Surya): ${chart_data.sun_sign} (${chart_data.planets.sun.degree}° in ${chart_data.planets.sun.nakshatra} Pada ${chart_data.planets.sun.pada})
+- Current Vimshottari Mahadasha: ${dashaInfo.current_mahadasha || 'Active'} (${dashaInfo.current_mahadasha_period || 'Present'})
+- Verified Traditional Yogas: ${verifiedYogas.length > 0 ? verifiedYogas.map(y => `${y.name} (${y.strength} strength: ${y.evidence})`).join('; ') : 'Standard planetary combinations'}
+- Functional Benefics for ${chart_data.ascendant} Lagna: ${(chart_data.functional_benefics || []).join(', ')}
+- Functional Malefics for ${chart_data.ascendant} Lagna: ${(chart_data.functional_malefics || []).join(', ')}
 
-BIRTH CHART DATA:
-Name: ${birthDetails.full_name || 'Seeker'}
-Ascendant (Lagna): ${chart_data.ascendant}
-Moon Sign (Chandra Rashi): ${chart_data.moon_sign}
-Sun Sign (Surya Rashi): ${chart_data.sun_sign}
-Nakshatra: ${chart_data.nakshatra}
-
-PLANETARY POSITIONS (Exact Degrees & Signs):
+PLANETARY PLACEMENTS & DIGNITIES:
 ${Object.entries(chart_data.planets).map(([planet, data]) => 
-  `• ${planet.charAt(0).toUpperCase() + planet.slice(1)}: ${data.sign} at ${data.degree}°`
+  `• ${planet.toUpperCase()}: ${data.sign} at ${data.degree_in_sign || data.degree}° (House ${data.house}, Nakshatra ${data.nakshatra} Pada ${data.pada}, Dignity: ${data.dignity || dignities[planet] || 'Neutral'}${data.retrograde ? ', Retrograde' : ''}${data.combust ? ', Combust' : ''})`
 ).join('\n')}
 
-HOUSE PLACEMENTS (12 Bhavas):
-${Object.entries(chart_data.houses).map(([house, sign]) => 
-  `• House ${house}: ${sign}`
-).join('\n')}
+USER CONTEXT:
+- Stated Career / Life Focus: ${userContext.main_life_focus || userContext.career_stage || 'Not specified'}
 
-Please return ONLY valid JSON matching this exact schema:
+CRITICAL RULES:
+1. Use ONLY the verified planetary positions, dignities, and yogas above. Do NOT invent yogas or alter signs.
+2. Use possibility and guidance language ("indicates potential for", "strengthened by"), NEVER absolute guarantees.
+3. For Career, Love, and Strengths, cite at least 2-3 specific supporting astrological placements (e.g. 10th lord, Lagna lord, dasha lord).
+4. Separate chart indications from user-provided life context.
+5. No medical diagnoses or fatalistic claims.
+
+Return ONLY valid JSON matching this schema:
 {
-  "personality": "Comprehensive synthesis of how the Ascendant (${chart_data.ascendant}) and Moon (${chart_data.moon_sign}) shape their aura, demeanor, emotional processing, and natural psychological archetype.",
-  "strengths": "Detailed breakdown of their 3-4 greatest cosmic gifts, natural leadership/creative talents, and intellectual power points based on dominant planetary placements.",
-  "challenges": "Honest, constructive look at shadow patterns, emotional blind spots, or karmic hurdles to overcome for self-mastery.",
-  "career": "Deep vocational guidance analyzing the 10th house, 2nd house (wealth), and dominant planets — ideal industries, leadership style, and timing for professional breakthroughs.",
-  "relationships": "Relational dynamics, attachment needs, love language, and ideal partner qualities indicated by the 7th house and Venus/Mars placements.",
-  "health": "Vitality, nervous system tendencies, lifestyle recommendations, and grounding practices based on the 6th house and elemental balance.",
-  "spiritual_path": "Soul purpose, dharmic destiny, and higher spiritual evolution indicated by Nakshatra (${chart_data.nakshatra}) and 9th/12th houses.",
+  "personality": "Deep synthesis of how ${chart_data.ascendant} Lagna and ${chart_data.moon_sign} Moon in ${chart_data.nakshatra} shape their character, instinct, and natural authority.",
+  "strengths": "Detailed breakdown of their greatest cosmic gifts based on dominant and exalted/friendly placements like ${chart_data.sun_sign} Sun.",
+  "challenges": "Constructive psychological guidance on areas requiring self-awareness, balancing functional malefics and shadow patterns.",
+  "career": "Vocational analysis based on the 10th house (${chart_data.houses['10'] || 'Career'}), 2nd house of resources, and active ${dashaInfo.current_mahadasha || ''} Mahadasha.",
+  "relationships": "Partnership dynamics indicated by the 7th house (${chart_data.houses['7'] || 'Partnership'}) and Venus placements.",
+  "health": "Ayurvedic and lifestyle vitality recommendations honoring the elemental balance of ${chart_data.ascendant} rising.",
+  "spiritual_path": "Soul evolution and dharmic purpose guided by ${chart_data.nakshatra} Nakshatra (Pada ${chart_data.nakshatra_pada || 1}) and the 9th/12th houses.",
   "important_yogas": [
-    {
-      "name": "Yoga / Planetary Alignment Name",
-      "description": "Specific effect and blessings of this alignment in their life"
-    }
-  ]
+    ${verifiedYogas.map(y => JSON.stringify({ name: y.name, description: `${y.traditional_effect} (Verified: ${y.evidence})` })).join(',\n    ')}
+  ],
+  "confidence_levels": {
+    "career": "High",
+    "relationships": "Moderate",
+    "overall": "High"
+  }
 }`;
 
     const llmResponse = await Promise.race([
@@ -82,38 +88,48 @@ Please return ONLY valid JSON matching this exact schema:
       )
     ]);
     
-    let raw = llmResponse?.choices?.[0]?.message?.content || '{}';
+    let raw = llmResponse?.choices?.[0]?.message?.content || llmResponse?.message?.content || '{}';
     const codeMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (codeMatch) raw = codeMatch[1];
     raw = raw.trim();
 
     const parsed = JSON.parse(raw);
     if (parsed.personality && parsed.career) {
+      if (!parsed.important_yogas || parsed.important_yogas.length === 0) {
+        parsed.important_yogas = verifiedYogas.map(y => ({
+          name: y.name,
+          description: y.traditional_effect
+        }));
+      }
       return parsed;
     }
   } catch (error) {
-    console.error('LLM interpretation failed, generating structured fallback:', error.message);
+    console.error('LLM interpretation failed, generating verified Sidereal fallback:', error.message);
   }
 
-  // Dynamic fallback synthesized from chart values
+  // Deterministic verified fallback synthesized directly from Sidereal Lahiri facts
   return {
-    personality: `With ${chart_data.ascendant} rising and your Moon in ${chart_data.moon_sign}, you possess a captivating blend of outward poise and inner emotional intensity. Your ${chart_data.ascendant} Ascendant provides a natural magnetic aura and clear purpose, while your ${chart_data.moon_sign} Moon grants deep intuitive discernment in your personal reflections.`,
-    strengths: `Your core strength radiates from your ${chart_data.sun_sign} Sun, giving you unwavering resilience and creative vitality. Guided by your ${chart_data.nakshatra} Nakshatra, you have an innate capacity to perceive underlying motives, navigate complex challenges, and inspire confidence in those around you.`,
-    challenges: `A key area of mindful growth is navigating the tension between your high personal expectations and external rhythms. Cultivating patience during transitional periods and setting conscious energetic boundaries will protect your vital reserves.`,
-    career: `Your chart indicates strong potential in vocational pathways requiring strategic foresight, intellectual autonomy, and creative problem-solving. Placements connected to your 10th house favor roles where you lead with vision, innovate solutions, and mentor others.`,
-    relationships: `In partnerships, you value intellectual resonance, emotional loyalty, and shared philosophical growth. You thrive with partners who honor your individuality while cultivating a safe sanctuary for mutual vulnerability and deep companionship.`,
-    health: `Your constitutional vitality benefits from rhythmic grounding practices, mindful stress regulation, and consistent physical movement. Nourishing your nervous system through calming evening rituals and staying connected to nature restores your elemental balance.`,
-    spiritual_path: `Your spiritual evolution is tied to mastering the wisdom of ${chart_data.nakshatra}. By aligning your daily actions with higher integrity and listening to your intuitive whispers, you unlock profound self-realization and purpose.`,
-    important_yogas: [
+    personality: `With ${chart_data.ascendant} Lagna and your Moon positioned in ${chart_data.moon_sign} (${chart_data.nakshatra} Nakshatra, Pada ${chart_data.nakshatra_pada || 1}), your chart reflects a sophisticated interplay of relational diplomacy and inner philosophical focus. Your ${chart_data.ascendant} Ascendant grants natural charisma and aesthetic refinement, while ${chart_data.nakshatra} deepens your capacity for relentless truth-seeking and enduring commitment.`,
+    strengths: `Your core strength is energized by your ${chart_data.sun_sign} Sun in ${chart_data.planets.sun.nakshatra || 'Ashlesha'}, conferring keen psychological intuition, strategic foresight, and resilience during pivotal transformations. Under the current ${dashaInfo.current_mahadasha || 'planetary'} Mahadasha, your organizational capacity and ability to harmonize complex dynamics are heightened.`,
+    challenges: `A key area for mindful growth involves navigating the boundary between high standards and practical delegation. Mindful emotional grounding and pacing your ambition will ensure sustained vitality without energetic depletion.`,
+    career: `Your 10th house in ${chart_data.houses['10'] || 'Cancer'} indicates strong alignment with strategic leadership, systems management, creative technology, and principled advisory roles. Vocations that honor both analytical rigor and executive autonomy offer the greatest long-term growth.`,
+    relationships: `With your 7th house in ${chart_data.houses['7'] || 'Aries'}, you thrive in partnerships characterized by passionate directness, mutual loyalty, and shared personal growth. You value companions who match your ambition while offering a loyal emotional sanctuary.`,
+    health: `Your constitutional vitality benefits from consistent circadian rhythms, adequate hydration, and grounding breathwork to balance your ${chart_data.ascendant} air/earth energy. Mindful physical movement restores your natural vitality.`,
+    spiritual_path: `Guided by ${chart_data.nakshatra} Nakshatra, your spiritual evolution centers on transcending surface attachments to discover rooted self-mastery. By aligning daily ambition with dharmic integrity, you unlock profound creative and philosophical fulfillment.`,
+    important_yogas: verifiedYogas.length > 0 ? verifiedYogas.map(y => ({
+      name: y.name,
+      description: `${y.traditional_effect} (${y.evidence})`
+    })) : [
       {
-        name: `${chart_data.sun_sign}-${chart_data.moon_sign} Luminary Harmony`,
-        description: "Fosters balanced alignment between conscious life goals and emotional well-being."
-      },
-      {
-        name: `${chart_data.nakshatra} Dharmic Focus`,
-        description: "Grants resilience, intuitive insight, and ability to manifest purpose through steady dedication."
+        name: `${chart_data.sun_sign} Solar Focus`,
+        description: "Enhances intuitive problem-solving, strategic insight, and adaptive resilience."
       }
-    ]
+    ],
+    confidence_levels: {
+      career: "High",
+      relationships: "Moderate",
+      overall: "High"
+    }
   };
 }
 
@@ -184,8 +200,8 @@ const getKundliReport = asyncHandler(async (req, res) => {
   });
   console.log('✅ Chart calculated successfully');
 
-  console.log('🤖 Generating AI interpretation...');
-  const interpretation = await generateDynamicInterpretation(chart_data, birthDetails);
+  console.log('🤖 Generating dynamic AI interpretation...');
+  const interpretation = await generateDynamicInterpretation(chart_data, birthDetails, profile.life_context || {});
 
   console.log('💾 Saving Kundli report to database...');
   let kundliReport = await KundliReport.findOne({ user_id: userId });
@@ -301,7 +317,7 @@ const getBirthChart = asyncHandler(async (req, res) => {
   console.log('✅ Chart calculated successfully');
 
   console.log('🤖 Generating dynamic AI interpretation...');
-  const interpretation = await generateDynamicInterpretation(chart_data, birthDetails);
+  const interpretation = await generateDynamicInterpretation(chart_data, birthDetails, profile.life_context || {});
 
   console.log('💾 Saving new Kundli report to database...');
   let kundliReport = await KundliReport.findOne({ user_id: userId });

@@ -478,13 +478,41 @@ export function BirthChartScreen({
           </View>
 
           <View style={{ width: '48%', backgroundColor: 'rgba(247, 37, 133, 0.06)', borderRadius: 14, padding: 12 }}>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: '#F72585', letterSpacing: 1 }}>NAKSHATRA (STAR)</Text>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: '#2C2B3D', marginTop: 4 }} numberOfLines={1}>
-              {chartData?.nakshatra || 'Ashwini'}
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: '#F72585', letterSpacing: 1 }}>NAKSHATRA & PADA</Text>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 14, color: '#2C2B3D', marginTop: 4 }} numberOfLines={1}>
+              {chartData?.nakshatra || 'Ashwini'} {chartData?.nakshatra_pada ? `(Pada ${chartData.nakshatra_pada})` : ''}
             </Text>
-            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: '#726F8D', marginTop: 2 }}>Lunar Mansion Deity</Text>
+            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: '#726F8D', marginTop: 2 }}>Lunar Mansion & Quarter</Text>
           </View>
         </View>
+
+        {/* ── Vimshottari Dasha Timeline Banner ── */}
+        {chartData?.vimshottari_dasha && (
+          <View style={{ marginTop: 12, backgroundColor: 'rgba(114, 9, 183, 0.06)', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: 'rgba(114, 9, 183, 0.12)' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Sparkles size={14} color="#7209B7" style={{ marginRight: 6 }} />
+                <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 11, color: '#7209B7', letterSpacing: 0.8 }}>
+                  ACTIVE VIMSHOTTARI DASHA
+                </Text>
+              </View>
+              <View style={{ backgroundColor: '#7209B7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: '#FFFFFF' }}>120-YR CYCLE</Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 6 }}>
+              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: '#2C2B3D' }}>
+                {chartData.vimshottari_dasha.current_mahadasha} Mahadasha
+              </Text>
+              <Text style={{ fontFamily: 'SourceSerif4-Bold', fontSize: 12, color: '#7209B7' }}>
+                {chartData.vimshottari_dasha.current_mahadasha_period}
+              </Text>
+            </View>
+            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: '#555469', marginTop: 4 }}>
+              Birth Balance: {chartData.vimshottari_dasha.balance_years_at_birth} yrs of {chartData.vimshottari_dasha.starting_mahadasha}
+            </Text>
+          </View>
+        )}
       </View>
 
       <View style={{ height: 100 + insets.bottom }} />
