@@ -352,41 +352,24 @@ class LLMService {
     try {
       const prompt = this.buildPrompt(userData);
       
-      const response = await axios.post(this.modelEndpoint, {
-        model: this.modelName,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an astrology and numerology expert. Always respond with valid JSON only.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000
-      }, {
-        timeout: 30000, // 30 seconds timeout
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const content = response.data.choices?.[0]?.message?.content;
+      const response = await this.callLLM(prompt);
+      const content = response.choices?.[0]?.message?.content || response.message?.content || response.response;
       
       if (!content) {
-        console.error('No content in LLM response:', response.data);
         throw new Error('No content received from LLM');
       }
       
       // Parse JSON response
+      let cleanContent = content;
+      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) cleanContent = jsonMatch[1];
+      cleanContent = cleanContent.trim();
+
       let insights;
       try {
-        insights = JSON.parse(content);
+        insights = JSON.parse(cleanContent);
       } catch (parseError) {
         console.error('Failed to parse LLM response:', content);
-        console.error('Parse error:', parseError.message);
         throw new Error('Invalid response format from LLM');
       }
 
@@ -399,7 +382,6 @@ class LLMService {
 
     } catch (error) {
       console.error('LLM Service Error:', error.message);
-      console.error('Full error details:', error);
       
       // Robust fallback that doesn't rely on external API
       console.log('Using fallback method for birth chart analysis');
