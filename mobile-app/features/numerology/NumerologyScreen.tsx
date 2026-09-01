@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, Share2 } from 'lucide-react-native';
+import { useTheme } from '../../theme';
 
 const LIFE_PATH_DATA: Record<string, { title: string; desc: string }> = {
   '1': {
@@ -78,6 +79,7 @@ export function NumerologyScreen({
   insets,
   triggerShareCard,
 }: NumerologyScreenProps) {
+  const { theme, isDark } = useTheme();
   const [selectedCoreNumType, setSelectedCoreNumType] = useState<'lifepath' | 'destiny' | 'soulurge'>('lifepath');
 
   // Animation values for mandala
@@ -363,7 +365,7 @@ export function NumerologyScreen({
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={styles.tabScroll}>
-      <Text style={styles.tabViewTitle}>Numerology</Text>
+      <Text style={[styles.tabViewTitle, isDark && { color: theme.text.primary }]}>Numerology</Text>
 
       {/* Share Numerology Card Button */}
       <TouchableOpacity
@@ -500,52 +502,47 @@ export function NumerologyScreen({
           return (
             <Animated.View
               key={`bg-num-${idx}`}
-              style={{
-                position: 'absolute',
-                left: 160 - item.size / 2,
-                top: 160 - item.size / 2,
-                width: item.size,
-                height: item.size,
-                alignItems: 'center',
-                justifyContent: 'center',
-                transform: [
-                  { rotate: rotateVal },
-                  { translateX: item.radius },
-                  { rotate: counterRotateVal }
-                ]
-              }}
+              pointerEvents="none"
+              style={[
+                styles.mandalaBgNumberWrapper,
+                {
+                  transform: [
+                    { rotate: rotateVal },
+                    { translateX: item.radius },
+                    { rotate: counterRotateVal },
+                  ],
+                },
+              ]}
             >
-              <Text style={{
-                fontFamily: 'Cinzel-Bold',
-                fontSize: item.size,
-                color: isDayTime ? '#F5A623' : '#B3A2E7',
-                opacity: item.opacity,
-              }}>
+              <Text style={[
+                styles.mandalaBgNumberText,
+                {
+                  fontSize: item.size,
+                  opacity: isDark ? 0.9 : item.opacity,
+                  color: isDark ? '#FFFFFF' : '#7209B7',
+                }
+              ]}>
                 {item.val}
               </Text>
             </Animated.View>
           );
         })}
 
-        {/* Three Orbiting Core Orbs */}
-        {orbData.map((orb, idx) => {
-          const angles = [-90, 30, 150];
-          const angleStart = angles[idx];
+        {/* Orbiting Planetary Orbs (Life Path, Destiny, Personal Year) */}
+        {orbData.map((orb, index) => {
           const isActive = selectedCoreNumType === orb.key;
-
-          const floatY = orb.floatAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, -6],
-          });
-
+          const baseAngle = index * 120;
           const rotateVal = orbitAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [`${angleStart}deg`, `${angleStart + 360}deg`],
+            outputRange: [`${baseAngle}deg`, `${baseAngle + 360}deg`],
           });
-
           const counterRotateVal = orbitAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [`${-angleStart}deg`, `${-angleStart - 360}deg`],
+            outputRange: [`${-baseAngle}deg`, `${-baseAngle - 360}deg`],
+          });
+          const floatY = orb.floatAnim.interpolate({
+            inputRange: [-1, 1],
+            outputRange: [-6, 6],
           });
 
           return (
@@ -554,8 +551,6 @@ export function NumerologyScreen({
               style={[
                 styles.mandalaOrbWrapper,
                 {
-                  left: 160 - 38,
-                  top: 160 - 38,
                   transform: [
                     { rotate: rotateVal },
                     { translateX: 120 },
@@ -571,6 +566,7 @@ export function NumerologyScreen({
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 style={[
                   styles.mandalaOrb,
+                  isDark && { backgroundColor: 'rgba(22, 19, 41, 0.75)', borderColor: 'rgba(168, 85, 247, 0.3)' },
                   isActive && { borderColor: orb.color, borderWidth: 2 },
                 ]}
               >
@@ -586,12 +582,14 @@ export function NumerologyScreen({
                   <>
                     <Text style={[
                       styles.mandalaOrbNumber,
+                      isDark && { color: '#F0EEFF' },
                       isActive && { color: '#FFFFFF' },
                     ]}>
                       {orb.val}
                     </Text>
                     <Text style={[
                       styles.mandalaOrbLabelCentered,
+                      isDark && { color: '#9E9BB3' },
                       isActive && { color: 'rgba(255,255,255,0.85)' }
                     ]}>
                       Personal{"\n"}Year
@@ -601,12 +599,14 @@ export function NumerologyScreen({
                   <>
                     <Text style={[
                       styles.mandalaOrbNumber,
+                      isDark && { color: '#F0EEFF' },
                       isActive && { color: '#FFFFFF' },
                     ]}>
                       {orb.val}
                     </Text>
                     <Text style={[
                       styles.mandalaOrbLabel,
+                      isDark && { color: '#9E9BB3' },
                       isActive && { color: 'rgba(255,255,255,0.85)' },
                     ]}>
                       {orb.label}
@@ -623,19 +623,19 @@ export function NumerologyScreen({
           );
         })}
 
-        <View style={styles.mandalaHint}>
-          <Text style={styles.mandalaHintText}>Tap to explore ✨</Text>
+        <View style={[styles.mandalaHint, isDark && { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}>
+          <Text style={[styles.mandalaHintText, isDark && { color: '#A855F7' }]}>Tap to explore ✨</Text>
         </View>
       </View>
 
       {/* Core Switcher Segment Bar */}
-      <View style={styles.chartsSegmentContainer}>
+      <View style={[styles.chartsSegmentContainer, isDark && { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}>
         <TouchableOpacity
           style={[styles.chartsSegmentBtn, selectedCoreNumType === 'lifepath' && styles.chartsSegmentBtnActive]}
           onPress={() => setSelectedCoreNumType('lifepath')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.chartsSegmentText, selectedCoreNumType === 'lifepath' && styles.chartsSegmentTextActive]}>
+          <Text style={[styles.chartsSegmentText, isDark && { color: '#A855F7' }, selectedCoreNumType === 'lifepath' && styles.chartsSegmentTextActive]}>
             Life Path
           </Text>
         </TouchableOpacity>
@@ -644,7 +644,7 @@ export function NumerologyScreen({
           onPress={() => setSelectedCoreNumType('destiny')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.chartsSegmentText, selectedCoreNumType === 'destiny' && styles.chartsSegmentTextActive]}>
+          <Text style={[styles.chartsSegmentText, isDark && { color: '#A855F7' }, selectedCoreNumType === 'destiny' && styles.chartsSegmentTextActive]}>
             Destiny
           </Text>
         </TouchableOpacity>
@@ -653,7 +653,7 @@ export function NumerologyScreen({
           onPress={() => setSelectedCoreNumType('soulurge')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.chartsSegmentText, selectedCoreNumType === 'soulurge' && styles.chartsSegmentTextActive]}>
+          <Text style={[styles.chartsSegmentText, isDark && { color: '#A855F7' }, selectedCoreNumType === 'soulurge' && styles.chartsSegmentTextActive]}>
             Personal Year
           </Text>
         </TouchableOpacity>
@@ -953,6 +953,16 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.9)',
     marginLeft: 6,
     lineHeight: 20,
+  },
+  mandalaBgNumberWrapper: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mandalaBgNumberText: {
+    fontFamily: 'Cinzel-Bold',
   },
 });
 

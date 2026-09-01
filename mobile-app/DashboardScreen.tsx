@@ -47,6 +47,7 @@ import {
 import HopeDisclosureModal from './HopeDisclosureModal';
 import RecalculationProgressModal from './components/common/RecalculationProgressModal';
 import { CosmicDatePickerModal, CosmicTimePickerModal } from './components/common/CosmicDateTimePickerModal';
+import CosmicStarField from './components/common/CosmicStarField';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -709,22 +710,14 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
           style={styles.gradientBg}
         >
           <StatusBar style={isDark ? 'light' : 'dark'} />
-
-          {/* Dynamic Watermark Background */}
-          <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
-            <Image
-              source={ZODIAC_ICONS[zodiacIndex + 1] || ZODIAC_ICONS[1]}
-              style={styles.bgWatermark}
-              resizeMode="contain"
-            />
-          </View>
+          {isDark && <CosmicStarField />}
 
           {/* Top Header */}
           <View style={[styles.header, { paddingTop: insets.top > 0 ? insets.top + 6 : 14 }]}>
             <View style={styles.headerLeftSlot}>
               {activeTab !== 'today' ? (
                 <TouchableOpacity onPress={() => changeTab('today')} style={styles.logoutBtn} activeOpacity={0.7}>
-                  <ArrowLeft size={20} color="#726F8D" />
+                  <ArrowLeft size={20} color={isDark ? '#F0EEFF' : '#726F8D'} />
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
@@ -733,22 +726,22 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
                     setCurrentProfileSubView('credits');
                     changeTab('profile');
                   }}
-                  style={styles.creditsPill}
+                  style={[styles.creditsPill, isDark && { backgroundColor: theme.bg.card, borderColor: theme.border }]}
                 >
                   <GoldCoin size={18} style={{ marginRight: 6 }} />
-                  <Text style={styles.creditsText}>{credits}</Text>
+                  <Text style={[styles.creditsText, isDark && { color: theme.text.primary }]}>{credits}</Text>
                 </TouchableOpacity>
               )}
             </View>
             <View style={styles.headerCenter}>
-              <Text style={styles.headerTitle}>
+              <Text style={[styles.headerTitle, isDark && { color: theme.text.primary }]}>
                 {activeTab === 'today' ? 'TODAY' :
                  activeTab === 'readings' ? 'EXPLORE' :
                  activeTab === 'numerology' ? 'NUMEROLOGY' :
                  activeTab === 'chat' ? 'HOPE' :
                  activeTab === 'charts' ? 'ASTRO MAP' : 'PROFILE'}
               </Text>
-              <Text style={styles.headerSubtitle}>Based on Vedic Astrology</Text>
+              <Text style={[styles.headerSubtitle, isDark && { color: theme.text.secondary }]}>Based on Vedic Astrology</Text>
             </View>
             <View style={styles.headerRightSlot}>
               <TouchableOpacity
@@ -882,10 +875,10 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
           {/* Custom Bottom Tab Bar */}
           {activeTab !== 'chat' && (
             <View style={[styles.bottomNavContainer, { bottom: insets.bottom > 0 ? insets.bottom + 4 : 16 }]}>
-              <View style={styles.bottomNavBlurWrapper}>
-                <BlurView intensity={95} tint="light" style={StyleSheet.absoluteFillObject} />
+              <View style={[styles.bottomNavBlurWrapper, isDark && { borderColor: 'rgba(168, 85, 247, 0.3)', backgroundColor: 'rgba(22, 19, 41, 0.92)' }]}>
+                <BlurView intensity={95} tint={isDark ? 'dark' : 'light'} style={StyleSheet.absoluteFillObject} />
                 <LinearGradient
-                  colors={['rgba(114, 9, 183, 0.08)', 'rgba(247, 37, 133, 0.05)']}
+                  colors={isDark ? ['rgba(168, 85, 247, 0.15)', 'rgba(247, 37, 133, 0.10)'] : ['rgba(114, 9, 183, 0.08)', 'rgba(247, 37, 133, 0.05)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={StyleSheet.absoluteFillObject}
@@ -895,21 +888,21 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
               {/* Left Tabs (Today, Explore) */}
               <View style={styles.navGroupLeft}>
                 <TouchableOpacity
-                  style={[styles.navTab, activeTab === 'today' && styles.navTabActive]}
+                  style={[styles.navTab, activeTab === 'today' && (isDark ? { backgroundColor: 'rgba(168, 85, 247, 0.15)' } : styles.navTabActive)]}
                   onPress={() => changeTab('today')}
                   activeOpacity={0.8}
                 >
-                  <Calendar size={18} color={activeTab === 'today' ? '#7209B7' : '#2C2B3D'} />
-                  <Text style={[styles.navText, activeTab === 'today' && styles.navTextActive]}>Today</Text>
+                  <Calendar size={18} color={activeTab === 'today' ? (isDark ? '#A855F7' : '#7209B7') : (isDark ? '#9E9BB3' : '#2C2B3D')} />
+                  <Text style={[styles.navText, { color: activeTab === 'today' ? (isDark ? '#A855F7' : '#7209B7') : (isDark ? '#9E9BB3' : '#726F8D') }]}>Today</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.navTab, activeTab === 'readings' && styles.navTabActive]}
+                  style={[styles.navTab, activeTab === 'readings' && (isDark ? { backgroundColor: 'rgba(168, 85, 247, 0.15)' } : styles.navTabActive)]}
                   onPress={() => changeTab('readings')}
                   activeOpacity={0.8}
                 >
-                  <Compass size={18} color={activeTab === 'readings' ? '#7209B7' : '#2C2B3D'} />
-                  <Text style={[styles.navText, activeTab === 'readings' && styles.navTextActive]}>Explore</Text>
+                  <Compass size={18} color={activeTab === 'readings' ? (isDark ? '#A855F7' : '#7209B7') : (isDark ? '#9E9BB3' : '#2C2B3D')} />
+                  <Text style={[styles.navText, { color: activeTab === 'readings' ? (isDark ? '#A855F7' : '#7209B7') : (isDark ? '#9E9BB3' : '#726F8D') }]}>Explore</Text>
                 </TouchableOpacity>
               </View>
 
@@ -934,31 +927,33 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
               {/* Right Tabs (Numbers, Astro Map) */}
               <View style={styles.navGroupRight}>
                 <TouchableOpacity
-                  style={[styles.navTab, activeTab === 'numerology' && styles.navTabActive]}
+                  style={[styles.navTab, activeTab === 'numerology' && (isDark ? { backgroundColor: 'rgba(168, 85, 247, 0.15)' } : styles.navTabActive)]}
                   onPress={() => changeTab('numerology')}
                   activeOpacity={0.8}
                 >
                   <View style={[
                     styles.navDestinyBadge,
+                    isDark && { backgroundColor: 'rgba(168, 85, 247, 0.15)', borderColor: 'rgba(168, 85, 247, 0.35)' },
                     activeTab === 'numerology' && styles.navDestinyBadgeActive
                   ]}>
                     <Text style={[
                       styles.navDestinyDigit,
+                      isDark && { color: '#A855F7' },
                       activeTab === 'numerology' && styles.navDestinyDigitActive
                     ]}>
                       {destinyNumber}
                     </Text>
                   </View>
-                  <Text style={[styles.navText, activeTab === 'numerology' && styles.navTextActive]}>Numbers</Text>
+                  <Text style={[styles.navText, { color: activeTab === 'numerology' ? (isDark ? '#A855F7' : '#7209B7') : (isDark ? '#9E9BB3' : '#726F8D') }]}>Numbers</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.navTab, activeTab === 'charts' && styles.navTabActive]}
+                  style={[styles.navTab, activeTab === 'charts' && (isDark ? { backgroundColor: 'rgba(168, 85, 247, 0.15)' } : styles.navTabActive)]}
                   onPress={() => changeTab('charts')}
                   activeOpacity={0.8}
                 >
-                  <Grid size={18} color={activeTab === 'charts' ? '#7209B7' : '#2C2B3D'} />
-                  <Text style={[styles.navText, activeTab === 'charts' && styles.navTextActive]}>Astro Map</Text>
+                  <Grid size={18} color={activeTab === 'charts' ? (isDark ? '#A855F7' : '#7209B7') : (isDark ? '#9E9BB3' : '#2C2B3D')} />
+                  <Text style={[styles.navText, { color: activeTab === 'charts' ? (isDark ? '#A855F7' : '#7209B7') : (isDark ? '#9E9BB3' : '#726F8D') }]}>Astro Map</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -1025,15 +1020,6 @@ const styles = StyleSheet.create({
   },
   gradientBg: {
     flex: 1,
-  },
-  bgWatermark: {
-    position: 'absolute',
-    width: 380,
-    height: 380,
-    right: -80,
-    top: 40,
-    opacity: 0.04,
-    tintColor: '#7209B7',
   },
   header: {
     flexDirection: 'row',

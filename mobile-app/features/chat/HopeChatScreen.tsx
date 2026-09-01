@@ -15,6 +15,7 @@ import {
 import { Sparkles, Send, Share2 } from 'lucide-react-native';
 import { ZODIAC_ICONS } from '../../constants/astrology';
 import { haptic } from '../../haptics';
+import { useTheme } from '../../theme';
 
 export interface ChatMessage {
   id: string;
@@ -48,6 +49,7 @@ export function HopeChatScreen({
   chatListRef,
   onShareMessage,
 }: HopeChatScreenProps) {
+  const { theme, isDark } = useTheme();
   const baseBottomPadding = (insets.bottom || 0) > 0 ? insets.bottom + 8 : 12;
   const bottomPaddingAnim = useRef(new Animated.Value(baseBottomPadding)).current;
   const [inputHeight, setInputHeight] = useState(44);
@@ -120,12 +122,12 @@ export function HopeChatScreen({
       {/* Astrologer Header */}
       <View style={styles.chatHeader}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <View style={styles.avatarIconWrapper}>
-            <Sparkles size={20} color="#7209B7" />
+          <View style={[styles.avatarIconWrapper, isDark && { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}>
+            <Sparkles size={20} color={isDark ? '#A855F7' : '#7209B7'} />
           </View>
           <View>
-            <Text style={{ fontSize: 18, fontFamily: 'Cinzel-Bold', color: '#2C2B3D' }}>Hope</Text>
-            <Text style={{ fontSize: 11.5, fontFamily: 'SourceSerif4', color: '#726F8D' }}>Your Personal Astrologer & Guide</Text>
+            <Text style={{ fontSize: 18, fontFamily: 'Cinzel-Bold', color: isDark ? '#F0EEFF' : '#2C2B3D' }}>Hope</Text>
+            <Text style={{ fontSize: 11.5, fontFamily: 'SourceSerif4', color: isDark ? '#9E9BB3' : '#726F8D' }}>Your Personal Astrologer & Guide</Text>
           </View>
         </View>
       </View>
@@ -154,8 +156,8 @@ export function HopeChatScreen({
                     />
                   </View>
                 )}
-                <View style={[styles.bubble, isAi ? styles.bubbleAi : styles.bubbleUser]}>
-                  <Text style={[styles.msgText, isAi ? styles.msgTextAi : styles.msgTextUser]}>
+                <View style={[styles.bubble, isAi ? (isDark ? { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.2)' } : styles.bubbleAi) : styles.bubbleUser]}>
+                  <Text style={[styles.msgText, isAi ? (isDark ? { color: '#F0EEFF' } : styles.msgTextAi) : styles.msgTextUser]}>
                     {item.text}
                   </Text>
                   {isAi && onShareMessage && (
@@ -193,9 +195,9 @@ export function HopeChatScreen({
                 key={chip}
                 onPress={() => { haptic.press(); handleChatSend('astrology', chip); }}
                 activeOpacity={0.8}
-                style={styles.quickChip}
+                style={[styles.quickChip, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.2)' }]}
               >
-                <Text style={styles.quickChipText}>{chip}</Text>
+                <Text style={[styles.quickChipText, isDark && { color: '#F0EEFF' }]}>{chip}</Text>
               </TouchableOpacity>
             )}
           />
@@ -203,10 +205,11 @@ export function HopeChatScreen({
       )}
 
       {/* Input Bar */}
-      <View style={styles.chatInputContainer}>
+      <View style={[styles.chatInputContainer, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.2)' }]}>
         <TextInput
           style={[
             styles.chatTextInput,
+            isDark && { backgroundColor: '#1F1B38', color: '#F0EEFF' },
             {
               height: Math.min(Math.max(44, inputHeight), 120),
             }

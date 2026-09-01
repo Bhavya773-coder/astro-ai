@@ -182,38 +182,38 @@ export function ProfileScreen({
   if (currentProfileSubView === 'help') {
     return (
       <View style={styles.subViewContainer}>
-        <View style={styles.subHeader}>
+        <View style={[styles.subHeader, isDark && { borderBottomColor: 'rgba(168, 85, 247, 0.2)' }]}>
           <TouchableOpacity onPress={() => setCurrentProfileSubView('profile')} style={styles.subHeaderBackBtn}>
-            <ArrowLeft size={18} color="#7209B7" />
+            <ArrowLeft size={18} color={isDark ? '#A855F7' : '#7209B7'} />
           </TouchableOpacity>
-          <Text style={styles.subHeaderTitle}>Help & Support</Text>
+          <Text style={[styles.subHeaderTitle, isDark && { color: '#F0EEFF' }]}>Help & Support</Text>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} style={styles.subScroll}>
-          <View style={styles.helpHeaderCard}>
-            <Text style={styles.helpHeaderTitle}>How can we guide you?</Text>
-            <Text style={styles.helpHeaderDesc}>
+          <View style={[styles.helpHeaderCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.2)' }]}>
+            <Text style={[styles.helpHeaderTitle, isDark && { color: '#F0EEFF' }]}>How can we guide you?</Text>
+            <Text style={[styles.helpHeaderDesc, isDark && { color: '#9E9BB3' }]}>
               Explore answers to common questions or reach our astrologers directly.
             </Text>
           </View>
 
-          <View style={styles.faqCard}>
-            <Text style={styles.faqQuestion}>How do I earn more credits?</Text>
-            <Text style={styles.faqAnswer}>
+          <View style={[styles.faqCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}>
+            <Text style={[styles.faqQuestion, isDark && { color: '#A855F7' }]}>How do I earn more credits?</Text>
+            <Text style={[styles.faqAnswer, isDark && { color: '#D1CEE2' }]}>
               AstroAi4u provides daily credits. If you need more, you can explore membership plans, numerology calculations, or view tarot spreads.
             </Text>
           </View>
 
-          <View style={styles.faqCard}>
-            <Text style={styles.faqQuestion}>How accurate are the readings?</Text>
-            <Text style={styles.faqAnswer}>
+          <View style={[styles.faqCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}>
+            <Text style={[styles.faqQuestion, isDark && { color: '#A855F7' }]}>How accurate are the readings?</Text>
+            <Text style={[styles.faqAnswer, isDark && { color: '#D1CEE2' }]}>
               Our charts are based on ancient Vedic Astrology principles. Calculations depend on your exact birth time and location coordinates.
             </Text>
           </View>
 
-          <View style={styles.faqCard}>
-            <Text style={styles.faqQuestion}>Is my face/palm scan photo saved?</Text>
-            <Text style={styles.faqAnswer}>
+          <View style={[styles.faqCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}>
+            <Text style={[styles.faqQuestion, isDark && { color: '#A855F7' }]}>Is my face/palm scan photo saved?</Text>
+            <Text style={[styles.faqAnswer, isDark && { color: '#D1CEE2' }]}>
               Never. All face and palm images are processed locally on your device in real-time. We do not store or share private biometric pictures.
             </Text>
           </View>
@@ -245,41 +245,41 @@ export function ProfileScreen({
   if (currentProfileSubView === 'privacy') {
     return (
       <View style={styles.subViewContainer}>
-        <View style={styles.subHeader}>
+        <View style={[styles.subHeader, isDark && { borderBottomColor: 'rgba(168, 85, 247, 0.2)' }]}>
           <TouchableOpacity onPress={() => setCurrentProfileSubView(previousProfileSubView || 'profile')} style={styles.subHeaderBackBtn}>
-            <ArrowLeft size={18} color="#7209B7" />
+            <ArrowLeft size={18} color={isDark ? '#A855F7' : '#7209B7'} />
           </TouchableOpacity>
-          <Text style={styles.subHeaderTitle}>Privacy Policy</Text>
+          <Text style={[styles.subHeaderTitle, isDark && { color: '#F0EEFF' }]}>Privacy Policy</Text>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} style={styles.subScroll}>
-          <View style={styles.helpHeaderCard}>
-            <Text style={styles.helpHeaderTitle}>Privacy Policy & Data Security</Text>
-            <Text style={styles.helpHeaderDesc}>
+          <View style={[styles.helpHeaderCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.2)' }]}>
+            <Text style={[styles.helpHeaderTitle, isDark && { color: '#F0EEFF' }]}>Privacy Policy & Data Security</Text>
+            <Text style={[styles.helpHeaderDesc, isDark && { color: '#9E9BB3' }]}>
               AstroAi4u is built on Privacy by Design. We respect your personal data and adhere strictly to App Store & Google Play privacy guidelines.
             </Text>
           </View>
 
-          <View style={styles.faqCard}>
-            <Text style={styles.faqQuestion}>1. Zero Biometric Storage</Text>
-            <Text style={styles.faqAnswer}>
+          <View style={[styles.faqCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}>
+            <Text style={[styles.faqQuestion, isDark && { color: '#A855F7' }]}>1. Zero Biometric Storage</Text>
+            <Text style={[styles.faqAnswer, isDark && { color: '#D1CEE2' }]}>
               All palm, face, and coffee reading photos are processed locally in real-time. We NEVER store, sell, or share biometric image data on any external server.
             </Text>
           </View>
 
-          <View style={styles.faqCard}>
-            <Text style={styles.faqQuestion}>2. Birth Information Usage</Text>
-            <Text style={styles.faqAnswer}>
+          <View style={[styles.faqCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}>
+            <Text style={[styles.faqQuestion, isDark && { color: '#A855F7' }]}>2. Birth Information Usage</Text>
+            <Text style={[styles.faqAnswer, isDark && { color: '#D1CEE2' }]}>
               Your full name, birthdate, birth time, and birth location coordinates are used exclusively to compute accurate Vedic horoscope charts.
             </Text>
           </View>
 
-          <Text style={styles.helpSectionTitle}>Device App Permissions</Text>
+          <Text style={[styles.helpSectionTitle, isDark && { color: '#F0EEFF' }]}>Device App Permissions</Text>
 
-          <View style={styles.permissionBar}>
+          <View style={[styles.permissionBar, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}>
             <View style={styles.permissionInfo}>
-              <Text style={styles.permissionTitle}>Camera Access</Text>
-              <Text style={styles.permissionDesc}>Used to capture live photos for real-time palm or face scans.</Text>
+              <Text style={[styles.permissionTitle, isDark && { color: '#F0EEFF' }]}>Camera Access</Text>
+              <Text style={[styles.permissionDesc, isDark && { color: '#9E9BB3' }]}>Used to capture live photos for real-time palm or face scans.</Text>
             </View>
             <TouchableOpacity
               activeOpacity={0.8}
@@ -290,10 +290,10 @@ export function ProfileScreen({
             </TouchableOpacity>
           </View>
 
-          <View style={styles.permissionBar}>
+          <View style={[styles.permissionBar, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}>
             <View style={styles.permissionInfo}>
-              <Text style={styles.permissionTitle}>Photo Gallery Uploads</Text>
-              <Text style={styles.permissionDesc}>Used to select saved pictures from your photo library.</Text>
+              <Text style={[styles.permissionTitle, isDark && { color: '#F0EEFF' }]}>Photo Gallery Uploads</Text>
+              <Text style={[styles.permissionDesc, isDark && { color: '#9E9BB3' }]}>Used to select saved pictures from your photo library.</Text>
             </View>
             <TouchableOpacity
               activeOpacity={0.8}
@@ -304,8 +304,8 @@ export function ProfileScreen({
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.systemSettingsBtn} onPress={() => Linking.openSettings()}>
-            <Text style={styles.systemSettingsBtnText}>Open Device System Settings</Text>
+          <TouchableOpacity style={[styles.systemSettingsBtn, isDark && { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]} onPress={() => Linking.openSettings()}>
+            <Text style={[styles.systemSettingsBtnText, isDark && { color: '#A855F7' }]}>Open Device System Settings</Text>
           </TouchableOpacity>
           <View style={{ height: 60 }} />
         </ScrollView>
@@ -316,31 +316,31 @@ export function ProfileScreen({
   if (currentProfileSubView === 'terms') {
     return (
       <View style={styles.subViewContainer}>
-        <View style={styles.subHeader}>
+        <View style={[styles.subHeader, isDark && { borderBottomColor: 'rgba(168, 85, 247, 0.2)' }]}>
           <TouchableOpacity onPress={() => setCurrentProfileSubView(previousProfileSubView || 'profile')} style={styles.subHeaderBackBtn}>
-            <ArrowLeft size={18} color="#7209B7" />
+            <ArrowLeft size={18} color={isDark ? '#A855F7' : '#7209B7'} />
           </TouchableOpacity>
-          <Text style={styles.subHeaderTitle}>Terms of Service</Text>
+          <Text style={[styles.subHeaderTitle, isDark && { color: '#F0EEFF' }]}>Terms of Service</Text>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} style={styles.subScroll}>
-          <View style={styles.helpHeaderCard}>
-            <Text style={styles.helpHeaderTitle}>Terms of Service</Text>
-            <Text style={styles.helpHeaderDesc}>
+          <View style={[styles.helpHeaderCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.2)' }]}>
+            <Text style={[styles.helpHeaderTitle, isDark && { color: '#F0EEFF' }]}>Terms of Service</Text>
+            <Text style={[styles.helpHeaderDesc, isDark && { color: '#9E9BB3' }]}>
               AstroAi4u Services & Subscriptions Policy. Last updated: July 2026.
             </Text>
           </View>
 
-          <View style={styles.faqCard}>
-            <Text style={styles.faqQuestion}>1. Agreement to Terms</Text>
-            <Text style={styles.faqAnswer}>
+          <View style={[styles.faqCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}>
+            <Text style={[styles.faqQuestion, isDark && { color: '#A855F7' }]}>1. Agreement to Terms</Text>
+            <Text style={[styles.faqAnswer, isDark && { color: '#D1CEE2' }]}>
               By downloading, creating an account, or using AstroAi4u, you agree to comply with and be bound by these Terms of Service.
             </Text>
           </View>
 
-          <View style={styles.faqCard}>
-            <Text style={styles.faqQuestion}>2. In-App Subscriptions</Text>
-            <Text style={styles.faqAnswer}>
+          <View style={[styles.faqCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}>
+            <Text style={[styles.faqQuestion, isDark && { color: '#A855F7' }]}>2. In-App Subscriptions</Text>
+            <Text style={[styles.faqAnswer, isDark && { color: '#D1CEE2' }]}>
               Subscriptions automatically renew monthly unless auto-renew is disabled at least 24 hours prior to the current period ending.
             </Text>
           </View>
@@ -353,27 +353,27 @@ export function ProfileScreen({
   if (currentProfileSubView === 'credits') {
     return (
       <View style={styles.subViewContainer}>
-        <View style={styles.subHeader}>
+        <View style={[styles.subHeader, isDark && { borderBottomColor: 'rgba(168, 85, 247, 0.2)' }]}>
           <TouchableOpacity onPress={() => setCurrentProfileSubView('profile')} style={styles.subHeaderBackBtn}>
-            <ArrowLeft size={18} color="#7209B7" />
+            <ArrowLeft size={18} color={isDark ? '#A855F7' : '#7209B7'} />
           </TouchableOpacity>
-          <Text style={styles.subHeaderTitle}>Cosmic Membership Plans</Text>
+          <Text style={[styles.subHeaderTitle, isDark && { color: '#F0EEFF' }]}>Cosmic Membership Plans</Text>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} style={styles.subScroll} nestedScrollEnabled={true}>
-          <View style={styles.balanceHeaderCard}>
+          <View style={[styles.balanceHeaderCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.2)' }]}>
             <Sparkles size={28} color="#FFD700" style={{ marginBottom: 8 }} />
-            <Text style={styles.balanceHeaderTitle}>Current Balance</Text>
+            <Text style={[styles.balanceHeaderTitle, isDark && { color: '#9E9BB3' }]}>Current Balance</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 2 }}>
               <GoldCoin size={22} style={{ marginRight: 6 }} />
-              <Text style={styles.balanceHeaderValue}>{credits} Credits</Text>
+              <Text style={[styles.balanceHeaderValue, isDark && { color: '#F0EEFF' }]}>{credits} Credits</Text>
             </View>
-            <Text style={styles.balanceHeaderDesc}>
+            <Text style={[styles.balanceHeaderDesc, isDark && { color: '#9E9BB3' }]}>
               Choose a monthly plan to get credits, unlock daily forecasts, personalized charts, and AI consultations.
             </Text>
           </View>
 
-          <Text style={styles.helpSectionTitle}>Select Membership Plan</Text>
+          <Text style={[styles.helpSectionTitle, isDark && { color: '#F0EEFF' }]}>Select Membership Plan</Text>
 
           {bundles.map((bundle) => (
             <View
@@ -384,7 +384,7 @@ export function ProfileScreen({
                 borderRadius: 20,
                 overflow: 'hidden',
                 borderWidth: bundle.popular ? 2 : 1,
-                borderColor: bundle.popular ? '#F72585' : 'rgba(255, 255, 255, 0.15)',
+                borderColor: bundle.popular ? '#F72585' : (isDark ? 'rgba(168, 85, 247, 0.25)' : 'rgba(255, 255, 255, 0.15)'),
                 elevation: 6,
                 shadowColor: bundle.popular ? '#F72585' : '#000',
                 shadowOffset: { width: 0, height: 4 },
@@ -473,10 +473,10 @@ export function ProfileScreen({
             marginTop: 14,
             marginBottom: 30,
             padding: 18,
-            backgroundColor: '#FFFFFF',
+            backgroundColor: isDark ? '#161329' : '#FFFFFF',
             borderRadius: 16,
             borderWidth: 1,
-            borderColor: 'rgba(114, 9, 183, 0.15)',
+            borderColor: isDark ? 'rgba(168, 85, 247, 0.2)' : 'rgba(114, 9, 183, 0.15)',
             shadowColor: '#7209B7',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.05,
@@ -484,13 +484,13 @@ export function ProfileScreen({
             elevation: 2,
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
-              <Lock size={15} color="#7209B7" style={{ marginRight: 6 }} />
-              <Text style={{ color: '#2C2B3D', fontSize: 13, fontFamily: 'Cinzel-Bold' }}>
+              <Lock size={15} color={isDark ? '#A855F7' : '#7209B7'} style={{ marginRight: 6 }} />
+              <Text style={{ color: isDark ? '#F0EEFF' : '#2C2B3D', fontSize: 13, fontFamily: 'Cinzel-Bold' }}>
                 Subscription Terms & Privacy Notice
               </Text>
             </View>
 
-            <Text style={{ color: '#726F8D', fontSize: 11, fontFamily: 'SourceSerif4', textAlign: 'center', lineHeight: 16, marginBottom: 14 }}>
+            <Text style={{ color: isDark ? '#9E9BB3' : '#726F8D', fontSize: 11, fontFamily: 'SourceSerif4', textAlign: 'center', lineHeight: 16, marginBottom: 14 }}>
               Subscriptions auto-renew monthly unless canceled at least 24 hours before renewal in Account Settings.
             </Text>
 
@@ -519,16 +519,16 @@ export function ProfileScreen({
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  backgroundColor: 'rgba(114, 9, 183, 0.08)',
+                  backgroundColor: isDark ? 'rgba(168, 85, 247, 0.12)' : 'rgba(114, 9, 183, 0.08)',
                   paddingHorizontal: 14,
                   paddingVertical: 8,
                   borderRadius: 10,
                   borderWidth: 1,
-                  borderColor: 'rgba(114, 9, 183, 0.25)'
+                  borderColor: isDark ? 'rgba(168, 85, 247, 0.3)' : 'rgba(114, 9, 183, 0.25)'
                 }}
               >
-                <Lock size={13} color="#7209B7" style={{ marginRight: 5 }} />
-                <Text style={{ color: '#7209B7', fontSize: 11.5, fontFamily: 'Cinzel-Bold' }}>Privacy Policy</Text>
+                <Lock size={13} color={isDark ? '#A855F7' : '#7209B7'} style={{ marginRight: 5 }} />
+                <Text style={{ color: isDark ? '#A855F7' : '#7209B7', fontSize: 11.5, fontFamily: 'Cinzel-Bold' }}>Privacy Policy</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -540,59 +540,59 @@ export function ProfileScreen({
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={styles.tabScroll}>
-      <Text style={styles.tabViewTitle}>Celestial Profile</Text>
+      <Text style={[styles.tabViewTitle, isDark && { color: '#F0EEFF' }]}>Celestial Profile</Text>
 
       {/* User Card */}
       {!isEditingProfile ? (
-        <View style={styles.profileDetailsCard}>
+        <View style={[styles.profileDetailsCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.2)' }]}>
           <View style={styles.profileAvatarLarge}>
             <Text style={styles.profileInitials}>{userName.substring(0, 2).toUpperCase()}</Text>
           </View>
-          <Text style={styles.profileName}>{userName}</Text>
-          <Text style={styles.profileSubText}>Zodiac Sign: {zodiac?.name}</Text>
+          <Text style={[styles.profileName, isDark && { color: '#F0EEFF' }]}>{userName}</Text>
+          <Text style={[styles.profileSubText, isDark && { color: '#9E9BB3' }]}>Zodiac Sign: {zodiac?.name}</Text>
 
-          <View style={styles.profileGrid}>
+          <View style={[styles.profileGrid, isDark && { borderTopColor: 'rgba(168, 85, 247, 0.15)' }]}>
             <View style={styles.profileGridItem}>
-              <Text style={styles.profileGridLabel}>BIRTHDATE</Text>
-              <Text style={styles.profileGridValue}>{birthdate || 'Not set'}</Text>
+              <Text style={[styles.profileGridLabel, isDark && { color: '#9E9BB3' }]}>BIRTHDATE</Text>
+              <Text style={[styles.profileGridValue, isDark && { color: '#F0EEFF' }]}>{birthdate || 'Not set'}</Text>
             </View>
             <View style={styles.profileGridItem}>
-              <Text style={styles.profileGridLabel}>BIRTH TIME</Text>
-              <Text style={styles.profileGridValue}>{profileAnswers.birthtime || 'Not set'}</Text>
+              <Text style={[styles.profileGridLabel, isDark && { color: '#9E9BB3' }]}>BIRTH TIME</Text>
+              <Text style={[styles.profileGridValue, isDark && { color: '#F0EEFF' }]}>{profileAnswers.birthtime || 'Not set'}</Text>
             </View>
           </View>
 
-          <View style={[styles.profileGrid, { marginTop: 10, borderTopWidth: 0 }]}>
+          <View style={[styles.profileGrid, isDark && { borderTopColor: 'rgba(168, 85, 247, 0.15)' }, { marginTop: 10, borderTopWidth: 0 }]}>
             <View style={styles.profileGridItem}>
-              <Text style={styles.profileGridLabel}>BIRTHPLACE</Text>
-              <Text style={styles.profileGridValue} numberOfLines={2}>{profileAnswers.birthplace || 'Not set'}</Text>
+              <Text style={[styles.profileGridLabel, isDark && { color: '#9E9BB3' }]}>BIRTHPLACE</Text>
+              <Text style={[styles.profileGridValue, isDark && { color: '#F0EEFF' }]} numberOfLines={2}>{profileAnswers.birthplace || 'Not set'}</Text>
             </View>
             <View style={styles.profileGridItem}>
-              <Text style={styles.profileGridLabel}>CURRENT LIVING PLACE</Text>
-              <Text style={styles.profileGridValue} numberOfLines={2}>{profileAnswers.current_location || 'Not set'}</Text>
+              <Text style={[styles.profileGridLabel, isDark && { color: '#9E9BB3' }]}>CURRENT LIVING PLACE</Text>
+              <Text style={[styles.profileGridValue, isDark && { color: '#F0EEFF' }]} numberOfLines={2}>{profileAnswers.current_location || 'Not set'}</Text>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.editProfileBtn} onPress={startEditing}>
-            <Sparkles size={13} color="#7209B7" style={{ marginRight: 6 }} />
-            <Text style={styles.editProfileBtnText}>Edit Profile Details</Text>
+          <TouchableOpacity style={[styles.editProfileBtn, isDark && { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]} onPress={startEditing}>
+            <Sparkles size={13} color={isDark ? '#A855F7' : '#7209B7'} style={{ marginRight: 6 }} />
+            <Text style={[styles.editProfileBtnText, isDark && { color: '#A855F7' }]}>Edit Profile Details</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={styles.profileDetailsCard}>
+        <View style={[styles.profileDetailsCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.2)' }]}>
           <View style={styles.profileAvatarLarge}>
             <Text style={styles.profileInitials}>
               {(editFullName || userName).substring(0, 2).toUpperCase()}
             </Text>
           </View>
 
-          <Text style={styles.editSectionTitle}>Edit Profile & Astrological Alignment</Text>
+          <Text style={[styles.editSectionTitle, isDark && { color: '#A855F7' }]}>Edit Profile & Astrological Alignment</Text>
 
           {/* Full Name Input */}
           <View style={styles.editFieldRow}>
-            <Text style={styles.editFieldLabel}>FULL NAME</Text>
+            <Text style={[styles.editFieldLabel, isDark && { color: '#9E9BB3' }]}>FULL NAME</Text>
             <TextInput
-              style={styles.profileNameInput}
+              style={[styles.profileNameInput, isDark && { backgroundColor: '#1F1B38', borderColor: 'rgba(168, 85, 247, 0.2)', color: '#F0EEFF' }]}
               value={editFullName}
               onChangeText={setEditFullName}
               placeholder="Full Name"
@@ -602,40 +602,40 @@ export function ProfileScreen({
 
           {/* Birth Date Picker */}
           <View style={styles.editFieldRow}>
-            <Text style={styles.editFieldLabel}>BIRTHDATE</Text>
+            <Text style={[styles.editFieldLabel, isDark && { color: '#9E9BB3' }]}>BIRTHDATE</Text>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => setIsDatePickerVisible(true)}
-              style={styles.pickerTriggerBtn}
+              style={[styles.pickerTriggerBtn, isDark && { backgroundColor: '#1F1B38', borderColor: 'rgba(168, 85, 247, 0.2)' }]}
             >
-              <Calendar size={14} color="#7209B7" style={{ marginRight: 6 }} />
-              <Text style={styles.pickerTriggerBtnText}>{editBirthdate || 'Select Date'}</Text>
+              <Calendar size={14} color={isDark ? '#A855F7' : '#7209B7'} style={{ marginRight: 6 }} />
+              <Text style={[styles.pickerTriggerBtnText, isDark && { color: '#F0EEFF' }]}>{editBirthdate || 'Select Date'}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Birth Time Picker */}
           <View style={styles.editFieldRow}>
-            <Text style={styles.editFieldLabel}>BIRTH TIME</Text>
+            <Text style={[styles.editFieldLabel, isDark && { color: '#9E9BB3' }]}>BIRTH TIME</Text>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => setIsTimePickerVisible(true)}
-              style={styles.pickerTriggerBtn}
+              style={[styles.pickerTriggerBtn, isDark && { backgroundColor: '#1F1B38', borderColor: 'rgba(168, 85, 247, 0.2)' }]}
             >
-              <Clock size={14} color="#7209B7" style={{ marginRight: 6 }} />
-              <Text style={styles.pickerTriggerBtnText}>{editBirthtime || 'Select Time'}</Text>
+              <Clock size={14} color={isDark ? '#A855F7' : '#7209B7'} style={{ marginRight: 6 }} />
+              <Text style={[styles.pickerTriggerBtnText, isDark && { color: '#F0EEFF' }]}>{editBirthtime || 'Select Time'}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Birthplace Places Picker */}
           <View style={styles.editFieldRow}>
-            <Text style={styles.editFieldLabel}>BIRTHPLACE (FREE PLACES API)</Text>
+            <Text style={[styles.editFieldLabel, isDark && { color: '#9E9BB3' }]}>BIRTHPLACE (FREE PLACES API)</Text>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => setActivePlacesTarget('birthplace')}
-              style={styles.pickerTriggerBtn}
+              style={[styles.pickerTriggerBtn, isDark && { backgroundColor: '#1F1B38', borderColor: 'rgba(168, 85, 247, 0.2)' }]}
             >
-              <MapPin size={14} color="#7209B7" style={{ marginRight: 6 }} />
-              <Text style={styles.pickerTriggerBtnText} numberOfLines={1}>
+              <MapPin size={14} color={isDark ? '#A855F7' : '#7209B7'} style={{ marginRight: 6 }} />
+              <Text style={[styles.pickerTriggerBtnText, isDark && { color: '#F0EEFF' }]} numberOfLines={1}>
                 {editBirthplace || 'Search & Pick Birthplace...'}
               </Text>
             </TouchableOpacity>
@@ -643,14 +643,14 @@ export function ProfileScreen({
 
           {/* Current Living Place Places Picker */}
           <View style={styles.editFieldRow}>
-            <Text style={styles.editFieldLabel}>CURRENT LIVING PLACE</Text>
+            <Text style={[styles.editFieldLabel, isDark && { color: '#9E9BB3' }]}>CURRENT LIVING PLACE</Text>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => setActivePlacesTarget('living')}
-              style={styles.pickerTriggerBtn}
+              style={[styles.pickerTriggerBtn, isDark && { backgroundColor: '#1F1B38', borderColor: 'rgba(168, 85, 247, 0.2)' }]}
             >
-              <MapPin size={14} color="#7209B7" style={{ marginRight: 6 }} />
-              <Text style={styles.pickerTriggerBtnText} numberOfLines={1}>
+              <MapPin size={14} color={isDark ? '#A855F7' : '#7209B7'} style={{ marginRight: 6 }} />
+              <Text style={[styles.pickerTriggerBtnText, isDark && { color: '#F0EEFF' }]} numberOfLines={1}>
                 {editCurrentLocation || 'Search & Pick Living Location...'}
               </Text>
             </TouchableOpacity>
@@ -666,7 +666,7 @@ export function ProfileScreen({
             return (
               <View style={styles.editActionsRow}>
                 <TouchableOpacity style={[styles.editActionBtn, styles.editCancelBtn]} onPress={() => setIsEditingProfile(false)}>
-                  <Text style={styles.editCancelBtnText}>Cancel</Text>
+                  <Text style={[styles.editCancelBtnText, isDark && { color: '#9E9BB3' }]}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.editActionBtn, styles.editSaveBtn, isBirthDataChanged && { backgroundColor: '#7209B7' }]}
@@ -688,12 +688,12 @@ export function ProfileScreen({
       )}
 
       {/* Credits Card */}
-      <View style={styles.profileCreditsCard}>
+      <View style={[styles.profileCreditsCard, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.2)' }]}>
         <View style={styles.profileCreditsLeft}>
           <GoldCoin size={24} style={{ marginRight: 10 }} />
           <View>
-            <Text style={styles.profileCreditsTitle}>Cosmic Credits</Text>
-            <Text style={styles.profileCreditsBalance}>Balance: {credits} CR</Text>
+            <Text style={[styles.profileCreditsTitle, isDark && { color: '#F0EEFF' }]}>Cosmic Credits</Text>
+            <Text style={[styles.profileCreditsBalance, isDark && { color: '#9E9BB3' }]}>Balance: {credits} CR</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -706,14 +706,14 @@ export function ProfileScreen({
       </View>
 
       {/* Daily Notifications Bar */}
-      <View style={styles.profileBar}>
+      <View style={[styles.profileBar, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}>
         <View style={styles.profileBarLeft}>
-          <View style={[styles.barIconBg, { backgroundColor: 'rgba(114, 9, 183, 0.08)' }]}>
-            <Bell size={18} color="#7209B7" />
+          <View style={[styles.barIconBg, { backgroundColor: isDark ? 'rgba(168, 85, 247, 0.15)' : 'rgba(114, 9, 183, 0.08)' }]}>
+            <Bell size={18} color={isDark ? '#A855F7' : '#7209B7'} />
           </View>
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.barTitle}>Daily Horoscope Alerts</Text>
-            <Text style={styles.barSubtitle}>Receive updates on your vibe chart</Text>
+            <Text style={[styles.barTitle, isDark && { color: '#F0EEFF' }]}>Daily Horoscope Alerts</Text>
+            <Text style={[styles.barSubtitle, isDark && { color: '#9E9BB3' }]}>Receive updates on your vibe chart</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -727,7 +727,7 @@ export function ProfileScreen({
 
       {/* Theme Toggle */}
       <TouchableOpacity
-        style={styles.profileBar}
+        style={[styles.profileBar, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}
         activeOpacity={0.7}
         onPress={() => { haptic.press(); setMode(isDark ? 'light' : 'dark'); }}
       >
@@ -736,22 +736,22 @@ export function ProfileScreen({
             {isDark ? <Sun size={18} color="#FBBF24" /> : <Moon size={18} color="#7209B7" />}
           </View>
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.barTitle}>{isDark ? 'Light Mode' : 'Dark Mode'}</Text>
-            <Text style={styles.barSubtitle}>Toggle cosmic ambiance</Text>
+            <Text style={[styles.barTitle, isDark && { color: '#F0EEFF' }]}>{isDark ? 'Light Mode' : 'Dark Mode'}</Text>
+            <Text style={[styles.barSubtitle, isDark && { color: '#9E9BB3' }]}>Toggle cosmic ambiance</Text>
           </View>
         </View>
         <Info size={16} color="#B3A2E7" />
       </TouchableOpacity>
 
       {/* Feedback & Reviews */}
-      <TouchableOpacity style={styles.profileBar} activeOpacity={0.7} onPress={() => setIsFeedbackModalOpen(true)}>
+      <TouchableOpacity style={[styles.profileBar, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]} activeOpacity={0.7} onPress={() => setIsFeedbackModalOpen(true)}>
         <View style={styles.profileBarLeft}>
           <View style={[styles.barIconBg, { backgroundColor: 'rgba(247, 37, 133, 0.08)' }]}>
             <Smile size={18} color="#F72585" />
           </View>
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.barTitle}>Feedback & Reviews</Text>
-            <Text style={styles.barSubtitle}>Share your reviews and suggestions</Text>
+            <Text style={[styles.barTitle, isDark && { color: '#F0EEFF' }]}>Feedback & Reviews</Text>
+            <Text style={[styles.barSubtitle, isDark && { color: '#9E9BB3' }]}>Share your reviews and suggestions</Text>
           </View>
         </View>
         <Info size={16} color="#B3A2E7" />
@@ -759,7 +759,7 @@ export function ProfileScreen({
 
       {/* Help & Support */}
       <TouchableOpacity
-        style={styles.profileBar}
+        style={[styles.profileBar, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}
         activeOpacity={0.7}
         onPress={() => setCurrentProfileSubView('help')}
       >
@@ -768,8 +768,8 @@ export function ProfileScreen({
             <HelpCircle size={18} color="#3B82F6" />
           </View>
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.barTitle}>Help & Support</Text>
-            <Text style={styles.barSubtitle}>arcadian@arcddia.co.in</Text>
+            <Text style={[styles.barTitle, isDark && { color: '#F0EEFF' }]}>Help & Support</Text>
+            <Text style={[styles.barSubtitle, isDark && { color: '#9E9BB3' }]}>arcadian@arcddia.co.in</Text>
           </View>
         </View>
         <Info size={16} color="#B3A2E7" />
@@ -777,7 +777,7 @@ export function ProfileScreen({
 
       {/* Privacy & Security */}
       <TouchableOpacity
-        style={styles.profileBar}
+        style={[styles.profileBar, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.18)' }]}
         activeOpacity={0.7}
         onPress={() => {
           setPreviousProfileSubView('profile');
@@ -790,8 +790,8 @@ export function ProfileScreen({
             <Lock size={18} color="#10B981" />
           </View>
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.barTitle}>Privacy & Security</Text>
-            <Text style={styles.barSubtitle}>Camera, Photos, and Data Permissions</Text>
+            <Text style={[styles.barTitle, isDark && { color: '#F0EEFF' }]}>Privacy & Security</Text>
+            <Text style={[styles.barSubtitle, isDark && { color: '#9E9BB3' }]}>Camera, Photos, and Data Permissions</Text>
           </View>
         </View>
         <Info size={16} color="#B3A2E7" />

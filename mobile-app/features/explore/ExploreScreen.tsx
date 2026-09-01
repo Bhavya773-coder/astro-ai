@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Sparkles } from 'lucide-react-native';
 import { haptic } from '../../haptics';
+import { useTheme } from '../../theme';
 
 interface ExploreScreenProps {
   insets: { bottom: number; top: number; left: number; right: number };
@@ -25,6 +26,7 @@ export function ExploreScreen({
   setCurrentView,
   handleOpenStyleForecaster,
 }: ExploreScreenProps) {
+  const { theme, isDark } = useTheme();
   const { width } = Dimensions.get('window');
   const specials = ['vastu-consultant', 'astrology-8ball', 'tarot-reading', 'palm-reading', 'face-reading', 'coffee-reading', 'style-forecaster'];
   const todaySpecial = specials[new Date().getDate() % specials.length];
@@ -92,7 +94,7 @@ export function ExploreScreen({
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={styles.tabScroll}>
-      <Text style={styles.tabViewTitle}>Explore</Text>
+      <Text style={[styles.tabViewTitle, isDark && { color: theme.text.primary }]}>Explore</Text>
 
       {/* Today's Special Hero Card */}
       <TouchableOpacity
@@ -121,22 +123,22 @@ export function ExploreScreen({
       </TouchableOpacity>
 
       {/* Bento Grid */}
-      <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>All Readings</Text>
+      <Text style={[styles.sectionTitle, { marginBottom: 12 }, isDark && { color: theme.text.primary }]}>All Readings</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
         {gridItems.map((item) => (
           <TouchableOpacity
             key={item.key}
             style={{
               width: (width - 56) / 2,
-              backgroundColor: '#FFFFFF',
+              backgroundColor: isDark ? 'rgba(22, 19, 41, 0.75)' : '#FFFFFF',
               borderRadius: 16,
               padding: 16,
               marginBottom: 12,
               borderWidth: 1,
-              borderColor: 'rgba(114, 111, 141, 0.08)',
-              shadowColor: '#726F8D',
+              borderColor: isDark ? 'rgba(168, 85, 247, 0.22)' : 'rgba(114, 111, 141, 0.08)',
+              shadowColor: isDark ? '#000000' : '#726F8D',
               shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.04,
+              shadowOpacity: isDark ? 0.2 : 0.04,
               shadowRadius: 8,
               elevation: 2,
               alignItems: 'center',
@@ -155,7 +157,7 @@ export function ExploreScreen({
             }}>
               <MaterialCommunityIcons name={item.icon as any} size={22} color={item.color} />
             </View>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 12, color: '#2C2B3D', textAlign: 'center' }}>{item.label}</Text>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 12, color: isDark ? '#F0EEFF' : '#2C2B3D', textAlign: 'center' }}>{item.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -163,19 +165,19 @@ export function ExploreScreen({
       {/* Previous Readings History */}
       {readingHistory.length > 0 && (
         <View style={{ marginTop: 24 }}>
-          <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>Your Saved Readings & Scans</Text>
+          <Text style={[styles.sectionTitle, { marginBottom: 12 }, isDark && { color: theme.text.primary }]}>Your Saved Readings & Scans</Text>
           {readingHistory.map((item: any, index: number) => (
-            <View key={item._id || item.id || `history_${index}`} style={[styles.sensorCard, { marginBottom: 12 }]}>
+            <View key={item._id || item.id || `history_${index}`} style={[styles.sensorCard, isDark && { backgroundColor: 'rgba(22, 19, 41, 0.75)', borderColor: 'rgba(168, 85, 247, 0.22)' }, { marginBottom: 12 }]}>
               <LinearGradient
-                colors={['rgba(255, 255, 255, 0.95)', 'rgba(247, 245, 255, 0.9)']}
+                colors={isDark ? ['rgba(22, 19, 41, 0.85)', 'rgba(31, 27, 56, 0.80)'] : ['rgba(255, 255, 255, 0.95)', 'rgba(247, 245, 255, 0.9)']}
                 style={[styles.sensorCardGradient, { padding: 14 }]}
               >
-                <Sparkles size={20} color="#7209B7" style={{ marginRight: 10 }} />
+                <Sparkles size={20} color={isDark ? '#A855F7' : '#7209B7'} style={{ marginRight: 10 }} />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 13, color: '#2C2B3D' }}>
+                  <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 13, color: isDark ? '#F0EEFF' : '#2C2B3D' }}>
                     {item.category || 'Reading'} • {new Date(item.createdAt || item.created_at || Date.now()).toLocaleDateString()}
                   </Text>
-                  <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12, color: '#726F8D', marginTop: 4 }} numberOfLines={2}>
+                  <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12, color: isDark ? '#9E9BB3' : '#726F8D', marginTop: 4 }} numberOfLines={2}>
                     {item.reading_data?.headline || item.headline || item.reading_data?.summary || item.summary || 'Scan analysis completed.'}
                   </Text>
                 </View>

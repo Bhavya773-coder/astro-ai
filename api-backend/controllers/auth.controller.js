@@ -65,8 +65,8 @@ const register = async (req, res, next) => {
 
   const password_hash = await bcrypt.hash(String(password), 10);
   const otp = generateSixDigitOtp();
-  // 25 seconds expiry as requested
-  const expiresAt = new Date(Date.now() + 25 * 1000);
+  // 10 minutes expiry
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
   if (!user) {
     user = await User.create({
@@ -92,9 +92,9 @@ const register = async (req, res, next) => {
   await sendOtpEmail({ 
     to: user.email, 
     otp, 
-    ttlMinutes: 0.42, 
+    ttlMinutes: 10, 
     subject: 'Your AstroAi4u verification code',
-    text: `Your verification code is: ${otp}. It expires in 25 seconds.`
+    text: `Your verification code is: ${otp}. It expires in 10 minutes.`
   });
 
   const hasEmail = hasSmtpConfig();
@@ -155,7 +155,7 @@ const resendSignupOtp = async (req, res, next) => {
   }
 
   const otp = generateSixDigitOtp();
-  const expiresAt = new Date(Date.now() + 25 * 1000);
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
   user.verification_otp = otp;
   user.verification_otp_expires_at = expiresAt;
@@ -164,9 +164,9 @@ const resendSignupOtp = async (req, res, next) => {
   await sendOtpEmail({ 
     to: user.email, 
     otp, 
-    ttlMinutes: 0.42, 
+    ttlMinutes: 10, 
     subject: 'Your new verification code',
-    text: `Your new verification code is: ${otp}. It expires in 25 seconds.`
+    text: `Your new verification code is: ${otp}. It expires in 10 minutes.`
   });
 
   const hasEmail = hasSmtpConfig();
@@ -209,6 +209,33 @@ const login = async (req, res, next) => {
   if (!ok) {
     res.status(401);
     return next(new Error('Invalid credentials'));
+  }
+
+  if (user.is_verified === false) {
+    const otp = generateSixDigitOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    user.verification_otp = otp;
+    user.verification_otp_expires_at = expiresAt;
+    await user.save();
+
+    await sendOtpEmail({
+      to: user.email,
+      otp,
+      ttlMinutes: 10,
+      subject: 'Your AstroAi4u verification code',
+      text: `Your verification code is: ${otp}. It expires in 10 minutes.`
+    });
+
+    const hasEmail = hasSmtpConfig();
+    const isDev = process.env.NODE_ENV === 'development';
+
+    return res.status(403).json({
+      success: false,
+      code: 'EMAIL_NOT_VERIFIED',
+      message: 'Please verify your email address before logging in.',
+      email: user.email,
+      otp: (isDev && !hasEmail) ? otp : undefined
+    });
   }
 
   const token = signToken(user);

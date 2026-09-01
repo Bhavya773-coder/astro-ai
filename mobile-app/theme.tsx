@@ -4,7 +4,18 @@ import { useColorScheme } from 'react-native';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
-export const tokens = {
+export interface ThemeTokens {
+  bg: { primary: string; secondary: string; card: string; chat: string; input: string };
+  text: { primary: string; secondary: string; inverse: string; muted: string };
+  accent: { purple: string; pink: string; gold: string; blue: string; green: string; red: string };
+  border: string;
+  borderStrong: string;
+  shadow: string;
+  gradient: [string, string, string];
+  skeleton: string;
+}
+
+export const tokens: { light: ThemeTokens; dark: ThemeTokens } = {
   light: {
     bg: { primary: '#F3EFFF', secondary: '#FFFFFF', card: '#FFFFFF', chat: 'rgba(255,255,255,0.4)', input: '#FFFFFF' },
     text: { primary: '#2C2B3D', secondary: '#726F8D', inverse: '#FFFFFF', muted: '#9E9BB3' },
@@ -12,22 +23,22 @@ export const tokens = {
     border: 'rgba(114, 111, 141, 0.08)',
     borderStrong: 'rgba(114, 111, 141, 0.18)',
     shadow: '#7209B7',
-    gradient: ['#F3EFFF', '#E9F3FF', '#FFFDF2'] as const,
+    gradient: ['#F3EFFF', '#E9F3FF', '#FFFDF2'],
     skeleton: '#E8E7ED',
   },
   dark: {
-    bg: { primary: '#0A0A12', secondary: '#12121F', card: '#1A1A2E', chat: 'rgba(18,18,31,0.6)', input: '#1A1A2E' },
-    text: { primary: '#F0EEFF', secondary: '#9E9BB3', inverse: '#0A0A12', muted: '#6B6880' },
-    accent: { purple: '#A855F7', pink: '#EC4899', gold: '#FBBF24', blue: '#60A5FA', green: '#34D399', red: '#F87171' },
-    border: 'rgba(168, 85, 247, 0.12)',
-    borderStrong: 'rgba(168, 85, 247, 0.25)',
+    bg: { primary: '#090714', secondary: 'rgba(18, 14, 36, 0.85)', card: 'rgba(22, 19, 41, 0.72)', chat: 'rgba(22, 19, 41, 0.75)', input: 'rgba(31, 27, 56, 0.80)' },
+    text: { primary: '#F0EEFF', secondary: '#9E9BB3', inverse: '#090714', muted: '#726F8D' },
+    accent: { purple: '#A855F7', pink: '#F72585', gold: '#FBBF24', blue: '#60A5FA', green: '#34D399', red: '#F87171' },
+    border: 'rgba(168, 85, 247, 0.18)',
+    borderStrong: 'rgba(168, 85, 247, 0.35)',
     shadow: '#000000',
-    gradient: ['#0A0A12', '#12121F', '#1A0B2E'] as const,
+    gradient: ['#090714', '#120D26', '#1A0D33'],
     skeleton: '#2A2A40',
   },
 };
 
-export type Theme = typeof tokens.light;
+export type Theme = ThemeTokens;
 
 const ThemeContext = createContext<{
   theme: Theme;

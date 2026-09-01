@@ -43,6 +43,10 @@ const LoginPage: React.FC = () => {
         navigate('/dashboard');
       }
     } catch (err: any) {
+      if (err?.code === 'EMAIL_NOT_VERIFIED' || err?.data?.code === 'EMAIL_NOT_VERIFIED') {
+        navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
+        return;
+      }
       setError(err?.message || 'Login failed');
     } finally {
       setIsLoading(false);

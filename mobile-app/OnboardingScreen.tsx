@@ -10,6 +10,7 @@ import {
   Keyboard,
   Platform,
   FlatList,
+  ScrollView,
   Dimensions,
   Animated,
   Alert,
@@ -182,6 +183,7 @@ interface OnboardingScreenProps {
 export default function OnboardingScreen({ onBack, onComplete }: OnboardingScreenProps) {
   const insets = useSafeAreaInsets();
   const [currentIdx, setCurrentIdx] = useState(0);
+  const currentQuestion = QUESTIONS[currentIdx] || QUESTIONS[0];
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [messages, setMessages] = useState<Message[]>([]);
   const [isAiTyping, setIsAiTyping] = useState(false);

@@ -25,6 +25,7 @@ import {
   Shirt,
 } from 'lucide-react-native';
 import { ZODIAC_ICONS, RASHI_GLYPHS } from '../../constants/astrology';
+import { useTheme } from '../../theme';
 
 interface TodayScreenProps {
   userName: string;
@@ -76,6 +77,7 @@ export function TodayScreen({
   haptic,
   getGreeting,
 }: TodayScreenProps) {
+  const { theme, isDark } = useTheme();
   const { width, height } = Dimensions.get('window');
   const [todayDeckH, setTodayDeckH] = useState(0);
   const [todayCard, setTodayCard] = useState(0);
@@ -102,12 +104,12 @@ export function TodayScreen({
   const sheetStyle = {
     flex: 1,
     borderRadius: 30,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: isDark ? 'rgba(22, 19, 41, 0.75)' : '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: 'rgba(114, 111, 141, 0.12)',
-    shadowColor: '#2C2B3D',
+    borderColor: isDark ? 'rgba(168, 85, 247, 0.22)' : 'rgba(114, 111, 141, 0.12)',
+    shadowColor: isDark ? '#000000' : '#2C2B3D',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
+    shadowOpacity: isDark ? 0.35 : 0.08,
     shadowRadius: 18,
     elevation: 4,
     overflow: 'hidden'
@@ -131,10 +133,11 @@ export function TodayScreen({
       <Animated.ScrollView
         ref={todayScrollRef}
         horizontal
-        showsHorizontalScrollIndicator={false}
+        pagingEnabled={false}
         snapToInterval={SNAP}
         snapToAlignment="start"
         decelerationRate="fast"
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: sidePad, alignItems: 'center' }}
         scrollEventThrottle={16}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: todayScrollX } } }], { useNativeDriver: true })}
@@ -143,16 +146,10 @@ export function TodayScreen({
         {/* ══════ CARD 1 · Cosmic Cover ══════ */}
         <Animated.View style={[pageStyle, cardArc(0)]}>
           <LinearGradient
-            colors={['#1F0C3B', '#3B1261', '#7209B7']}
+            colors={isDark ? ['rgba(31, 12, 59, 0.85)', 'rgba(59, 18, 97, 0.80)', 'rgba(114, 9, 183, 0.75)'] : ['#1F0C3B', '#3B1261', '#7209B7']}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            style={{ flex: 1, borderRadius: 30, overflow: 'hidden', padding: 22, justifyContent: 'space-between' }}
+            style={{ flex: 1, borderRadius: 30, overflow: 'hidden', padding: 22, justifyContent: 'space-between', borderWidth: 1, borderColor: isDark ? 'rgba(168, 85, 247, 0.25)' : 'transparent' }}
           >
-            <Image
-              source={ZODIAC_ICONS[zodiac?.index || 1] || ZODIAC_ICONS[1]}
-              style={{ position: 'absolute', width: 320, height: 320, right: -90, top: -40, opacity: 0.09, tintColor: '#FFFFFF' }}
-              resizeMode="contain"
-            />
-
             {/* Top: greeting + streak + share */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <View style={{ flex: 1 }}>
@@ -225,25 +222,25 @@ export function TodayScreen({
                   <Text style={{ fontFamily: 'SourceSerif4-Bold', fontSize: 10, color: accent }}>{activeFocus} Focus</Text>
                 </View>
               </View>
-              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 21, color: '#2C2B3D', marginTop: 8, lineHeight: 28 }}>What Will Happen Today</Text>
+              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 21, color: isDark ? '#F0EEFF' : '#2C2B3D', marginTop: 8, lineHeight: 28 }}>What Will Happen Today</Text>
               <View style={{ height: 2.5, width: 40, backgroundColor: accent, borderRadius: 2, marginVertical: 14 }} />
 
-              <View style={{ backgroundColor: 'rgba(114, 9, 183, 0.04)', borderRadius: 16, padding: 14, borderLeftWidth: 3, borderLeftColor: accent }}>
-                <Text style={{ fontFamily: 'SourceSerif4', fontSize: 15.5, color: '#2C2B3D', lineHeight: 23, fontStyle: 'italic' }}>
+              <View style={{ backgroundColor: isDark ? 'rgba(168, 85, 247, 0.1)' : 'rgba(114, 9, 183, 0.04)', borderRadius: 16, padding: 14, borderLeftWidth: 3, borderLeftColor: accent }}>
+                <Text style={{ fontFamily: 'SourceSerif4', fontSize: 15.5, color: isDark ? '#F0EEFF' : '#2C2B3D', lineHeight: 23, fontStyle: 'italic' }}>
                   “{activeData.prediction}”
                 </Text>
               </View>
 
-              <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12.5, color: '#726F8D', lineHeight: 19, marginTop: 12 }}>
+              <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12.5, color: isDark ? '#9E9BB3' : '#726F8D', lineHeight: 19, marginTop: 12 }}>
                 {activeData.rationale}
               </Text>
             </View>
 
             <View style={{ marginTop: 12 }}>
-              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9.5, color: '#726F8D', textAlign: 'center', marginBottom: 8 }}>DID THIS PREDICTION RESONATE?</Text>
+              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9.5, color: isDark ? '#9E9BB3' : '#726F8D', textAlign: 'center', marginBottom: 8 }}>DID THIS PREDICTION RESONATE?</Text>
               <View style={styles.feedbackButtonsRow}>
                 <TouchableOpacity
-                  style={[styles.feedbackBtn, outcomeFeedback[activeFocus] === 'Happened' && styles.feedbackBtnHappenedActive]}
+                  style={[styles.feedbackBtn, isDark && { backgroundColor: '#1F1B38', borderColor: 'rgba(168, 85, 247, 0.2)' }, outcomeFeedback[activeFocus] === 'Happened' && styles.feedbackBtnHappenedActive]}
                   onPress={() => {
                     haptic.success();
                     setOutcomeFeedback(prev => ({ ...prev, [activeFocus]: 'Happened' }));
@@ -254,7 +251,7 @@ export function TodayScreen({
                   <Text style={[styles.feedbackBtnText, { color: outcomeFeedback[activeFocus] === 'Happened' ? '#FFF' : '#03B07A' }]}>Happened</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.feedbackBtn, outcomeFeedback[activeFocus] === 'Didnt' && styles.feedbackBtnDidntActive]}
+                  style={[styles.feedbackBtn, isDark && { backgroundColor: '#1F1B38', borderColor: 'rgba(168, 85, 247, 0.2)' }, outcomeFeedback[activeFocus] === 'Didnt' && styles.feedbackBtnDidntActive]}
                   onPress={() => {
                     haptic.press();
                     setOutcomeFeedback(prev => ({ ...prev, [activeFocus]: 'Didnt' }));
@@ -273,7 +270,7 @@ export function TodayScreen({
         <Animated.View style={[pageStyle, cardArc(2)]}>
           <View style={[sheetStyle, { padding: 18 }]}>
             <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
-              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: '#2C2B3D', marginBottom: 10 }}>Where's your focus today?</Text>
+              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: isDark ? '#F0EEFF' : '#2C2B3D', marginBottom: 10 }}>Where's your focus today?</Text>
               
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
                 {(['Work', 'Love', 'Mind', 'Money'] as const).map((focus) => {
@@ -288,14 +285,14 @@ export function TodayScreen({
                     >
                       <View style={{
                         width: '100%', borderRadius: 16, padding: 12, flexDirection: 'row', alignItems: 'center',
-                        backgroundColor: isActive ? meta.color : '#FFFFFF',
-                        borderWidth: 1.5, borderColor: isActive ? meta.color : 'rgba(114, 111, 141, 0.10)',
+                        backgroundColor: isActive ? meta.color : (isDark ? '#1F1B38' : '#FFFFFF'),
+                        borderWidth: 1.5, borderColor: isActive ? meta.color : (isDark ? 'rgba(168, 85, 247, 0.2)' : 'rgba(114, 111, 141, 0.10)'),
                         shadowColor: meta.color, shadowOffset: { width: 0, height: isActive ? 4 : 1 }, shadowOpacity: isActive ? 0.25 : 0.04, shadowRadius: isActive ? 8 : 4, elevation: isActive ? 3 : 1,
                       }}>
                         <View style={{ width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : `${meta.color}14` }}>
                           <MaterialCommunityIcons name={meta.icon} size={18} color={isActive ? '#FFFFFF' : meta.color} />
                         </View>
-                        <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 12, color: isActive ? '#FFFFFF' : '#2C2B3D', marginLeft: 8 }}>{meta.label}</Text>
+                        <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 12, color: isActive ? '#FFFFFF' : (isDark ? '#F0EEFF' : '#2C2B3D'), marginLeft: 8 }}>{meta.label}</Text>
                       </View>
                     </TouchableOpacity>
                   );
@@ -316,19 +313,19 @@ export function TodayScreen({
                 </View>
               </LinearGradient>
 
-              <View style={[styles.movesCard, { marginTop: 10, borderTopWidth: 3, borderTopColor: accent }]}>
+              <View style={[styles.movesCard, isDark && { backgroundColor: '#1F1B38', borderColor: 'rgba(168, 85, 247, 0.2)' }, { marginTop: 10, borderTopWidth: 3, borderTopColor: accent }]}>
                 <Text style={[styles.movesCardTitle, { color: accent, fontSize: 13 }]}>{activeData.title}</Text>
                 {activeData.moves.length === 0 && isTodayLoading ? (
-                  <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12, color: '#726F8D', paddingVertical: 8 }}>Consulting the stars…</Text>
+                  <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12, color: isDark ? '#9E9BB3' : '#726F8D', paddingVertical: 8 }}>Consulting the stars…</Text>
                 ) : (
                   activeData.moves.map((move, index) => {
                     const isSelected = selectedMove === move;
                     return (
-                      <TouchableOpacity key={index} style={[styles.moveOption, isSelected && styles.moveOptionActive]} onPress={() => setSelectedMove(move)} activeOpacity={0.7}>
+                      <TouchableOpacity key={index} style={[styles.moveOption, isDark && { backgroundColor: '#161329', borderColor: 'rgba(168, 85, 247, 0.15)' }, isSelected && styles.moveOptionActive]} onPress={() => setSelectedMove(move)} activeOpacity={0.7}>
                         <View style={[styles.radioButton, isSelected && styles.radioButtonActive]}>
                           {isSelected && <View style={styles.radioButtonInner} />}
                         </View>
-                        <Text style={[styles.moveOptionText, isSelected && styles.moveOptionTextActive, { fontSize: 12 }]}>{move}</Text>
+                        <Text style={[styles.moveOptionText, isDark && { color: '#F0EEFF' }, isSelected && styles.moveOptionTextActive, { fontSize: 12 }]}>{move}</Text>
                       </TouchableOpacity>
                     );
                   })
@@ -342,63 +339,63 @@ export function TodayScreen({
         <Animated.View style={[pageStyle, cardArc(3)]}>
           <View style={[sheetStyle, { padding: 18 }]}>
             <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
-              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: '#2C2B3D', marginBottom: 10 }}>Cosmic Guidance</Text>
+              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: isDark ? '#F0EEFF' : '#2C2B3D', marginBottom: 10 }}>Cosmic Guidance</Text>
 
               <View style={styles.splitListsRow}>
-                <View style={[styles.listCard, styles.doCard]}>
+                <View style={[styles.listCard, styles.doCard, isDark && { backgroundColor: 'rgba(3, 176, 122, 0.12)', borderColor: 'rgba(3, 176, 122, 0.3)' }]}>
                   <Text style={[styles.listHeader, { color: '#03B07A' }]}>Do This</Text>
                   {activeData.doList.map((item, idx) => (
                     <View key={idx} style={styles.listItemRow}>
                       <PlusCircle size={10} color="#03B07A" style={styles.listItemIcon} />
-                      <Text style={styles.listItemText}>{item}</Text>
+                      <Text style={[styles.listItemText, isDark && { color: '#F0EEFF' }]}>{item}</Text>
                     </View>
                   ))}
                 </View>
-                <View style={[styles.listCard, styles.avoidCard]}>
+                <View style={[styles.listCard, styles.avoidCard, isDark && { backgroundColor: 'rgba(230, 57, 70, 0.12)', borderColor: 'rgba(230, 57, 70, 0.3)' }]}>
                   <Text style={[styles.listHeader, { color: '#E63946' }]}>Avoid This</Text>
                   {activeData.avoidList.map((item, idx) => (
                     <View key={idx} style={styles.listItemRow}>
                       <AlertTriangle size={10} color="#E63946" style={styles.listItemIcon} />
-                      <Text style={styles.listItemText}>{item}</Text>
+                      <Text style={[styles.listItemText, isDark && { color: '#F0EEFF' }]}>{item}</Text>
                     </View>
                   ))}
                 </View>
               </View>
 
               <View style={[styles.timeWindowsCard, { marginTop: 12 }]}>
-                <View style={styles.timeWindowItem}>
+                <View style={[styles.timeWindowItem, isDark && { backgroundColor: 'rgba(3, 176, 122, 0.12)', borderColor: 'rgba(3, 176, 122, 0.3)' }]}>
                   <View style={styles.timeHeaderRow}>
                     <Clock size={12} color="#03B07A" />
-                    <Text style={styles.timeLabel}>Power Window</Text>
+                    <Text style={[styles.timeLabel, isDark && { color: '#9E9BB3' }]}>Power Window</Text>
                   </View>
                   <Text style={[styles.timeValue, { color: '#03B07A', fontSize: 11.5 }]}>{activeData.powerWindow}</Text>
                 </View>
-                <View style={[styles.timeWindowItem, styles.avoidTimeItem]}>
+                <View style={[styles.timeWindowItem, styles.avoidTimeItem, isDark && { backgroundColor: 'rgba(230, 57, 70, 0.12)', borderColor: 'rgba(230, 57, 70, 0.3)' }]}>
                   <View style={styles.timeHeaderRow}>
                     <Clock size={12} color="#E63946" />
-                    <Text style={styles.timeLabel}>Avoid After</Text>
+                    <Text style={[styles.timeLabel, isDark && { color: '#9E9BB3' }]}>Avoid After</Text>
                   </View>
                   <Text style={[styles.timeValue, { color: '#E63946', fontSize: 11.5 }]}>{activeData.avoidAfter}</Text>
                 </View>
               </View>
 
-              <View style={[styles.insightCard, { marginTop: 12 }]}>
+              <View style={[styles.insightCard, isDark && { backgroundColor: 'rgba(168, 85, 247, 0.1)', borderColor: 'rgba(168, 85, 247, 0.25)' }, { marginTop: 12 }]}>
                 <View style={styles.insightHeaderRow}>
-                  <Info size={13} color="#7209B7" />
-                  <Text style={styles.insightTitle}>Cosmic Insight</Text>
+                  <Info size={13} color={isDark ? '#A855F7' : '#7209B7'} />
+                  <Text style={[styles.insightTitle, isDark && { color: '#A855F7' }]}>Cosmic Insight</Text>
                 </View>
-                <Text style={[styles.insightText, { fontSize: 12, lineHeight: 17 }]}>{activeData.rationale}</Text>
+                <Text style={[styles.insightText, isDark && { color: '#F0EEFF' }, { fontSize: 12, lineHeight: 17 }]}>{activeData.rationale}</Text>
               </View>
 
               <View style={[styles.widgetsGrid, { marginTop: 12 }]}>
-                <TouchableOpacity style={styles.widgetBox} activeOpacity={0.8} onPress={() => setCurrentView('astro-calendar')}>
+                <TouchableOpacity style={[styles.widgetBox, isDark && { backgroundColor: '#1F1B38', borderColor: 'rgba(168, 85, 247, 0.2)' }]} activeOpacity={0.8} onPress={() => setCurrentView('astro-calendar')}>
                   <Calendar size={16} color="#FFD700" style={{ marginBottom: 2 }} />
-                  <Text style={styles.widgetLabel}>Astro Calendar</Text>
+                  <Text style={[styles.widgetLabel, isDark && { color: '#9E9BB3' }]}>Astro Calendar</Text>
                   <Text style={[styles.widgetValueText, { color: '#FFD700', fontWeight: '700', fontSize: 11 }]}>Events & Phases</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.widgetBox} activeOpacity={0.8} onPress={handleOpenStyleForecaster}>
+                <TouchableOpacity style={[styles.widgetBox, isDark && { backgroundColor: '#1F1B38', borderColor: 'rgba(168, 85, 247, 0.2)' }]} activeOpacity={0.8} onPress={handleOpenStyleForecaster}>
                   <Shirt size={16} color="#F72585" style={{ marginBottom: 2 }} />
-                  <Text style={styles.widgetLabel}>StyleForecaster</Text>
+                  <Text style={[styles.widgetLabel, isDark && { color: '#9E9BB3' }]}>StyleForecaster</Text>
                   <Text style={[styles.widgetValueText, { color: '#F72585', fontFamily: 'SourceSerif4-Bold', fontSize: 11 }]}>Outfit tips</Text>
                 </TouchableOpacity>
               </View>

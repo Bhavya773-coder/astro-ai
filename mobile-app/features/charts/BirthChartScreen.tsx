@@ -21,6 +21,7 @@ import {
 } from '../../constants/astrology';
 import KundliDiamond from '../../components/charts/KundliDiamond';
 import BirthChartWheel from '../../components/charts/BirthChartWheel';
+import { useTheme } from '../../theme';
 
 interface BirthChartScreenProps {
   userName: string;
@@ -39,6 +40,7 @@ export function BirthChartScreen({
   insets,
   triggerShareCard,
 }: BirthChartScreenProps) {
+  const { theme, isDark } = useTheme();
   const { width } = Dimensions.get('window');
   const [chartsSubTab, setChartsSubTab] = useState<'birthChart' | 'kundli'>('birthChart');
   const [selectedPlanet, setSelectedPlanet] = useState<string | null>(null);
@@ -57,6 +59,23 @@ export function BirthChartScreen({
   const interpretation = apiBirthChart?.data?.interpretation || apiBirthChart?.interpretation || null;
   const planetsObj: Record<string, any> = chartData?.planets || {};
   const housesObj: Record<string, string> = chartData?.houses || {};
+
+  const getPlanetHouseNum = (pVal: any, signName: string): number => {
+    if (pVal?.house !== undefined && !isNaN(Number(pVal.house))) {
+      const h = Number(pVal.house);
+      if (h >= 1 && h <= 12) return h;
+    }
+    const signIdx = rashiToIndex[signName] ?? 0;
+    if (housesObj && Object.keys(housesObj).length > 0) {
+      for (let h = 1; h <= 12; h++) {
+        const hVal = housesObj[h.toString()] || housesObj[h];
+        if (hVal === signName || (rashiToIndex[hVal] !== undefined && rashiToIndex[hVal] === signIdx)) {
+          return h;
+        }
+      }
+    }
+    return ((signIdx - ascIndex0 + 12) % 12) + 1;
+  };
 
   const svgPlanets = (() => {
     if (Object.keys(planetsObj).length === 0) {
@@ -77,12 +96,7 @@ export function BirthChartScreen({
       const k = pKey.toLowerCase();
       const meta = PLANET_META[k] || { label: pKey, abbr: pKey.substring(0, 2).toUpperCase(), color: '#7209B7' };
       const signName = pVal?.sign || 'Aries';
-      const signIdx = rashiToIndex[signName] ?? 0;
-      let houseNum = ((signIdx - ascIndex0 + 12) % 12) + 1;
-      if (Object.keys(housesObj).length > 0) {
-        const found = Object.entries(housesObj).find(([_, s]) => s === signName);
-        if (found) houseNum = Number(found[0]);
-      }
+      const houseNum = getPlanetHouseNum(pVal, signName);
       return {
         key: k, name: meta.label, san: meta.label, glyph: '', abbr: meta.abbr,
         theme: signName, house: houseNum,
@@ -108,16 +122,16 @@ export function BirthChartScreen({
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={[styles.tabScroll, { paddingHorizontal: scrollPadding }]}>
-      <Text style={styles.tabViewTitle}>Astro Map</Text>
+      <Text style={[styles.tabViewTitle, isDark && { color: '#F0EEFF' }]}>Astro Map</Text>
 
       {/* Segmented Control */}
-      <View style={[styles.chartsSegmentContainer, { marginHorizontal: cardMargin }]}>
+      <View style={[styles.chartsSegmentContainer, isDark && { backgroundColor: 'rgba(22, 19, 41, 0.75)', borderColor: 'rgba(168, 85, 247, 0.25)' }, { marginHorizontal: cardMargin }]}>
         <TouchableOpacity
           style={[styles.chartsSegmentBtn, chartsSubTab === 'birthChart' && styles.chartsSegmentBtnActive]}
           onPress={() => { setChartsSubTab('birthChart'); setSelectedPlanet(null); }}
           activeOpacity={0.8}
         >
-          <Text style={[styles.chartsSegmentText, chartsSubTab === 'birthChart' && styles.chartsSegmentTextActive]}>
+          <Text style={[styles.chartsSegmentText, isDark && { color: '#9E9BB3' }, chartsSubTab === 'birthChart' && styles.chartsSegmentTextActive]}>
             ☉ Birth Chart Wheel
           </Text>
         </TouchableOpacity>
@@ -126,7 +140,7 @@ export function BirthChartScreen({
           onPress={() => { setChartsSubTab('kundli'); setSelectedPlanet(null); }}
           activeOpacity={0.8}
         >
-          <Text style={[styles.chartsSegmentText, chartsSubTab === 'kundli' && styles.chartsSegmentTextActive]}>
+          <Text style={[styles.chartsSegmentText, isDark && { color: '#9E9BB3' }, chartsSubTab === 'kundli' && styles.chartsSegmentTextActive]}>
             ◇ Lagna Kundli
           </Text>
         </TouchableOpacity>
@@ -166,23 +180,28 @@ export function BirthChartScreen({
 
       {/* Chart Label */}
       <View style={[styles.amChartLabelRow, { marginHorizontal: cardMargin }]}>
-        <Text style={styles.amChartLabel}>
+        <Text style={[styles.amChartLabel, isDark && { color: '#F0EEFF' }]}>
           {chartsSubTab === 'birthChart' ? 'Western Natal Wheel' : 'North Indian (Lagna) Chart'}
         </Text>
-        <Text style={styles.amAscLabel}>ASC: {chartData?.ascendant || RASHIS[ascIndex0]} {RASHI_GLYPHS[ascIndex0]}</Text>
+        <Text style={[styles.amAscLabel, isDark && { color: '#A855F7' }]}>ASC: {chartData?.ascendant || RASHIS[ascIndex0]} {RASHI_GLYPHS[ascIndex0]}</Text>
       </View>
 
       {/* Chart / Kundli SVG */}
-      <View style={styles.amChartContainer}>
+      <View style={[styles.amChartContainer, isDark && { backgroundColor: 'rgba(22, 19, 41, 0.75)', borderColor: 'rgba(168, 85, 247, 0.25)' }]}>
         {chartData ? (
           chartsSubTab === 'birthChart' ? (
-            <BirthChartWheel size={chartSize} ascIndex0={ascIndex0} planets={svgPlanets} selectedKey={selectedPlanet} />
+            <BirthChartWheel size={chartSize} ascIndex0={ascIndex0} planets={svgPlanets} selectedKey={selectedPlanet} isDark={isDark} />
           ) : (
-            <KundliDiamond size={chartSize} ascIndex0={ascIndex0} planets={svgPlanets} selectedKey={selectedPlanet} houses={housesObj} />
+            <View style={{ alignItems: 'center' }}>
+              <KundliDiamond size={chartSize} ascIndex0={ascIndex0} planets={svgPlanets} selectedKey={selectedPlanet} houses={housesObj} isDark={isDark} />
+              <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: isDark ? '#9E9BB3' : '#726F8D', textAlign: 'center', marginTop: 8, marginHorizontal: 12 }}>
+                ✦ <Text style={{ fontFamily: 'Cinzel-Bold', color: isDark ? '#A855F7' : '#7209B7' }}>H1–H12</Text> are fixed Vedic Houses. Numbers represent Zodiac Signs (1=Aries, 7=Libra).
+              </Text>
+            </View>
           )
         ) : (
           <View style={{ alignItems: 'center', justifyContent: 'center', minHeight: chartSize }}>
-            <Text style={{ color: '#726F8D', fontFamily: 'SourceSerif4', fontSize: 14 }}>Chart data unavailable</Text>
+            <Text style={{ color: isDark ? '#9E9BB3' : '#726F8D', fontFamily: 'SourceSerif4', fontSize: 14 }}>Chart data unavailable</Text>
           </View>
         )}
       </View>
@@ -190,8 +209,8 @@ export function BirthChartScreen({
       {/* ── 1. Executive Dynamic AI Astrological Interpretation ── */}
       {interpretation && (
         <View style={{ marginBottom: 20 }}>
-          <Text style={styles.sectionTitle}>AI Astrological Interpretation</Text>
-          <View style={[styles.amInterpretationsCard, { marginHorizontal: cardMargin }]}>
+          <Text style={[styles.sectionTitle, isDark && { color: '#F0EEFF' }]}>AI Astrological Interpretation</Text>
+          <View style={[styles.amInterpretationsCard, isDark && { backgroundColor: 'rgba(22, 19, 41, 0.75)', borderColor: 'rgba(168, 85, 247, 0.22)' }, { marginHorizontal: cardMargin }]}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.amInterpretationsTabsScroll}>
               {[
                 { key: 'personality', label: 'Personality' },
@@ -207,10 +226,10 @@ export function BirthChartScreen({
                   <TouchableOpacity
                     key={tab.key}
                     onPress={() => setSelectedInterpretationTab(tab.key)}
-                    style={[styles.amInterpretationsTabBtn, isTabSelected && styles.amInterpretationsTabBtnActive]}
+                    style={[styles.amInterpretationsTabBtn, isDark && { backgroundColor: 'rgba(168, 85, 247, 0.12)' }, isTabSelected && styles.amInterpretationsTabBtnActive]}
                     activeOpacity={0.8}
                   >
-                    <Text style={[styles.amInterpretationsTabText, isTabSelected && styles.amInterpretationsTabTextActive]}>
+                    <Text style={[styles.amInterpretationsTabText, isDark && { color: '#9E9BB3' }, isTabSelected && styles.amInterpretationsTabTextActive]}>
                       {tab.label}
                     </Text>
                   </TouchableOpacity>
@@ -218,16 +237,16 @@ export function BirthChartScreen({
               })}
             </ScrollView>
             <View style={styles.amInterpretationsContent}>
-              <Text style={styles.amInterpretationsText}>
+              <Text style={[styles.amInterpretationsText, isDark && { color: '#F0EEFF' }]}>
                 {interpretation[selectedInterpretationTab] || "Detailed insight available for this section."}
               </Text>
 
-              <View style={{ backgroundColor: 'rgba(114, 9, 183, 0.05)', borderRadius: 12, padding: 12, marginTop: 14, borderWidth: 1, borderColor: 'rgba(114, 9, 183, 0.1)' }}>
+              <View style={{ backgroundColor: isDark ? 'rgba(168, 85, 247, 0.14)' : 'rgba(114, 9, 183, 0.05)', borderRadius: 12, padding: 12, marginTop: 14, borderWidth: 1, borderColor: isDark ? 'rgba(168, 85, 247, 0.25)' : 'rgba(114, 9, 183, 0.1)' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                  <Sparkles size={13} color="#7209B7" style={{ marginRight: 5 }} />
-                  <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 10, color: '#7209B7', letterSpacing: 0.5 }}>COSMIC TAKEAWAY</Text>
+                  <Sparkles size={13} color="#A855F7" style={{ marginRight: 5 }} />
+                  <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 10, color: '#A855F7', letterSpacing: 0.5 }}>COSMIC TAKEAWAY</Text>
                 </View>
-                <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12, color: '#2C2B3D', fontStyle: 'italic', lineHeight: 18 }}>
+                <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12, color: isDark ? '#D1CEE2' : '#2C2B3D', fontStyle: 'italic', lineHeight: 18 }}>
                   Align your actions with your {chartData?.ascendant || 'Lagna'} Ascendant strengths while honoring the intuitive guidance of your {chartData?.moon_sign || 'Moon'} Moon.
                 </Text>
               </View>
@@ -239,8 +258,8 @@ export function BirthChartScreen({
       {/* ── 2. Planetary Positions & Dignity Deck ── */}
       <View style={{ marginBottom: 20 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginHorizontal: cardMargin, marginBottom: 8 }}>
-          <Text style={[styles.sectionTitle, { marginHorizontal: 0, marginBottom: 0 }]}>Planetary Positions</Text>
-          <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 10, color: '#726F8D', letterSpacing: 1 }}>SWIPE →</Text>
+          <Text style={[styles.sectionTitle, isDark && { color: '#F0EEFF' }, { marginHorizontal: 0, marginBottom: 0 }]}>Planetary Positions</Text>
+          <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 10, color: isDark ? '#A855F7' : '#726F8D', letterSpacing: 1 }}>SWIPE →</Text>
         </View>
         {Object.keys(planetsObj).length > 0 ? (
           <ScrollView
@@ -256,12 +275,7 @@ export function BirthChartScreen({
               const signName = pVal.sign || 'Aries';
               const signGlyph = RASHI_GLYPHS[rashiToIndex[signName] ?? 0] || '';
               const dignity = getPlanetDignityBadge(pName, signName);
-              const signIdx = rashiToIndex[signName] ?? 0;
-              let houseNum = ((signIdx - ascIndex0 + 12) % 12) + 1;
-              if (Object.keys(housesObj).length > 0) {
-                const found = Object.entries(housesObj).find(([_, s]) => s === signName);
-                if (found) houseNum = Number(found[0]);
-              }
+              const houseNum = getPlanetHouseNum(pVal, signName);
               const houseInsight = getPlanetHouseInsight(pName, houseNum, signName);
 
               return (
@@ -269,15 +283,15 @@ export function BirthChartScreen({
                   key={pName}
                   style={{
                     width: carouselCardW,
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: isDark ? 'rgba(22, 19, 41, 0.75)' : '#FFFFFF',
                     borderRadius: 20,
                     padding: 16,
                     marginRight: 12,
                     borderWidth: 1,
-                    borderColor: 'rgba(114, 111, 141, 0.10)',
+                    borderColor: isDark ? 'rgba(168, 85, 247, 0.22)' : 'rgba(114, 111, 141, 0.10)',
                     shadowColor: meta.color,
                     shadowOffset: { width: 0, height: 3 },
-                    shadowOpacity: 0.08,
+                    shadowOpacity: isDark ? 0.2 : 0.08,
                     shadowRadius: 8,
                     elevation: 2,
                     justifyContent: 'space-between'
@@ -285,14 +299,14 @@ export function BirthChartScreen({
                 >
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: `${meta.color}15`, alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+                      <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: `${meta.color}18`, alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
                         <Text style={{ fontSize: 20, color: meta.color }}>{meta.glyph}</Text>
                       </View>
                       <View>
-                        <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: '#2C2B3D' }}>
-                          {pName.charAt(0).toUpperCase() + pName.slice(1)} • <Text style={{ color: '#726F8D', fontFamily: 'SourceSerif4' }}>{meta.san}</Text>
+                        <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: isDark ? '#F0EEFF' : '#2C2B3D' }}>
+                          {pName.charAt(0).toUpperCase() + pName.slice(1)} • <Text style={{ color: isDark ? '#D1CEE2' : '#726F8D', fontFamily: 'SourceSerif4' }}>{meta.san}</Text>
                         </Text>
-                        <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: '#726F8D' }}>{meta.nature}</Text>
+                        <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: isDark ? '#9E9BB3' : '#726F8D' }}>{meta.nature}</Text>
                       </View>
                     </View>
 
@@ -301,21 +315,21 @@ export function BirthChartScreen({
                     </View>
                   </View>
 
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(114, 9, 183, 0.03)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, marginBottom: 10 }}>
-                    <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 12, color: '#2C2B3D' }}>
-                      {signName} {signGlyph} <Text style={{ fontFamily: 'SourceSerif4-Bold', color: '#7209B7' }}>{pVal.degree}°</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: isDark ? 'rgba(168, 85, 247, 0.12)' : 'rgba(114, 9, 183, 0.03)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, marginBottom: 10 }}>
+                    <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 12, color: isDark ? '#F0EEFF' : '#2C2B3D' }}>
+                      {signName} {signGlyph} <Text style={{ fontFamily: 'SourceSerif4-Bold', color: isDark ? '#A855F7' : '#7209B7' }}>{pVal.degree}°</Text>
                     </Text>
-                    <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 11, color: '#7209B7' }}>
+                    <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 11, color: isDark ? '#A855F7' : '#7209B7' }}>
                       House {houseNum}
                     </Text>
                   </View>
 
-                  <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12.5, color: '#555469', lineHeight: 18 }}>
+                  <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12.5, color: isDark ? '#F0EEFF' : '#555469', lineHeight: 18 }}>
                     {houseInsight}
                   </Text>
 
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(114, 111, 141, 0.06)' }}>
-                    <Text style={{ fontFamily: 'SourceSerif4', fontSize: 10, color: '#726F8D' }}>Planet {pIdx + 1} of {Object.keys(planetsObj).length}</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(168, 85, 247, 0.15)' : 'rgba(114, 111, 141, 0.06)' }}>
+                    <Text style={{ fontFamily: 'SourceSerif4', fontSize: 10, color: isDark ? '#9E9BB3' : '#726F8D' }}>Planet {pIdx + 1} of {Object.keys(planetsObj).length}</Text>
                     <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: meta.color }} />
                   </View>
                 </View>
@@ -323,8 +337,8 @@ export function BirthChartScreen({
             })}
           </ScrollView>
         ) : (
-          <View style={[styles.astroGridCard, { marginHorizontal: cardMargin, alignItems: 'center', paddingVertical: 24 }]}>
-            <Text style={{ color: '#999', fontSize: 14 }}>Loading planetary positions...</Text>
+          <View style={[styles.astroGridCard, isDark && { backgroundColor: 'rgba(22, 19, 41, 0.75)', borderColor: 'rgba(168, 85, 247, 0.2)' }, { marginHorizontal: cardMargin, alignItems: 'center', paddingVertical: 24 }]}>
+            <Text style={{ color: isDark ? '#9E9BB3' : '#999', fontSize: 14 }}>Loading planetary positions...</Text>
           </View>
         )}
       </View>
@@ -332,8 +346,8 @@ export function BirthChartScreen({
       {/* ── 3. 12 Bhavas (House Matrix) ── */}
       <View style={{ marginBottom: 20 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginHorizontal: cardMargin, marginBottom: 8 }}>
-          <Text style={[styles.sectionTitle, { marginHorizontal: 0, marginBottom: 0 }]}>12 Bhavas (Houses)</Text>
-          <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 10, color: '#726F8D', letterSpacing: 1 }}>SWIPE →</Text>
+          <Text style={[styles.sectionTitle, isDark && { color: theme.text.primary }, { marginHorizontal: 0, marginBottom: 0 }]}>12 Bhavas (Houses)</Text>
+          <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 10, color: isDark ? '#9E9BB3' : '#726F8D', letterSpacing: 1 }}>SWIPE →</Text>
         </View>
         <ScrollView
           horizontal
@@ -353,15 +367,15 @@ export function BirthChartScreen({
                 key={h}
                 style={{
                   width: carouselCardW,
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: isDark ? 'rgba(22, 19, 41, 0.75)' : '#FFFFFF',
                   borderRadius: 20,
                   padding: 16,
                   marginRight: 12,
                   borderWidth: 1,
-                  borderColor: 'rgba(114, 111, 141, 0.08)',
-                  shadowColor: '#7209B7',
+                  borderColor: isDark ? 'rgba(168, 85, 247, 0.22)' : 'rgba(114, 111, 141, 0.08)',
+                  shadowColor: isDark ? '#000000' : '#7209B7',
                   shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.05,
+                  shadowOpacity: isDark ? 0.25 : 0.05,
                   shadowRadius: 6,
                   elevation: 2,
                   justifyContent: 'space-between'
@@ -370,35 +384,35 @@ export function BirthChartScreen({
                 <View>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: 'rgba(114, 9, 183, 0.08)', alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
-                        <MaterialCommunityIcons name={bhava.icon as any} size={18} color="#7209B7" />
+                      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: isDark ? 'rgba(168, 85, 247, 0.18)' : 'rgba(114, 9, 183, 0.08)', alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
+                        <MaterialCommunityIcons name={bhava.icon as any} size={18} color={isDark ? '#A855F7' : '#7209B7'} />
                       </View>
                       <View>
-                        <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 14, color: '#2C2B3D' }}>
+                        <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 14, color: isDark ? '#F0EEFF' : '#2C2B3D' }}>
                           House {h}: {bhava.sanskrit}
                         </Text>
-                        <Text style={{ fontFamily: 'SourceSerif4-Bold', fontSize: 11, color: '#7209B7' }}>{bhava.title}</Text>
+                        <Text style={{ fontFamily: 'SourceSerif4-Bold', fontSize: 11, color: isDark ? '#A855F7' : '#7209B7' }}>{bhava.title}</Text>
                       </View>
                     </View>
-                    <View style={{ backgroundColor: 'rgba(114, 9, 183, 0.06)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}>
-                      <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 11, color: '#2C2B3D' }}>
+                    <View style={{ backgroundColor: isDark ? 'rgba(168, 85, 247, 0.15)' : 'rgba(114, 9, 183, 0.06)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}>
+                      <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 11, color: isDark ? '#F0EEFF' : '#2C2B3D' }}>
                         {sign} {RASHI_GLYPHS[signIdx]}
                       </Text>
                     </View>
                   </View>
 
-                  <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12, color: '#726F8D', lineHeight: 17 }}>
+                  <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12, color: isDark ? '#9E9BB3' : '#726F8D', lineHeight: 17 }}>
                     {bhava.domain}
                   </Text>
                 </View>
 
-                <View style={{ marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(114, 9, 183, 0.05)' }}>
+                <View style={{ marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: isDark ? 'rgba(168, 85, 247, 0.12)' : 'rgba(114, 9, 183, 0.05)' }}>
                   {occupants.length > 0 ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9.5, color: '#7209B7' }}>OCCUPANTS:</Text>
+                      <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9.5, color: isDark ? '#A855F7' : '#7209B7' }}>OCCUPANTS:</Text>
                       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
                         {occupants.map((occ, oIdx) => (
-                          <View key={oIdx} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: `${occ.color}15`, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                          <View key={oIdx} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: `${occ.color}18`, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
                             <Text style={{ fontSize: 10, color: occ.color, marginRight: 2 }}>{occ.glyph}</Text>
                             <Text style={{ fontFamily: 'SourceSerif4-Bold', fontSize: 10, color: occ.color }}>{occ.name}</Text>
                           </View>
@@ -406,7 +420,7 @@ export function BirthChartScreen({
                       </View>
                     </View>
                   ) : (
-                    <Text style={{ fontFamily: 'SourceSerif4', fontSize: 10.5, color: '#A09FB1', fontStyle: 'italic' }}>
+                    <Text style={{ fontFamily: 'SourceSerif4', fontSize: 10.5, color: isDark ? '#726F8D' : '#A09FB1', fontStyle: 'italic' }}>
                       No direct planetary occupants
                     </Text>
                   )}
@@ -420,16 +434,16 @@ export function BirthChartScreen({
       {/* ── 4. Important Yogas ── */}
       {interpretation?.important_yogas && interpretation.important_yogas.length > 0 && (
         <View style={{ marginBottom: 20 }}>
-          <Text style={styles.sectionTitle}>Auspicious Yogas</Text>
-          <View style={[styles.amYogasCard, { marginHorizontal: cardMargin }]}>
+          <Text style={[styles.sectionTitle, isDark && { color: theme.text.primary }]}>Auspicious Yogas</Text>
+          <View style={[styles.amYogasCard, isDark && { backgroundColor: 'rgba(22, 19, 41, 0.75)', borderColor: 'rgba(168, 85, 247, 0.22)' }, { marginHorizontal: cardMargin }]}>
             {interpretation.important_yogas.map((yoga: any, idx: number) => (
-              <View key={idx} style={[styles.amYogaItem, idx === interpretation.important_yogas.length - 1 && { borderBottomWidth: 0 }]}>
+              <View key={idx} style={[styles.amYogaItem, isDark && { borderBottomColor: 'rgba(168, 85, 247, 0.12)' }, idx === interpretation.important_yogas.length - 1 && { borderBottomWidth: 0 }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                  <Sparkles size={14} color="#7209B7" style={{ marginRight: 6 }} />
-                  <Text style={styles.amYogaName}>{typeof yoga === 'string' ? yoga : (yoga.name || yoga.title || 'Yoga')}</Text>
+                  <Sparkles size={14} color={isDark ? '#A855F7' : '#7209B7'} style={{ marginRight: 6 }} />
+                  <Text style={[styles.amYogaName, isDark && { color: '#A855F7' }]}>{typeof yoga === 'string' ? yoga : (yoga.name || yoga.title || 'Yoga')}</Text>
                 </View>
                 {typeof yoga !== 'string' && (yoga.description || yoga.desc) && (
-                  <Text style={styles.amYogaDesc}>{yoga.description || yoga.desc}</Text>
+                  <Text style={[styles.amYogaDesc, isDark && { color: '#D1CEE2' }]}>{yoga.description || yoga.desc}</Text>
                 )}
               </View>
             ))}
@@ -438,77 +452,77 @@ export function BirthChartScreen({
       )}
 
       {/* ── 5. Celestial Trinity & Coordinates ── */}
-      <Text style={styles.sectionTitle}>Celestial Trinity & Coordinates</Text>
-      <View style={[styles.astroGridCard, { marginHorizontal: cardMargin, padding: 18, marginBottom: 20 }]}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: 'rgba(114, 9, 183, 0.08)', paddingBottom: 12, marginBottom: 14 }}>
+      <Text style={[styles.sectionTitle, isDark && { color: theme.text.primary }]}>Celestial Trinity & Coordinates</Text>
+      <View style={[styles.astroGridCard, isDark && { backgroundColor: 'rgba(22, 19, 41, 0.75)', borderColor: 'rgba(168, 85, 247, 0.22)' }, { marginHorizontal: cardMargin, padding: 18, marginBottom: 20 }]}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: isDark ? 'rgba(168, 85, 247, 0.15)' : 'rgba(114, 9, 183, 0.08)', paddingBottom: 12, marginBottom: 14 }}>
           <View>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: '#2C2B3D' }}>{birthDetails?.full_name || userName}</Text>
-            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12, color: '#726F8D', marginTop: 2 }}>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: isDark ? '#F0EEFF' : '#2C2B3D' }}>{birthDetails?.full_name || userName}</Text>
+            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 12, color: isDark ? '#9E9BB3' : '#726F8D', marginTop: 2 }}>
               {birthDetails?.date_of_birth} • {birthDetails?.time_of_birth || 'Birth Time Verified'}
             </Text>
           </View>
-          <View style={{ backgroundColor: 'rgba(114, 9, 183, 0.08)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 }}>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 10.5, color: '#7209B7' }}>{birthDetails?.place_of_birth || 'Earth'}</Text>
+          <View style={{ backgroundColor: isDark ? 'rgba(168, 85, 247, 0.18)' : 'rgba(114, 9, 183, 0.08)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 }}>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 10.5, color: isDark ? '#A855F7' : '#7209B7' }}>{birthDetails?.place_of_birth || 'Earth'}</Text>
           </View>
         </View>
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-          <View style={{ width: '48%', backgroundColor: 'rgba(114, 9, 183, 0.04)', borderRadius: 14, padding: 12, marginBottom: 10 }}>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: '#7209B7', letterSpacing: 1 }}>ASCENDANT (LAGNA)</Text>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: '#2C2B3D', marginTop: 4 }}>
+          <View style={{ width: '48%', backgroundColor: isDark ? 'rgba(31, 27, 56, 0.80)' : 'rgba(114, 9, 183, 0.04)', borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: isDark ? 'rgba(168, 85, 247, 0.18)' : 'transparent' }}>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: isDark ? '#A855F7' : '#7209B7', letterSpacing: 1 }}>ASCENDANT (LAGNA)</Text>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: isDark ? '#F0EEFF' : '#2C2B3D', marginTop: 4 }}>
               {chartData?.ascendant || 'Aries'} {chartData?.ascendant ? RASHI_GLYPHS[rashiToIndex[chartData.ascendant] ?? 0] : '♈'}
             </Text>
-            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: '#726F8D', marginTop: 2 }}>Core Soul Mask & Aura</Text>
+            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: isDark ? '#9E9BB3' : '#726F8D', marginTop: 2 }}>Core Soul Mask & Aura</Text>
           </View>
 
-          <View style={{ width: '48%', backgroundColor: 'rgba(232, 162, 0, 0.06)', borderRadius: 14, padding: 12, marginBottom: 10 }}>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: '#D9730D', letterSpacing: 1 }}>SUN SIGN (SURYA)</Text>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: '#2C2B3D', marginTop: 4 }}>
+          <View style={{ width: '48%', backgroundColor: isDark ? 'rgba(31, 27, 56, 0.80)' : 'rgba(232, 162, 0, 0.06)', borderRadius: 14, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: isDark ? 'rgba(217, 115, 13, 0.25)' : 'transparent' }}>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: '#FBBF24', letterSpacing: 1 }}>SUN SIGN (SURYA)</Text>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: isDark ? '#F0EEFF' : '#2C2B3D', marginTop: 4 }}>
               {chartData?.sun_sign || zodiac?.name || 'Leo'} {chartData?.sun_sign ? RASHI_GLYPHS[rashiToIndex[chartData.sun_sign] ?? 0] : '♌'}
             </Text>
-            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: '#726F8D', marginTop: 2 }}>Vitality & Soul Mission</Text>
+            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: isDark ? '#9E9BB3' : '#726F8D', marginTop: 2 }}>Vitality & Soul Mission</Text>
           </View>
 
-          <View style={{ width: '48%', backgroundColor: 'rgba(91, 141, 239, 0.06)', borderRadius: 14, padding: 12 }}>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: '#5B8DEF', letterSpacing: 1 }}>MOON SIGN (CHANDRA)</Text>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: '#2C2B3D', marginTop: 4 }}>
+          <View style={{ width: '48%', backgroundColor: isDark ? 'rgba(31, 27, 56, 0.80)' : 'rgba(91, 141, 239, 0.06)', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: isDark ? 'rgba(96, 165, 250, 0.25)' : 'transparent' }}>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: '#60A5FA', letterSpacing: 1 }}>MOON SIGN (CHANDRA)</Text>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: isDark ? '#F0EEFF' : '#2C2B3D', marginTop: 4 }}>
               {chartData?.moon_sign || 'Taurus'} {chartData?.moon_sign ? RASHI_GLYPHS[rashiToIndex[chartData.moon_sign] ?? 0] : '♉'}
             </Text>
-            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: '#726F8D', marginTop: 2 }}>Inner Mind & Emotions</Text>
+            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: isDark ? '#9E9BB3' : '#726F8D', marginTop: 2 }}>Inner Mind & Emotions</Text>
           </View>
 
-          <View style={{ width: '48%', backgroundColor: 'rgba(247, 37, 133, 0.06)', borderRadius: 14, padding: 12 }}>
+          <View style={{ width: '48%', backgroundColor: isDark ? 'rgba(31, 27, 56, 0.80)' : 'rgba(247, 37, 133, 0.06)', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: isDark ? 'rgba(247, 37, 133, 0.25)' : 'transparent' }}>
             <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: '#F72585', letterSpacing: 1 }}>NAKSHATRA & PADA</Text>
-            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 14, color: '#2C2B3D', marginTop: 4 }} numberOfLines={1}>
+            <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 14, color: isDark ? '#F0EEFF' : '#2C2B3D', marginTop: 4 }} numberOfLines={1}>
               {chartData?.nakshatra || 'Ashwini'} {chartData?.nakshatra_pada ? `(Pada ${chartData.nakshatra_pada})` : ''}
             </Text>
-            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: '#726F8D', marginTop: 2 }}>Lunar Mansion & Quarter</Text>
+            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: isDark ? '#9E9BB3' : '#726F8D', marginTop: 2 }}>Lunar Mansion & Quarter</Text>
           </View>
         </View>
 
         {/* ── Vimshottari Dasha Timeline Banner ── */}
         {chartData?.vimshottari_dasha && (
-          <View style={{ marginTop: 12, backgroundColor: 'rgba(114, 9, 183, 0.06)', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: 'rgba(114, 9, 183, 0.12)' }}>
+          <View style={{ marginTop: 12, backgroundColor: isDark ? 'rgba(31, 27, 56, 0.80)' : 'rgba(114, 9, 183, 0.06)', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: isDark ? 'rgba(168, 85, 247, 0.25)' : 'rgba(114, 9, 183, 0.12)' }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Sparkles size={14} color="#7209B7" style={{ marginRight: 6 }} />
-                <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 11, color: '#7209B7', letterSpacing: 0.8 }}>
+                <Sparkles size={14} color={isDark ? '#A855F7' : '#7209B7'} style={{ marginRight: 6 }} />
+                <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 11, color: isDark ? '#A855F7' : '#7209B7', letterSpacing: 0.8 }}>
                   ACTIVE VIMSHOTTARI DASHA
                 </Text>
               </View>
-              <View style={{ backgroundColor: '#7209B7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+              <View style={{ backgroundColor: isDark ? '#A855F7' : '#7209B7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
                 <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 9, color: '#FFFFFF' }}>120-YR CYCLE</Text>
               </View>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 6 }}>
-              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: '#2C2B3D' }}>
+              <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 15, color: isDark ? '#F0EEFF' : '#2C2B3D' }}>
                 {chartData.vimshottari_dasha.current_mahadasha} Mahadasha
               </Text>
-              <Text style={{ fontFamily: 'SourceSerif4-Bold', fontSize: 12, color: '#7209B7' }}>
+              <Text style={{ fontFamily: 'SourceSerif4-Bold', fontSize: 12, color: isDark ? '#A855F7' : '#7209B7' }}>
                 {chartData.vimshottari_dasha.current_mahadasha_period}
               </Text>
             </View>
-            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: '#555469', marginTop: 4 }}>
+            <Text style={{ fontFamily: 'SourceSerif4', fontSize: 11, color: isDark ? '#9E9BB3' : '#555469', marginTop: 4 }}>
               Birth Balance: {chartData.vimshottari_dasha.balance_years_at_birth} yrs of {chartData.vimshottari_dasha.starting_mahadasha}
             </Text>
           </View>

@@ -431,7 +431,7 @@ async function buildMonthEvents(year: number, month: number, birthdateStr: strin
     const res = await fetchCalendarEvents(year, month);
     const apiEvents = (res && res.events && Array.isArray(res.events)) ? res.events : [];
 
-    apiEvents.forEach(ev => {
+    apiEvents.forEach((ev: any) => {
       if (ev.title.includes('Moon') || ev.category === 'birthday' || !ev.isSystem) {
         const key = `${ev.date}_${ev.title.trim().toLowerCase()}`;
         map.set(key, ev);

@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
+  Linking,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,7 +24,7 @@ import { CustomAlertContainer } from './CustomAlert';
 import type OnboardingScreenComp from './OnboardingScreen';
 import type DashboardScreenComp from './DashboardScreen';
 import AstroSplashScreen from './AstroSplashScreen';
-import { ThemeProvider } from './theme';
+import { ThemeProvider, useTheme } from './theme';
 import { haptic } from './haptics';
 
 // Lazily load large components to optimize app startup time
@@ -57,7 +58,8 @@ const { width, height } = Dimensions.get('window');
 
 type AuthMode = 'login' | 'signup' | 'signup_otp' | 'forgot_email' | 'forgot_otp' | 'forgot_new' | 'onboarding' | 'dashboard';
 
-export default function App() {
+function AppContent() {
+  const { theme, isDark } = useTheme();
   const [showSplash, setShowSplash] = useState(true);
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [showPassword, setShowPassword] = useState(false);
@@ -99,6 +101,19 @@ export default function App() {
   const [resetToken, setResetToken] = useState<string | null>(null);
   const [agreedPrivacy, setAgreedPrivacy] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  const startResendCooldown = (seconds = 60) => {
+    setResendCooldown(seconds);
+  };
+
+  React.useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown(prev => (prev > 1 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   const handleGoogleSignIn = () => {
     const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '92991229834-mbdk1f4qrbv8ip67fohh1m3en3dkjl35.apps.googleusercontent.com';
@@ -287,7 +302,9 @@ export default function App() {
           setOnboardingAnswers({
             full_name: name,
           });
+          setOtp(['', '', '', '', '', '']);
           changeMode('signup_otp');
+          startResendCooldown(60);
         }
 
       } else if (authMode === 'signup_otp') {
@@ -303,7 +320,11 @@ export default function App() {
           setAuthToken(res.token);
           setAuthTokenState(res.token);
           saveAuthToken(res.token);
-          Alert.alert('Success', 'Email verified successfully!');
+          setOnboardingAnswers(prev => ({
+            ...prev,
+            full_name: name || (res.user?.email ? res.user.email.split('@')[0] : 'Seeker'),
+          }));
+          Alert.alert('Success', 'Email verified successfully! Welcome to AstroAi4u.');
           changeMode('onboarding');
         }
 
@@ -317,7 +338,9 @@ export default function App() {
         const res = await requestPasswordResetOtp(email);
         if (res.ok) {
           Alert.alert('Reset Code Sent', 'We\'ve sent a password reset code to your email. Please check your inbox and spam folder.');
+          setOtp(['', '', '', '', '', '']);
           changeMode('forgot_otp');
+          startResendCooldown(60);
         }
 
       } else if (authMode === 'forgot_otp') {
@@ -368,6 +391,16 @@ export default function App() {
         }
       }
     } catch (err: any) {
+      if (err?.code === 'EMAIL_NOT_VERIFIED' || err?.data?.code === 'EMAIL_NOT_VERIFIED') {
+        Alert.alert(
+          'Verification Required',
+          'Please verify your email address. We have sent a 6-digit verification code to your email.'
+        );
+        setOtp(['', '', '', '', '', '']);
+        changeMode('signup_otp');
+        startResendCooldown(60);
+        return;
+      }
       const msg = err.message || '';
       const userMsg = msg.includes('non-JSON') || msg.includes('network') || msg.includes('fetch')
         ? 'Unable to connect to the server. Please check your internet connection and try again.'
@@ -425,112 +458,90 @@ export default function App() {
 
   if (authMode === 'onboarding') {
     return (
-      <ThemeProvider>
-        <SafeAreaProvider>
-          <OnboardingScreen
-            onBack={() => changeMode('signup')}
-            onComplete={async (answers) => {
-              setIsLoading(true);
-              try {
-                const payload = {
-                  full_name: answers.full_name,
-                  date_of_birth: answers.date_of_birth,
-                  time_of_birth: answers.time_of_birth || answers.birthtime || '',
-                  place_of_birth: answers.place_of_birth || answers.birthplace || '',
-                  current_location: answers.current_location || '',
-                  gender: answers.gender || 'prefer_not_to_say',
-                };
-                await saveBasicProfile(payload);
-                setOnboardingAnswers({
-                  ...answers,
-                  birthplace: payload.place_of_birth,
-                  birthtime: payload.time_of_birth,
-                  current_location: payload.current_location,
-                });
-                changeMode('dashboard');
-              } catch (err: any) {
-                Alert.alert('Error Saving Profile', err.message || 'Failed to save birth details.');
-              } finally {
-                setIsLoading(false);
-              }
-            }}
-          />
-        </SafeAreaProvider>
-      </ThemeProvider>
+      <SafeAreaProvider>
+        <OnboardingScreen
+          onBack={() => changeMode('signup')}
+          onComplete={async (answers) => {
+            setIsLoading(true);
+            try {
+              const payload = {
+                full_name: answers.full_name,
+                date_of_birth: answers.date_of_birth,
+                time_of_birth: answers.time_of_birth || answers.birthtime || '',
+                place_of_birth: answers.place_of_birth || answers.birthplace || '',
+                current_location: answers.current_location || '',
+                gender: answers.gender || 'prefer_not_to_say',
+              };
+              await saveBasicProfile(payload);
+              setOnboardingAnswers({
+                ...answers,
+                birthplace: payload.place_of_birth,
+                birthtime: payload.time_of_birth,
+                current_location: payload.current_location,
+              });
+              changeMode('dashboard');
+            } catch (err: any) {
+              Alert.alert('Error Saving Profile', err.message || 'Failed to save birth details.');
+            } finally {
+              setIsLoading(false);
+            }
+          }}
+        />
+      </SafeAreaProvider>
     );
   }
 
   if (authMode === 'dashboard') {
     return (
-      <ThemeProvider>
-        <SafeAreaProvider>
-          <DashboardScreen
-            answers={onboardingAnswers}
-            token={authToken}
-            onLogout={async () => {
-              setAuthToken(null);
-              setAuthTokenState(null);
-              setOnboardingAnswers({});
-              await saveAuthToken(null);
-              changeMode('login');
-            }}
-          />
-          <CustomAlertContainer />
-        </SafeAreaProvider>
-      </ThemeProvider>
+      <SafeAreaProvider>
+        <DashboardScreen
+          answers={onboardingAnswers}
+          token={authToken}
+          onLogout={async () => {
+            setAuthToken(null);
+            setAuthTokenState(null);
+            setOnboardingAnswers({});
+            await saveAuthToken(null);
+            changeMode('login');
+          }}
+        />
+        <CustomAlertContainer />
+      </SafeAreaProvider>
     );
   }
 
   return (
-    <ThemeProvider>
-      <SafeAreaProvider>
-        <LinearGradient
-          colors={['#F3EFFF', '#E9F3FF', '#FFFDF2']}
-          locations={[0, 0.5, 1]}
-          style={styles.container}
+    <SafeAreaProvider>
+      <LinearGradient
+        colors={theme.gradient as any}
+        locations={[0, 0.5, 1]}
+        style={styles.container}
+      >
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
         >
-        <StatusBar style="dark" />
-
-        {/* Background Watermark & Decorative Icons (Merged into background, cannot block touch events) */}
-        <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
-          <Image
-            source={require('./assets/icons/astro_icon_9.png')}
-            style={styles.bgWatermark}
-            resizeMode="contain"
-          />
-          <Image
-            source={require('./assets/icons/astro_icon_4.png')}
-            style={[styles.bgIcon, styles.bgIconLeft]}
-          />
-          <Image
-            source={require('./assets/icons/astro_icon_10.png')}
-            style={[styles.bgIcon, styles.bgIconRight]}
-          />
-        </View>
-
-        <SafeAreaView style={styles.safeArea}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.keyboardView}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
           >
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="handled"
-            >
-              {/* Header Section */}
-              <View style={styles.headerContainer}>
-                <Image
-                  source={require('./assets/icon.png')}
-                  style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 12, alignSelf: 'center' }}
-                  resizeMode="contain"
-                />
-                <Text style={styles.brandTitle}>AstroAi4u</Text>
-                <Text style={styles.brandSubtitle}>Your celestial guide through the stars</Text>
-              </View>
+            {/* Header Section */}
+            <View style={styles.headerContainer}>
+              <Image
+                source={require('./assets/icon.png')}
+                style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 12, alignSelf: 'center' }}
+                resizeMode="contain"
+              />
+              <Text style={[styles.brandTitle, { color: theme.text.primary }]}>AstroAi4u</Text>
+              <Text style={[styles.brandSubtitle, { color: theme.text.secondary }]}>Your celestial guide through the stars</Text>
+            </View>
 
-              {/* Auth Card */}
-              <View style={styles.authCard}>
+            {/* Auth Card */}
+            <View style={[styles.authCard, isDark && { backgroundColor: theme.bg.card, borderColor: theme.border }]}>
 
                 {/* Header Back Button & Title for Forgot Flow */}
                 {(isForgotFlow || authMode === 'signup_otp') && (
@@ -763,6 +774,7 @@ export default function App() {
                         <TouchableOpacity
                           activeOpacity={0.7}
                           onPress={async () => {
+                            if (resendCooldown > 0) return;
                             setIsLoading(true);
                             try {
                               if (authMode === 'signup_otp') {
@@ -772,15 +784,18 @@ export default function App() {
                                 await requestPasswordResetOtp(email);
                                 Alert.alert('Code Resent', 'A new password reset code has been sent to your email.');
                               }
+                              startResendCooldown(60);
                             } catch (err: any) {
                               Alert.alert('Resend Failed', 'We couldn\'t resend the code right now. Please wait a moment and try again.');
                             } finally {
                               setIsLoading(false);
                             }
                           }}
-                          disabled={isLoading}
+                          disabled={isLoading || resendCooldown > 0}
                         >
-                          <Text style={styles.resendLink}>Resend</Text>
+                          <Text style={[styles.resendLink, resendCooldown > 0 && { color: '#9E9BB3' }]}>
+                            {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend'}
+                          </Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -1018,7 +1033,6 @@ export default function App() {
       </LinearGradient>
       <CustomAlertContainer />
     </SafeAreaProvider>
-    </ThemeProvider>
   );
 }
 
@@ -1043,32 +1057,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 50,
     justifyContent: 'center',
-  },
-  // Background Watermark (merged into the background)
-  bgWatermark: {
-    position: 'absolute',
-    width: width * 0.8,
-    height: width * 0.8,
-    top: height * 0.12,
-    alignSelf: 'center',
-    opacity: 0.08,
-  },
-  // Background decorative elements
-  bgIcon: {
-    position: 'absolute',
-    width: 140,
-    height: 140,
-    opacity: 0.1,
-  },
-  bgIconLeft: {
-    top: 50,
-    left: -40,
-    transform: [{ rotate: '-15deg' }],
-  },
-  bgIconRight: {
-    bottom: 30,
-    right: -40,
-    transform: [{ rotate: '25deg' }],
   },
   // Header Section
   headerContainer: {
@@ -1466,3 +1454,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}
