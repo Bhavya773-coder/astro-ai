@@ -21,7 +21,6 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system/legacy';
 import { getAuthToken, generateStyleLook, getTodayStyleLook, updateStyleInteraction } from './api';
 
 import {
@@ -549,63 +548,15 @@ export default function StyleForecasterScreen({
     );
   };
 
-  const [cachedAlternativeUri, setCachedAlternativeUri] = useState<string | null>(null);
-  const [cachedUserUri, setCachedUserUri] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    const cacheImage = async () => {
-      if (styleResult?.image_base64) {
-        try {
-          const raw = styleResult.image_base64.replace(/^data:image\/\w+;base64,/, '').replace(/[\r\n\s]+/g, '');
-          if (!raw) return;
-          const fileUri = `${FileSystem.cacheDirectory}alternative_outfit_${Date.now()}.png`;
-          await FileSystem.writeAsStringAsync(fileUri, raw, { encoding: FileSystem.EncodingType.Base64 });
-          if (isMounted) setCachedAlternativeUri(fileUri);
-        } catch (e) {
-          console.warn('[StyleForecaster] Cache failed, fallback to data URI:', e);
-          const raw = styleResult.image_base64.replace(/^data:image\/\w+;base64,/, '').replace(/[\r\n\s]+/g, '');
-          if (isMounted) setCachedAlternativeUri(`data:image/png;base64,${raw}`);
-        }
-      } else {
-        if (isMounted) setCachedAlternativeUri(null);
-      }
-    };
-    cacheImage();
-    return () => { isMounted = false; };
-  }, [styleResult?.image_base64]);
-
-  useEffect(() => {
-    let isMounted = true;
-    const cacheUserImage = async () => {
-      if (userImageBase64) {
-        try {
-          const raw = userImageBase64.replace(/^data:image\/\w+;base64,/, '').replace(/[\r\n\s]+/g, '');
-          if (!raw) return;
-          const fileUri = `${FileSystem.cacheDirectory}user_outfit_${Date.now()}.png`;
-          await FileSystem.writeAsStringAsync(fileUri, raw, { encoding: FileSystem.EncodingType.Base64 });
-          if (isMounted) setCachedUserUri(fileUri);
-        } catch (e) {
-          const raw = userImageBase64.replace(/^data:image\/\w+;base64,/, '').replace(/[\r\n\s]+/g, '');
-          if (isMounted) setCachedUserUri(`data:image/png;base64,${raw}`);
-        }
-      } else {
-        if (isMounted) setCachedUserUri(null);
-      }
-    };
-    cacheUserImage();
-    return () => { isMounted = false; };
-  }, [userImageBase64]);
-
   const cleanBase64Uri = (str?: string | null) => {
     if (!str) return null;
-    if (str.startsWith('http') || str.startsWith('file:')) return str;
+    if (str.startsWith('http') || str.startsWith('file:') || str.startsWith('data:')) return str;
     const raw = str.replace(/^data:image\/\w+;base64,/, '').replace(/[\r\n\s]+/g, '');
     return raw ? `data:image/png;base64,${raw}` : null;
   };
 
-  const alternativePhotoUri = cachedAlternativeUri || cleanBase64Uri(styleResult?.image_base64);
-  const userPhotoUri = cachedUserUri || userImageUri || cleanBase64Uri(userImageBase64);
+  const alternativePhotoUri = cleanBase64Uri(styleResult?.image_base64);
+  const userPhotoUri = userImageUri || cleanBase64Uri(userImageBase64);
 
   return (
     <LinearGradient
