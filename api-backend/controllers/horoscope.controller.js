@@ -1,4 +1,5 @@
 const aiService = require('../services/aiService');
+const llmService = require('../services/llmService');
 const AIFeedback = require('../models/AIFeedback');
 const Profile = require('../models/Profile');
 const DailyDecision = require('../models/DailyDecision');
@@ -479,18 +480,20 @@ MONEY_LUCK: [time]`
   generateDailyDecisionData = async (req, res) => {
     try {
       let { zodiac } = req.body;
-      const user_id = req.user.userId;
+      const user_id = req.user?.userId || req.user?._id || req.user?.id;
       const today = new Date().toISOString().split('T')[0];
 
-      const profile = await Profile.findOne({ user_id });
+      const profile = user_id ? await Profile.findOne({ user_id }) : null;
 
       const targetZodiac = zodiac || profile?.birth_chart_data?.sun_sign || (profile?.date_of_birth ? llmService.getSunSign(profile.date_of_birth) : 'Aries');
 
       // 1. Check for stable daily data for this specific zodiac
-      const existing = await DailyDecision.findOne({ user_id, date: today });
-      if (existing && existing.data) {
-        if (!existing.zodiac || existing.zodiac === targetZodiac) {
-          return res.json({ success: true, data: existing.data });
+      if (user_id) {
+        const existing = await DailyDecision.findOne({ user_id, date: today });
+        if (existing && existing.data) {
+          if (!existing.zodiac || existing.zodiac === targetZodiac) {
+            return res.json({ success: true, data: existing.data });
+          }
         }
       }
 
@@ -637,13 +640,17 @@ MONEY_LUCK: [time]`
             insight: `Jupiter's steady influence favors methodical, disciplined financial planning over speculative shortcuts.`
           }
         }
+      };
+
       // Save the fallback data for today for fast instant retrieval
       try {
-        await DailyDecision.findOneAndUpdate(
-          { user_id, date: today },
-          { zodiac: activeZodiac, data: fallbackData },
-          { upsert: true, new: true }
-        );
+        if (user_id) {
+          await DailyDecision.findOneAndUpdate(
+            { user_id, date: today },
+            { zodiac: activeZodiac, data: fallbackData },
+            { upsert: true, new: true }
+          );
+        }
       } catch (saveError) {
         console.error('[DecisionEngine] Failed to save fallback data to DB:', saveError.message);
       }
