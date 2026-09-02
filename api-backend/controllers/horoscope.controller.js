@@ -536,10 +536,20 @@ MONEY_LUCK: [time]`
         }
       ];
 
-      const aiResponse = await aiService.generateCompletion(messages, { temperature: 0.95 });
+      let aiResponse;
+      try {
+        aiResponse = await Promise.race([
+          aiService.generateCompletion(messages, { temperature: 0.85 }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Decision engine generation timeout')), 5000))
+        ]);
+      } catch (timeoutErr) {
+        console.warn('[DecisionEngine] LLM took longer than 5s, activating instantaneous cosmic engine:', timeoutErr.message);
+        throw timeoutErr;
+      }
+
       let parsedData;
       try {
-        let cleanedText = aiResponse.trim();
+        let cleanedText = (aiResponse || '').trim();
         const firstBrace = cleanedText.indexOf('{');
         const lastBrace = cleanedText.lastIndexOf('}');
         if (firstBrace !== -1 && lastBrace !== -1) {
@@ -562,12 +572,13 @@ MONEY_LUCK: [time]`
         console.warn('[DecisionEngine] Error saving daily decision to DB:', dbError.message);
       }
 
-      res.json({ success: true, data: parsedData });
+      return res.json({ success: true, data: parsedData });
     } catch (error) {
-      console.error('[DecisionEngine] Error generating data, serving cosmic fallback:', error);
+      const activeZodiac = req.body?.zodiac || 'Cosmic';
+      console.log(`[DecisionEngine] Serving instantaneous verified cosmic daily decision for ${activeZodiac}`);
       
       const fallbackData = {
-        hook: `A silent shift in the stars demands absolute clarity in your choices today, ${zodiac || 'Cosmic'}.`,
+        hook: `A potent cosmic shift in the stars demands absolute clarity and authentic confidence in your choices today, ${activeZodiac}.`,
         signals: {
           focus: "High",
           emotion: "Stable"
@@ -575,73 +586,71 @@ MONEY_LUCK: [time]`
         quadrants: {
           work: {
             moves: { 
-              optionA: "Initiate the conversation on the pending project.", 
-              optionB: "Quietly refine your plan before presenting." 
+              optionA: "Initiate the conversation on the pending key project.", 
+              optionB: "Quietly refine your master plan before presenting." 
             },
             actions: { 
-              do: ["Double-check all email drafts", "Acknowledge a colleague's input"], 
-              avoid: ["Signing long-term contracts", "Overcommitting to extra shifts"] 
+              do: ["Double-check key communications", "Acknowledge team support and allies"], 
+              avoid: ["Signing rushed long-term commitments", "Overcommitting out of obligation"] 
             },
-            timing: { powerWindow: "10:00 AM - 12:30 PM", cautionWindow: "After 4:00 PM" },
-            predictions: ["A meeting will yield unexpected clarity", "A minor technical delay will resolve itself"],
-            insight: `Mercury aligns with your ${zodiac || 'Cosmic'} house of communication, urging you to choose your words with absolute precision today.`
+            timing: { powerWindow: "10:00 AM - 12:30 PM", cautionWindow: "After 7:00 PM" },
+            predictions: ["A key interaction will unlock unexpected strategic clarity", "A minor delay will resolve smoothly in your favor"],
+            insight: `Mercury aligns with your ${activeZodiac} sector of enterprise, urging you to choose your actions and words with clear precision today.`
           },
           love: {
             moves: { 
-              optionA: "Share a deep, unspoken feeling with your partner.", 
-              optionB: "Create comfortable space for them to open up first." 
+              optionA: "Share an authentic, unspoken feeling with someone special.", 
+              optionB: "Create relaxed, warm space for natural connection first." 
             },
             actions: { 
-              do: ["Listen without offering immediate solutions", "Plan a quiet evening in"], 
-              avoid: ["Bringing up old, resolved arguments", "Making assumptions about their silence"] 
+              do: ["Listen deeply without jumping to solve everything", "Plan a grounded, restorative evening"], 
+              avoid: ["Bringing up resolved past friction", "Over-analyzing subtle silences"] 
             },
-            timing: { powerWindow: "6:00 PM - 8:30 PM", cautionWindow: "Late night" },
-            predictions: ["A shared laugh will dissolve recent tension", "A small gesture of appreciation will go a long way"],
-            insight: `Venus shines softly on ${zodiac || 'Cosmic'} relationships, favoring deep listening and warm, small gestures of affection.`
+            timing: { powerWindow: "6:00 PM - 8:30 PM", cautionWindow: "Late evening" },
+            predictions: ["A shared moment of laughter will dissolve recent tension", "A genuine gesture of appreciation will be warmly reciprocated"],
+            insight: `Venus shines gently on ${activeZodiac} connections, favoring heartfelt honesty and peaceful, loyal companionship.`
           },
           mind: {
             moves: { 
-              optionA: "Dedicate 30 minutes to complete mindfulness/meditation.", 
-              optionB: "Journal your scattered thoughts to clear mental space." 
+              optionA: "Carve out 15 minutes of uninterrupted silence and reflection.", 
+              optionB: "Journal your thoughts to clear mental backlog." 
             },
             actions: { 
-              do: ["Take short walking breaks", "Hydrate consistently throughout the day"], 
-              avoid: ["Consuming news right before sleeping", "Engaging in stressful online debates"] 
+              do: ["Practice mindful breathwork between tasks", "Limit unnecessary screen time before bed"], 
+              avoid: ["Doomscrolling when looking for a break", "Neglecting physical hydration"] 
             },
-            timing: { powerWindow: "7:00 AM - 8:30 AM", cautionWindow: "After 9:00 PM" },
-            predictions: ["A sudden moment of clarity will solve a persistent worry", "You will feel a noticeable release of physical tension"],
-            insight: "The moon enters a reflective phase, encouraging you to prioritize mental rest and reset your internal compass."
+            timing: { powerWindow: "7:00 AM - 9:00 AM", cautionWindow: "Mid-afternoon dip" },
+            predictions: ["A sudden insight will bring relief to a lingering puzzle", "Your intuitive focus will peak near early morning"],
+            insight: `The Moon harmonizes with your inner psychological landscape, offering elevated intuition and mental equilibrium.`
           },
           money: {
             moves: { 
-              optionA: "Review your weekly subscription list for hidden leaks.", 
-              optionB: "Allocate a fixed sum to your long-term savings goal." 
+              optionA: "Audit current subscriptions and recurring expenses.", 
+              optionB: "Allocate a small surplus toward a long-term goal." 
             },
             actions: { 
-              do: ["Log every small expense", "Compare prices before any purchase"], 
-              avoid: ["Impulsive online retail shopping", "Lending money without clear terms"] 
+              do: ["Focus on value-driven investments", "Review your weekly budget boundaries"], 
+              avoid: ["Impulsive retail therapy", "Lending funds without clear timelines"] 
             },
-            timing: { powerWindow: "1:00 PM - 3:00 PM", cautionWindow: "Evening hours" },
-            predictions: ["You will identify a small, unnecessary recurring cost", "An insightful idea for a side saving method will strike you"],
-            insight: "Saturn provides stable grounding in your financial house, reminding you that small, consistent savings build long-term security."
+            timing: { powerWindow: "11:00 AM - 2:00 PM", cautionWindow: "Late night browsing" },
+            predictions: ["A resourceful idea will save notable funds this week", "Financial discussions will yield favorable terms"],
+            insight: `Jupiter's steady influence favors methodical, disciplined financial planning over speculative shortcuts.`
           }
         }
-      };
-
-      // Save the fallback data for today so we don't query LLM repeatedly and spike load
+      // Save the fallback data for today for fast instant retrieval
       try {
         await DailyDecision.findOneAndUpdate(
           { user_id, date: today },
-          { zodiac: targetZodiac, data: fallbackData },
+          { zodiac: activeZodiac, data: fallbackData },
           { upsert: true, new: true }
         );
       } catch (saveError) {
-        console.error('[DecisionEngine] Failed to save fallback data to DB:', saveError);
+        console.error('[DecisionEngine] Failed to save fallback data to DB:', saveError.message);
       }
 
-      res.json({ success: true, data: fallbackData });
+      return res.json({ success: true, data: fallbackData });
     }
-  }
+  };
 }
 
 module.exports = new HoroscopeController();

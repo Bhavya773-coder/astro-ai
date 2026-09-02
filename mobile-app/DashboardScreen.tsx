@@ -43,6 +43,7 @@ import {
   fetchCredits,
   verifyIAPPayment,
   deleteAccount,
+  getDailyDecisionData,
 } from './api';
 import HopeDisclosureModal from './HopeDisclosureModal';
 import RecalculationProgressModal from './components/common/RecalculationProgressModal';
@@ -305,6 +306,24 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
       })
       .catch(() => {});
 
+    // Fetch Today's Daily Decision data
+    const userZodiac = zodiac?.name || 'Aries';
+    setIsTodayLoading(true);
+    getDailyDecisionData(userZodiac)
+      .then(res => {
+        if (res?.data) {
+          setDailyDecision(res.data);
+          setTodayLoadError(false);
+        }
+      })
+      .catch(err => {
+        console.warn('Daily decision fetch failed, using cosmic engine:', err);
+        setTodayLoadError(true);
+      })
+      .finally(() => {
+        setIsTodayLoading(false);
+      });
+
     fetchCredits()
       .then(res => { if (typeof res?.credits === 'number') setCredits(res.credits); })
       .catch(() => {});
@@ -337,7 +356,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
         }
       })
       .catch(() => {});
-  }, []);
+  }, [zodiac?.name]);
 
   const getGreeting = () => {
     const hr = new Date().getHours();
@@ -352,31 +371,37 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
   const activeData = apiQuadrant ? {
     title: `Your Move in ${activeFocusLower}`,
     moves: [apiQuadrant.moves?.optionA || '', apiQuadrant.moves?.optionB || ''].filter(Boolean),
-    doList: apiQuadrant.actions?.do || [],
-    avoidList: apiQuadrant.actions?.avoid || [],
-    powerWindow: apiQuadrant.timing?.powerWindow || 'N/A',
-    avoidAfter: apiQuadrant.timing?.cautionWindow || 'N/A',
-    prediction: apiQuadrant.predictions?.[0] || 'A quiet, introspective period is expected.',
-    rationale: apiQuadrant.insight || 'Cosmic transits alignment.',
-  } : (isTodayLoading ? {
-    title: `Your Move in ${activeFocusLower}`,
-    moves: [],
-    doList: [],
-    avoidList: [],
-    powerWindow: '—',
-    avoidAfter: '—',
-    prediction: 'Loading your cosmic guidance…',
-    rationale: 'Consulting the stars…',
+    doList: Array.isArray(apiQuadrant.actions?.do) && apiQuadrant.actions.do.length > 0 ? apiQuadrant.actions.do : ['Stay grounded in your authentic intentions', 'Take mindful pauses between tasks'],
+    avoidList: Array.isArray(apiQuadrant.actions?.avoid) && apiQuadrant.actions.avoid.length > 0 ? apiQuadrant.actions.avoid : ['Overcommitting to urgent requests', 'Making hasty decisions'],
+    powerWindow: apiQuadrant.timing?.powerWindow || '10:00 AM - 12:30 PM',
+    avoidAfter: apiQuadrant.timing?.cautionWindow || 'After 7:00 PM',
+    prediction: apiQuadrant.predictions?.[0] || 'Cosmic alignment is active for your signs. Trust your inner guidance.',
+    rationale: apiQuadrant.insight || 'Align your efforts with natural celestial flow for steady progress.',
   } : {
     title: `Your Move in ${activeFocusLower}`,
-    moves: ['Embrace today\'s natural flow with mindfulness'],
-    doList: ['Stay grounded in your authentic intentions', 'Take mindful pauses between tasks'],
-    avoidList: ['Overcommitting to urgent requests'],
-    powerWindow: '9:00 - 11:30 AM',
-    avoidAfter: '8:00 PM',
-    prediction: 'Cosmic transits suggest high intuition and productive clarity.',
-    rationale: 'Align your efforts with natural celestial flow for steady progress.',
-  });
+    moves: [
+      activeFocus === 'Work' ? 'Initiate the conversation on the pending key project.' :
+      activeFocus === 'Love' ? 'Share an authentic, unspoken feeling with someone special.' :
+      activeFocus === 'Mind' ? 'Carve out 15 minutes of uninterrupted silence and reflection.' :
+      'Audit current subscriptions and recurring expenses.',
+      activeFocus === 'Work' ? 'Quietly refine your master plan before presenting.' :
+      activeFocus === 'Love' ? 'Create relaxed, warm space for natural connection first.' :
+      activeFocus === 'Mind' ? 'Journal your thoughts to clear mental backlog.' :
+      'Allocate a small surplus toward a long-term goal.'
+    ],
+    doList: [
+      activeFocus === 'Work' ? 'Double-check key communications' : activeFocus === 'Love' ? 'Listen deeply without jumping to solve' : activeFocus === 'Mind' ? 'Practice mindful breathwork' : 'Focus on value-driven investments',
+      activeFocus === 'Work' ? 'Acknowledge team support and allies' : activeFocus === 'Love' ? 'Plan a grounded, restorative evening' : activeFocus === 'Mind' ? 'Limit unnecessary screen time' : 'Review weekly budget boundaries'
+    ],
+    avoidList: [
+      activeFocus === 'Work' ? 'Signing rushed long-term commitments' : activeFocus === 'Love' ? 'Bringing up resolved past friction' : activeFocus === 'Mind' ? 'Doomscrolling when tired' : 'Impulsive retail therapy',
+      activeFocus === 'Work' ? 'Overcommitting out of obligation' : activeFocus === 'Love' ? 'Over-analyzing subtle silences' : activeFocus === 'Mind' ? 'Neglecting hydration' : 'Lending funds without clear timelines'
+    ],
+    powerWindow: activeFocus === 'Work' ? '10:00 AM - 12:30 PM' : activeFocus === 'Love' ? '6:00 PM - 8:30 PM' : activeFocus === 'Mind' ? '7:00 AM - 9:00 AM' : '11:00 AM - 2:00 PM',
+    avoidAfter: activeFocus === 'Work' ? 'After 7:00 PM' : activeFocus === 'Love' ? 'Late evening' : activeFocus === 'Mind' ? 'Mid-afternoon dip' : 'Late night browsing',
+    prediction: `The stars align in your favor for ${activeFocus}. High intuition and productive clarity are highlighted today.`,
+    rationale: `Mercury and Venus harmonize with your ${zodiac?.name || 'sign'} placements, supporting focused execution and harmony in ${activeFocus}.`,
+  };
 
   const handleChatSend = async (method = 'astrology', explicitText?: string) => {
     const pendingText = (explicitText || chatInput).trim();
