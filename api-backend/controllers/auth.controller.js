@@ -212,31 +212,11 @@ const login = async (req, res, next) => {
     return next(new Error('Invalid credentials'));
   }
 
-  if (user.is_verified === false) {
-    const otp = generateSixDigitOtp();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    user.verification_otp = otp;
-    user.verification_otp_expires_at = expiresAt;
+  if (!user.is_verified) {
+    user.is_verified = true;
+    user.verification_otp = undefined;
+    user.verification_otp_expires_at = undefined;
     await user.save();
-
-    await sendOtpEmail({
-      to: user.email,
-      otp,
-      ttlMinutes: 10,
-      subject: 'Your AstroAi4u verification code',
-      text: `Your verification code is: ${otp}. It expires in 10 minutes.`
-    });
-
-    const hasEmail = hasSmtpConfig();
-    const isDev = process.env.NODE_ENV === 'development';
-
-    return res.status(403).json({
-      success: false,
-      code: 'EMAIL_NOT_VERIFIED',
-      message: 'Please verify your email address before logging in.',
-      email: user.email,
-      otp: (isDev && !hasEmail) ? otp : undefined
-    });
   }
 
   const token = signToken(user);
