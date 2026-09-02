@@ -341,7 +341,12 @@ const getBirthChart = asyncHandler(async (req, res) => {
     existingReport.content.birth_details.time_of_birth === profile.time_of_birth &&
     existingReport.content.birth_details.full_name === profile.full_name;
 
-  if (isBirthMatch && !force && existingReport.content.chart_data) {
+  const hasNewTropicalFormat =
+    existingReport?.content?.chart_data?.zodiac_system === 'Tropical (Western)' &&
+    Array.isArray(existingReport?.content?.chart_data?.aspects) &&
+    existingReport?.content?.chart_data?.elements;
+
+  if (isBirthMatch && !force && existingReport?.content?.chart_data && hasNewTropicalFormat) {
     console.log('✅ Found matching cached Western Birth Chart for user:', userId);
     return res.json({
       success: true,

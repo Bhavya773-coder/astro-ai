@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "dev:full": "node start-with-ollama.js",
     "worker:email": "node workers/emailWorker.js",
+    "migrate:charts": "node scripts/migrateAllUserCharts.js",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {

@@ -37,8 +37,7 @@ const PLANET_IDS = {
   uranus: swisseph.Planet?.Uranus ?? 7,
   neptune: swisseph.Planet?.Neptune ?? 8,
   pluto: swisseph.Planet?.Pluto ?? 9,
-  north_node: swisseph.LunarPoint?.TrueNode ?? 11,
-  chiron: 15
+  north_node: swisseph.LunarPoint?.TrueNode ?? 11
 };
 
 const MAJOR_ASPECTS = [
