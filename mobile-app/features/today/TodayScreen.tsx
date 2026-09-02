@@ -133,25 +133,25 @@ export function TodayScreen({
   const accent = focusMeta[activeFocus]?.color || '#7209B7';
   const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   const CARD_COUNT = 4;
-  const NAV_SPACE = 84 + insets.bottom;
-  const usableH = Math.max((todayDeckH || (height - NAV_SPACE - 24)), 400);
-  const GAP = 14;
-  const CW = Math.round(width * 0.88);
+  const NAV_SPACE = 76 + insets.bottom;
+  const GAP = 12;
+  const CW = Math.round(width * 0.85);
   const SNAP = CW + GAP;
   const sidePad = Math.round((width - CW) / 2);
+  const usableH = Math.max((todayDeckH || (height - (insets.top > 0 ? insets.top + 70 : 80) - NAV_SPACE - 20)), 480);
   const pageStyle = { width: CW, height: usableH, marginRight: GAP } as const;
 
   const sheetStyle = {
     flex: 1,
-    borderRadius: 28,
-    backgroundColor: isDark ? 'rgba(22, 19, 41, 0.85)' : '#FFFFFF',
+    borderRadius: 32,
+    backgroundColor: isDark ? 'rgba(22, 19, 41, 0.90)' : '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: isDark ? 'rgba(168, 85, 247, 0.22)' : 'rgba(114, 111, 141, 0.12)',
+    borderColor: isDark ? 'rgba(168, 85, 247, 0.28)' : 'rgba(114, 111, 141, 0.14)',
     shadowColor: isDark ? '#000000' : '#2C2B3D',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: isDark ? 0.35 : 0.08,
-    shadowRadius: 18,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: isDark ? 0.45 : 0.10,
+    shadowRadius: 20,
+    elevation: 6,
     overflow: 'hidden'
   } as const;
 
@@ -160,10 +160,10 @@ export function TodayScreen({
     const inputRange = [c - SNAP, c - SNAP / 2, c, c + SNAP / 2, c + SNAP];
     const opts = { extrapolate: 'clamp' as const };
     return {
-      opacity: todayScrollX.interpolate({ inputRange, outputRange: [0.60, 0.88, 1, 0.88, 0.60], ...opts }),
+      opacity: todayScrollX.interpolate({ inputRange, outputRange: [0.65, 0.90, 1, 0.90, 0.65], ...opts }),
       transform: [
-        { scale: todayScrollX.interpolate({ inputRange, outputRange: [0.93, 0.97, 1, 0.97, 0.93], ...opts }) },
-        { translateY: todayScrollX.interpolate({ inputRange, outputRange: [12, 3, 0, 3, 12], ...opts }) },
+        { scale: todayScrollX.interpolate({ inputRange, outputRange: [0.92, 0.97, 1, 0.97, 0.92], ...opts }) },
+        { translateY: todayScrollX.interpolate({ inputRange, outputRange: [10, 2, 0, 2, 10], ...opts }) },
       ],
     };
   };
