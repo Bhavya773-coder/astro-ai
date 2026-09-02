@@ -264,9 +264,9 @@ export function TodayScreen({
           <LinearGradient
             colors={isDark ? ['#1A0B2E', '#2D124D', '#4A154B'] : ['#1E0D3A', '#381463', '#681375']}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            style={{ flex: 1, borderRadius: 28, overflow: 'hidden', padding: 18, justifyContent: 'space-between', borderWidth: 1.5, borderColor: isDark ? 'rgba(168, 85, 247, 0.35)' : 'rgba(255,255,255,0.2)' }}
+            style={{ flex: 1, borderRadius: 28, overflow: 'hidden', padding: 18, borderWidth: 1.5, borderColor: isDark ? 'rgba(168, 85, 247, 0.35)' : 'rgba(255,255,255,0.2)' }}
           >
-            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ paddingBottom: 10 }}>
+            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingVertical: 8 }}>
               {/* Top Header: Greeting, Streak & Story Share */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <View style={{ flex: 1 }}>
@@ -413,8 +413,8 @@ export function TodayScreen({
             CARD 2 · Forecast & Prediction Story Card
            ══════════════════════════════════════════════════════════ */}
         <Animated.View style={[pageStyle, cardArc(1)]}>
-          <View style={[sheetStyle, { padding: 20, justifyContent: 'space-between' }]}>
-            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
+          <View style={[sheetStyle, { padding: 20 }]}>
+            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingVertical: 8 }}>
               {/* Header with Focus Badge & Share */}
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <View style={{ backgroundColor: `${accent}18`, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, borderWidth: 1, borderColor: `${accent}40` }}>
@@ -485,7 +485,7 @@ export function TodayScreen({
            ══════════════════════════════════════════════════════════ */}
         <Animated.View style={[pageStyle, cardArc(2)]}>
           <View style={[sheetStyle, { padding: 18 }]}>
-            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ paddingBottom: 10 }}>
+            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingVertical: 8 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 16, color: isDark ? '#F0EEFF' : '#2C2B3D' }}>Strategic Focus</Text>
                 <TouchableOpacity
@@ -563,7 +563,7 @@ export function TodayScreen({
            ══════════════════════════════════════════════════════════ */}
         <Animated.View style={[pageStyle, cardArc(3)]}>
           <View style={[sheetStyle, { padding: 18 }]}>
-            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ paddingBottom: 10 }}>
+            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingVertical: 8 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <Text style={{ fontFamily: 'Cinzel-Bold', fontSize: 16, color: isDark ? '#F0EEFF' : '#2C2B3D' }}>Cosmic Guidance</Text>
                 <TouchableOpacity
