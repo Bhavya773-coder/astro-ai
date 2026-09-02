@@ -77,6 +77,9 @@ function AppContent() {
   // Answers from interactive onboarding
   const [onboardingAnswers, setOnboardingAnswers] = useState<Record<string, string>>({});
 
+  const isForgotFlow = authMode === 'forgot_email' || authMode === 'forgot_otp' || authMode === 'forgot_new';
+  const isAuthTabFlow = authMode === 'login' || authMode === 'signup';
+
   // Helper to change screen mode and clear errors
   const changeMode = (mode: AuthMode) => {
     setAuthMode(mode);
@@ -391,7 +394,15 @@ function AppContent() {
         }
       }
     } catch (err: any) {
-      if (err?.code === 'EMAIL_NOT_VERIFIED' || err?.data?.code === 'EMAIL_NOT_VERIFIED') {
+      const isEmailNotVerified =
+        err?.code === 'EMAIL_NOT_VERIFIED' ||
+        err?.data?.code === 'EMAIL_NOT_VERIFIED' ||
+        err?.status === 403 ||
+        err?.message?.toLowerCase().includes('verify your email') ||
+        err?.message?.toLowerCase().includes('email not verified') ||
+        err?.message?.toLowerCase().includes('verification');
+
+      if (isEmailNotVerified) {
         Alert.alert(
           'Verification Required',
           'Please verify your email address. We have sent a 6-digit verification code to your email.'
@@ -543,22 +554,22 @@ function AppContent() {
             {/* Auth Card */}
             <View style={[styles.authCard, isDark && { backgroundColor: theme.bg.card, borderColor: theme.border }]}>
 
-                {/* Header Back Button & Title for Forgot Flow */}
-                {(isForgotFlow || authMode === 'signup_otp') && (
+                {/* Header Back Button & Title for Forgot and OTP flows */}
+                {!isAuthTabFlow && (
                   <View style={styles.forgotHeaderRow}>
                     <TouchableOpacity
                       onPress={() => {
                         if (authMode === 'forgot_email') changeMode('login');
                         else if (authMode === 'forgot_otp') changeMode('forgot_email');
                         else if (authMode === 'forgot_new') changeMode('forgot_otp');
-                        else if (authMode === 'signup_otp') changeMode('signup');
+                        else if (authMode === 'signup_otp') changeMode('login');
                       }}
                       style={styles.backButton}
                       activeOpacity={0.7}
                     >
-                      <ArrowLeft size={20} color="#2C2B3D" />
+                      <ArrowLeft size={20} color={isDark ? '#E5E4EA' : '#2C2B3D'} />
                     </TouchableOpacity>
-                    <Text style={styles.forgotCardTitle}>
+                    <Text style={[styles.forgotCardTitle, isDark && { color: theme.text.primary }]}>
                       {authMode === 'forgot_email' && 'Reset Password'}
                       {authMode === 'forgot_otp' && 'Verification'}
                       {authMode === 'forgot_new' && 'New Password'}
@@ -569,8 +580,8 @@ function AppContent() {
                   </View>
                 )}
 
-                {/* Tab Selector (Hidden during Forgot Flow) */}
-                {!isForgotFlow && (
+                {/* Tab Selector (Only shown on Sign In and Create Account screens) */}
+                {isAuthTabFlow && (
                   <View style={styles.tabContainer}>
                     <TouchableOpacity
                       style={[styles.tab, authMode === 'login' && styles.activeTab]}
@@ -942,8 +953,8 @@ function AppContent() {
                     </LinearGradient>
                   </TouchableOpacity>
 
-                  {/* Divider & Google Login (Hidden during verification flows) */}
-                  {!isForgotFlow && authMode !== 'signup_otp' && (
+                  {/* Divider & Google Login (Hidden during verification and forgot flows) */}
+                  {isAuthTabFlow && (
                     <>
                       <View style={styles.dividerContainer}>
                         <View style={styles.dividerLine} />

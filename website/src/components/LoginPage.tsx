@@ -43,7 +43,12 @@ const LoginPage: React.FC = () => {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      if (err?.code === 'EMAIL_NOT_VERIFIED' || err?.data?.code === 'EMAIL_NOT_VERIFIED') {
+      if (
+        err?.code === 'EMAIL_NOT_VERIFIED' ||
+        err?.data?.code === 'EMAIL_NOT_VERIFIED' ||
+        err?.message?.toLowerCase().includes('verify your email') ||
+        err?.message?.toLowerCase().includes('email not verified')
+      ) {
         navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
         return;
       }
