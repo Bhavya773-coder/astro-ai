@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
@@ -19,6 +19,8 @@ import {
   Star,
   Coins
 } from 'lucide-react';
+import AutoResizeTextarea from './AutoResizeTextarea';
+import { apiFetch } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 
 interface ServiceItem {
@@ -34,6 +36,7 @@ interface ServiceItem {
 const ExplorePage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [questionInput, setQuestionInput] = useState('');
 
   const specials = [
     { key: 'vastu-consultant', title: 'Vastu Consultant', desc: 'Upload a 2D floor plan for sacred spatial guidance and dosha remedies', to: '/vastu-consultant', icon: <Compass className="w-6 h-6" />, gradient: 'from-amber-500 to-orange-600' },
@@ -279,6 +282,56 @@ const ExplorePage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* FLOATING CHAT INPUT - ChatGPT Style */}
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!questionInput.trim()) return;
+              try {
+                const res = await apiFetch('/api/ai-chat/create', {
+                  method: 'POST',
+                  body: JSON.stringify({ title: 'Explore Hub Chat' })
+                });
+                if (res?.success && res?.data) {
+                  navigate(`/ai-chat?chatId=${res.data._id}`, { state: { initialMessage: questionInput.trim() } });
+                } else {
+                  navigate('/ai-chat', { state: { initialMessage: questionInput.trim() } });
+                }
+              } catch {
+                navigate('/ai-chat', { state: { initialMessage: questionInput.trim() } });
+              }
+            }}
+            className="w-full px-4 py-4 md:py-6"
+          >
+            <div className="max-w-3xl mx-auto relative flex items-end">
+              <AutoResizeTextarea
+                value={questionInput}
+                onChange={(e) => setQuestionInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (questionInput.trim()) {
+                      (e.target as any).form?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                    }
+                  }
+                }}
+                placeholder="Ask AstroAi4u anything about your birth chart, daily horoscope, or services..."
+                maxRows={6}
+                className="w-full bg-purple-900/95 hover:bg-purple-900 focus:bg-purple-900 backdrop-blur-xl border-2 border-white/70 hover:border-white focus:border-white rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-lg text-white placeholder-white/90 focus:outline-none focus:ring-4 focus:ring-purple-400/60 transition-all shadow-xl shadow-purple-500/20"
+              />
+              <button
+                type="submit"
+                disabled={!questionInput.trim()}
+                className="absolute right-2 bottom-2 p-2 md:right-3 md:bottom-3 bg-white hover:bg-gray-100 disabled:bg-white/20 disabled:opacity-50 text-purple-900 rounded-xl transition-all disabled:cursor-not-allowed shadow-lg border-2 border-purple-300"
+              >
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-center text-white/30 text-xs mt-2">AstroAi4u can make mistakes. Consider checking important information.</p>
+          </form>
         </div>
       </div>
     </CosmicBackground>

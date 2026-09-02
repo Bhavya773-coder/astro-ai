@@ -3,7 +3,8 @@ import toast from 'react-hot-toast';
 import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard } from './CosmicUI';
-import { Sparkles, RotateCcw, ShieldCheck, HelpCircle } from 'lucide-react';
+import { Sparkles, RotateCcw, ShieldCheck } from 'lucide-react';
+import AutoResizeTextarea from './AutoResizeTextarea';
 import { useAuth } from '../auth/AuthContext';
 
 const ANSWERS = [
@@ -26,19 +27,21 @@ const SUGGESTIONS = [
 
 const Astrology8BallPage: React.FC = () => {
   const { user } = useAuth();
-  const [question, setQuestion] = useState('');
+  const [questionInput, setQuestionInput] = useState('');
+  const [activeQuestion, setActiveQuestion] = useState('');
   const [answer, setAnswer] = useState<typeof ANSWERS[number] | null>(null);
   const [isShaking, setIsShaking] = useState(false);
 
   const handleAsk = (qToAsk?: string) => {
-    const q = (qToAsk || question).trim();
-    if (q.length < 4) {
+    const q = (qToAsk || questionInput).trim();
+    if (q.length < 3) {
       toast.error('Please type a clear yes/no question first');
       return;
     }
 
+    setActiveQuestion(q);
     if (qToAsk) {
-      setQuestion(qToAsk);
+      setQuestionInput(qToAsk);
     }
 
     setAnswer(null);
@@ -55,7 +58,8 @@ const Astrology8BallPage: React.FC = () => {
   };
 
   const handleReset = () => {
-    setQuestion('');
+    setQuestionInput('');
+    setActiveQuestion('');
     setAnswer(null);
     setIsShaking(false);
   };
@@ -86,7 +90,7 @@ const Astrology8BallPage: React.FC = () => {
               </div>
 
               {/* 3D Celestial Oracle Ball */}
-              <div className="relative my-6 flex flex-col items-center justify-center">
+              <div className="relative my-4 flex flex-col items-center justify-center">
                 {/* Ambient Glow */}
                 <div
                   className={`absolute w-72 h-72 md:w-96 md:h-96 rounded-full transition-all duration-700 blur-3xl pointer-events-none ${
@@ -104,7 +108,7 @@ const Astrology8BallPage: React.FC = () => {
                 {/* Sphere */}
                 <div
                   onClick={() => {
-                    if (question) handleAsk();
+                    if (questionInput) handleAsk();
                   }}
                   className={`relative w-64 h-64 md:w-80 md:h-80 rounded-full cursor-pointer flex flex-col items-center justify-center p-6 text-center select-none shadow-[inset_0_-20px_40px_rgba(0,0,0,0.9),0_25px_50px_rgba(0,0,0,0.8)] border border-white/10 transition-transform duration-300 ${
                     isShaking ? 'animate-bounce scale-105' : 'hover:scale-[1.02]'
@@ -137,7 +141,7 @@ const Astrology8BallPage: React.FC = () => {
                       <div className="space-y-1 text-center opacity-80">
                         <span className="text-4xl font-black text-white/50 block">8</span>
                         <span className="text-[10px] uppercase font-bold tracking-widest text-white/60">
-                          Ask & Shake
+                          Ask Below & Shake
                         </span>
                       </div>
                     )}
@@ -145,13 +149,13 @@ const Astrology8BallPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Answer Card */}
+              {/* Answer Guidance Card */}
               {answer && (
                 <GlassCard className="w-full max-w-xl my-4 p-6 border-fuchsia-500/30 text-center animate-fadeIn">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <ShieldCheck className="w-4 h-4" style={{ color: answer.tone }} />
                     <span className="text-xs font-bold uppercase tracking-wider text-white/70">
-                      Cosmic Oracle Guidance
+                      Oracle Response for: "{activeQuestion}"
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-white">{answer.title}</h3>
@@ -169,65 +173,64 @@ const Astrology8BallPage: React.FC = () => {
                 </GlassCard>
               )}
 
-              {/* Question Input */}
-              <GlassCard className="w-full max-w-xl mt-4 p-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-white/60 mb-2">
-                      Type Your Yes / No Question
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="e.g., Should I take action on this proposal today?"
-                        value={question}
-                        onChange={e => setQuestion(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') handleAsk();
-                        }}
-                        className="w-full bg-white/5 border border-white/10 focus:border-fuchsia-500 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-white/30 focus:outline-none transition shadow-inner"
-                      />
-                      {question && (
-                        <button
-                          onClick={() => setQuestion('')}
-                          className="absolute right-3 top-3.5 text-xs text-white/40 hover:text-white"
-                        >
-                          Clear
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleAsk()}
-                    disabled={isShaking || question.trim().length < 4}
-                    className="w-full py-3.5 px-6 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] text-white font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    {isShaking ? 'Consulting the Heavens...' : 'Ask the Cosmic 8-Ball'}
-                  </button>
-
-                  {/* Suggestions */}
-                  <div className="pt-3 border-t border-white/10">
-                    <span className="text-[11px] font-semibold text-white/50 block mb-2">
-                      Or select a suggested query:
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {SUGGESTIONS.map((sug, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleAsk(sug)}
-                          className="text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg px-3 py-1.5 text-left transition"
-                        >
-                          {sug}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+              {/* Suggested Questions Quick Chips */}
+              <div className="w-full max-w-xl my-2">
+                <span className="text-[11px] font-semibold text-white/50 block mb-2 text-center">
+                  Or pick a common question:
+                </span>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {SUGGESTIONS.map((sug, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleAsk(sug)}
+                      className="text-xs text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg px-3 py-1.5 transition text-left"
+                    >
+                      {sug}
+                    </button>
+                  ))}
                 </div>
-              </GlassCard>
+              </div>
             </div>
           </div>
+
+          {/* FLOATING CHAT INPUT - Consistent ChatGPT-style asking bar across all website pages */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (questionInput.trim()) {
+                handleAsk();
+              }
+            }}
+            className="w-full px-4 py-4 md:py-6"
+          >
+            <div className="max-w-3xl mx-auto relative flex items-end">
+              <AutoResizeTextarea
+                value={questionInput}
+                onChange={(e) => setQuestionInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (questionInput.trim()) {
+                      handleAsk();
+                    }
+                  }
+                }}
+                placeholder="Ask the Cosmic 8-Ball any yes or no dilemma..."
+                maxRows={6}
+                className="w-full bg-purple-900/95 hover:bg-purple-900 focus:bg-purple-900 backdrop-blur-xl border-2 border-white/70 hover:border-white focus:border-white rounded-2xl pl-4 pr-12 py-3.5 md:pl-5 md:pr-14 md:py-4 text-lg text-white placeholder-white/90 focus:outline-none focus:ring-4 focus:ring-purple-400/60 transition-all shadow-xl shadow-purple-500/20"
+              />
+              <button
+                type="submit"
+                disabled={!questionInput.trim() || isShaking}
+                className="absolute right-2 bottom-2 p-2 md:right-3 md:bottom-3 bg-white hover:bg-gray-100 disabled:bg-white/20 disabled:opacity-50 text-purple-900 rounded-xl transition-all disabled:cursor-not-allowed shadow-lg border-2 border-purple-300"
+              >
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-center text-white/30 text-xs mt-2">AstroAi4u can make mistakes. Consider checking important information.</p>
+          </form>
         </div>
       </div>
     </CosmicBackground>
