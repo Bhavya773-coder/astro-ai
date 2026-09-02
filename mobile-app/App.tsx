@@ -496,9 +496,6 @@ function AppContent() {
     );
   }
 
-  // Helper to determine if we are in one of the forgot password sub-flows
-  const isForgotFlow = ['forgot_email', 'forgot_otp', 'forgot_new'].includes(authMode);
-
   if (authMode === 'onboarding') {
     return (
       <SafeAreaProvider>
