@@ -8,12 +8,13 @@ const SignupOtpPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setAuth } = useAuth();
-  const email = (location.state as any)?.email || '';
+  const rawEmail = (location.state as any)?.email || new URLSearchParams(location.search).get('email') || '';
+  const [email, setEmail] = useState(rawEmail.trim());
 
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [timer, setTimer] = useState(25);
+  const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
 
   useEffect(() => {
@@ -50,8 +51,9 @@ const SignupOtpPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (timer <= 0) {
-      setError('OTP has expired. Please click Resend Code for a new one.');
+    const userEmail = email.trim();
+    if (!userEmail) {
+      setError('Email address is required. Please go back to login.');
       return;
     }
 
@@ -65,7 +67,7 @@ const SignupOtpPage: React.FC = () => {
     setError(null);
 
     try {
-      const res = await verifySignupOtp(email, otpCode);
+      const res = await verifySignupOtp(userEmail, otpCode);
       setAuth(res.token, res.user);
       navigate('/onboarding');
     } catch (err: any) {
@@ -76,11 +78,16 @@ const SignupOtpPage: React.FC = () => {
   };
 
   const handleResend = async () => {
+    const userEmail = email.trim();
+    if (!userEmail) {
+      setError('Email address is missing. Please return to login.');
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
-      await resendSignupOtp(email);
-      setTimer(25);
+      await resendSignupOtp(userEmail);
+      setTimer(60);
       setCanResend(false);
       setOtp(['', '', '', '', '', '']);
     } catch (err: any) {

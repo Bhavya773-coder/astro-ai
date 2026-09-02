@@ -311,24 +311,53 @@ function AppContent() {
         }
 
       } else if (authMode === 'signup_otp') {
-        const code = otp.join('');
+        const code = otp.join('').trim();
+        const userEmail = (email || '').trim();
+        if (!userEmail) {
+          setErrors({ email: "Email address is required" });
+          Alert.alert("Email Required", "Please enter your email address to verify.");
+          setIsLoading(false);
+          return;
+        }
         if (code.length < 6) {
           setErrors({ otp: "Please enter the complete 6-digit code" });
           setIsLoading(false);
           return;
         }
 
-        const res = await verifyOtp(email, code);
+        const res = await verifyOtp(userEmail, code);
         if (res.token) {
           setAuthToken(res.token);
           setAuthTokenState(res.token);
           saveAuthToken(res.token);
-          setOnboardingAnswers(prev => ({
-            ...prev,
-            full_name: name || (res.user?.email ? res.user.email.split('@')[0] : 'Seeker'),
-          }));
+
+          try {
+            const profileRes = await fetchProfile();
+            if (profileRes?.success && profileRes?.data) {
+              const p = profileRes.data;
+              setOnboardingAnswers({
+                full_name: p.full_name || (res.user?.email ? res.user.email.split('@')[0] : 'Seeker'),
+                date_of_birth: p.date_of_birth || '',
+                birthtime: p.time_of_birth || '',
+                birthplace: p.place_of_birth || '',
+                gender: p.gender || 'neutral',
+              });
+              changeMode('dashboard');
+            } else {
+              setOnboardingAnswers(prev => ({
+                ...prev,
+                full_name: name || (res.user?.email ? res.user.email.split('@')[0] : 'Seeker'),
+              }));
+              changeMode('onboarding');
+            }
+          } catch {
+            setOnboardingAnswers(prev => ({
+              ...prev,
+              full_name: name || (res.user?.email ? res.user.email.split('@')[0] : 'Seeker'),
+            }));
+            changeMode('onboarding');
+          }
           Alert.alert('Success', 'Email verified successfully! Welcome to AstroAi4u.');
-          changeMode('onboarding');
         }
 
       } else if (authMode === 'forgot_email') {
@@ -403,6 +432,9 @@ function AppContent() {
         err?.message?.toLowerCase().includes('verification');
 
       if (isEmailNotVerified) {
+        if (err?.data?.email && !email) {
+          setEmail(err.data.email);
+        }
         Alert.alert(
           'Verification Required',
           'Please verify your email address. We have sent a 6-digit verification code to your email.'

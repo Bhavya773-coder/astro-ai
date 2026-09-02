@@ -111,20 +111,21 @@ const verifySignupOtp = async (req, res, next) => {
   const { email, otp } = req.body;
   if (!email || !otp) {
     res.status(400);
-    return next(new Error('email and otp are required'));
+    return next(new Error('Email and verification code are required'));
   }
 
-  const normalizedEmail = String(email).toLowerCase();
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const normalizedOtp = String(otp).trim();
   const user = await User.findOne({ email: normalizedEmail });
 
   if (!user) {
     res.status(404);
-    return next(new Error('User not found'));
+    return next(new Error('User not found with this email'));
   }
 
-  if (user.verification_otp !== otp || user.verification_otp_expires_at < new Date()) {
+  if (user.verification_otp !== normalizedOtp || (user.verification_otp_expires_at && user.verification_otp_expires_at < new Date())) {
     res.status(400);
-    return next(new Error('Invalid or expired OTP'));
+    return next(new Error('Invalid or expired verification code. Please check or request a new code.'));
   }
 
   user.is_verified = true;
