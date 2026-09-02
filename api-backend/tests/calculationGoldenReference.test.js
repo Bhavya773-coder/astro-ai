@@ -335,4 +335,46 @@ test('--- GOLDEN REFERENCE VALIDATION SUITE ---', async (t) => {
     assert.ok(chart3.ascendant, 'Ascendant must be calculated for Southern latitudes');
     assert.equal(Object.keys(chart3.houses).length, 12);
   });
+
+  await t.test('9. Benchmark Western Tropical Birth Chart Verification (Swiss Ephemeris Tropical Placidus)', async () => {
+    const { calculateWesternBirthChart } = require('../services/westernChartCalculator');
+
+    // Benchmark Western Chart: 1990-05-15, 14:30 IST, New Delhi
+    const westernChart = await calculateWesternBirthChart({
+      date_of_birth: '1990-05-15',
+      time_of_birth: '14:30',
+      latitude: 28.6139,
+      longitude: 77.2090,
+      timezoneOffsetHours: 5.5
+    });
+
+    assert.equal(westernChart.zodiac_system, 'Tropical (Western)');
+    assert.equal(westernChart.sun_sign, 'Taurus');
+    assert.equal(westernChart.moon_sign, 'Capricorn');
+    assert.equal(westernChart.ascendant, 'Virgo');
+
+    // Tropical Sun ~24.28° Taurus (54.28° longitude)
+    assertClose(westernChart.planets.sun.longitude, 54.28, 0.05, 'Western Sun Longitude');
+    assert.equal(westernChart.planets.sun.sign, 'Taurus');
+
+    // Tropical Moon ~25.66° Capricorn (295.66° longitude)
+    assertClose(westernChart.planets.moon.longitude, 295.66, 0.05, 'Western Moon Longitude');
+    assert.equal(westernChart.planets.moon.sign, 'Capricorn');
+
+    // Tropical Venus in Aries ~12.8° (12.8° longitude)
+    assert.equal(westernChart.planets.venus.sign, 'Aries');
+
+    // Placidus House Cusps
+    assert.equal(Object.keys(westernChart.houses).length, 12);
+    assert.equal(Object.keys(westernChart.house_cusps).length, 12);
+
+    // Elements & Modalities
+    assert.ok(typeof westernChart.elements.Earth === 'number');
+    assert.ok(typeof westernChart.elements.Water === 'number');
+    assert.ok(typeof westernChart.modalities.Fixed === 'number');
+
+    // Aspects Matrix
+    assert.ok(Array.isArray(westernChart.aspects));
+    assert.ok(westernChart.aspects.length > 0, 'Aspects matrix must contain calculated planetary aspects');
+  });
 });
