@@ -462,6 +462,13 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
     ]).start();
   };
 
+  const handleAskOracleFromToday = (question: string) => {
+    changeTab('chat');
+    setTimeout(() => {
+      handleChatSend('astrology', question);
+    }, 150);
+  };
+
   const startEditing = () => {
     setEditFullName(userName);
     setEditBirthdate(birthdate);
@@ -803,6 +810,7 @@ export default function DashboardScreen({ answers = {}, token = null, onLogout }
                 setCurrentView={setCurrentView}
                 haptic={haptic}
                 getGreeting={getGreeting}
+                onAskOracle={handleAskOracleFromToday}
               />
             ) : activeTab === 'readings' ? (
               <ExploreScreen
