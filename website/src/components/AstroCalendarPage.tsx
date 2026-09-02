@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
-import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
+import { GlassCard, LoadingSpinner } from './CosmicUI';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -15,12 +15,8 @@ import {
   Plus,
   Trash2,
   Download,
-  Share2,
-  Flame,
   Star,
-  Zap,
-  Heart,
-  Compass,
+  Flame,
   Check,
   X
 } from 'lucide-react';
@@ -67,7 +63,7 @@ const AstroCalendarPage: React.FC = () => {
   const { user } = useAuth();
   const today = new Date();
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth() + 1); // 1-12
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState<string>(
     `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   );
@@ -194,7 +190,6 @@ const AstroCalendarPage: React.FC = () => {
         // Backend fallback
       }
 
-      // Combine & deduplicate
       const combined = [...moonEvents, ...backendEvents];
       setEvents(combined);
     } catch (err: any) {
@@ -211,12 +206,11 @@ const AstroCalendarPage: React.FC = () => {
       if (res?.success && res.data) {
         setDailyInsight(res.data);
       } else {
-        // Compute client deterministic day insight
         const d = new Date(dateStr);
         const dayOfWeek = d.getDay();
         const planetNames = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
         const rulingPlanet = planetNames[dayOfWeek];
-        const luckyColors = ['Gold/Yellow', 'Pearl White/Silver', 'Coral Red', 'Emerald Green', 'Royal Yellow', 'Diamond White/Pink', 'Deep Blue/Black'];
+        const luckyColors = ['Gold/Yellow', 'Silver/Pearl', 'Coral Red', 'Emerald Green', 'Royal Yellow', 'Diamond White', 'Deep Blue'];
         
         setDailyInsight({
           date: dateStr,
@@ -228,7 +222,7 @@ const AstroCalendarPage: React.FC = () => {
         });
       }
     } catch (e) {
-      // Fallback client insight
+      // Fallback
     } finally {
       setIsLoadingInsight(false);
     }
@@ -309,12 +303,10 @@ const AstroCalendarPage: React.FC = () => {
     }
   };
 
-  // Muhurta Calculation Helpers for Selected Date
   const getMuhurtaTimings = (dateStr: string) => {
     const d = new Date(dateStr);
-    const dayOfWeek = d.getDay(); // 0 = Sun, 1 = Mon, etc.
+    const dayOfWeek = d.getDay();
 
-    // Traditional Rahu Kaal windows (based on standard 12-hour sunrise 06:00 to sunset 18:00)
     const rahuKaalMap = [
       '16:30 - 18:00', // Sun
       '07:30 - 09:00', // Mon
@@ -335,35 +327,21 @@ const AstroCalendarPage: React.FC = () => {
       '13:30 - 15:00', // Sat
     ];
 
-    const gulikaMap = [
-      '15:00 - 16:30', // Sun
-      '13:30 - 15:00', // Mon
-      '12:00 - 13:30', // Tue
-      '10:30 - 12:00', // Wed
-      '09:00 - 10:30', // Thu
-      '07:30 - 09:00', // Fri
-      '06:00 - 07:30', // Sat
-    ];
-
     return {
       abhijit: '11:48 - 12:36',
       brahma: '04:32 - 05:20',
       rahuKaal: rahuKaalMap[dayOfWeek] || '12:00 - 13:30',
       yamaganda: yamagandaMap[dayOfWeek] || '09:00 - 10:30',
-      gulika: gulikaMap[dayOfWeek] || '07:30 - 09:00'
     };
   };
 
-  // Calendar Grid generation
   const daysInCurrentMonth = new Date(currentYear, currentMonth, 0).getDate();
-  const firstDayOfWeek = new Date(currentYear, currentMonth - 1, 1).getDay(); // 0 for Sun
+  const firstDayOfWeek = new Date(currentYear, currentMonth - 1, 1).getDay();
 
   const calendarDays = [];
-  // Empty padding cells for first week
   for (let i = 0; i < firstDayOfWeek; i++) {
     calendarDays.push(null);
   }
-  // Days 1..N
   for (let d = 1; d <= daysInCurrentMonth; d++) {
     calendarDays.push(d);
   }
@@ -382,429 +360,426 @@ const AstroCalendarPage: React.FC = () => {
       case 'muhurta':
         return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
       default:
-        return 'bg-sky-500/20 text-sky-300 border-sky-500/30';
+        return 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30';
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-white selection:bg-fuchsia-500 selection:text-white">
-      <CosmicBackground />
-      <Sidebar />
-
-      <main className="flex-1 p-4 md:p-8 lg:p-10 ml-0 md:ml-64 overflow-y-auto max-w-7xl mx-auto">
-        {/* Header Title & Controls */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-violet-500/20 to-fuchsia-600/20 border border-violet-500/30 rounded-2xl">
-                <CalendarIcon className="w-8 h-8 text-fuchsia-400" />
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                  <GradientText>Cosmic & Astro Calendar</GradientText>
+    <CosmicBackground>
+      <div className="flex min-h-screen overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 lg:ml-64 transition-all duration-300 h-screen flex flex-col" id="main-content">
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-8 lg:py-16">
+              {/* Header */}
+              <div className="flex flex-col items-center mb-10">
+                <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 flex items-center gap-3 font-display">
+                  <CalendarIcon className="w-8 h-8 md:w-12 md:h-12 text-fuchsia-400" />
+                  Astro Calendar
                 </h1>
-                <p className="text-slate-400 text-sm mt-1">
-                  Planetary transits, lunar phases, auspicious Muhurtas & personal synchronicity
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={handleToday}
-              className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-            >
-              Today
-            </button>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-600/20 transition"
-            >
-              <Plus className="w-4 h-4" /> Add Event
-            </button>
-            <a
-              href={getExportIcsUrl()}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
-              title="Download iCal (.ics) to sync with Google or Apple Calendar"
-            >
-              <Download className="w-4 h-4 text-amber-400" /> Export ICS
-            </a>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Grid: Month Calendar */}
-          <div className="lg:col-span-7 space-y-6">
-            <GlassCard className="border-slate-800/90">
-              {/* Month Navigator Header */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800/80">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl font-black text-slate-100">
-                    {MONTH_NAMES[currentMonth - 1]} {currentYear}
-                  </span>
-                  {isLoading && <LoadingSpinner className="w-4 h-4 text-fuchsia-400 ml-2" />}
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={handlePrevMonth}
-                    className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={handleNextMonth}
-                    className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Weekday Labels */}
-              <div className="grid grid-cols-7 gap-1.5 mb-2 text-center">
-                {DAYS_OF_WEEK.map((day, idx) => (
-                  <div
-                    key={day}
-                    className={`text-xs font-bold uppercase tracking-wider py-1 ${
-                      idx === 0 || idx === 6 ? 'text-amber-400/80' : 'text-slate-400'
-                    }`}
-                  >
-                    {day}
+                {user?.is_believer && (
+                  <div className="mb-6 px-4 py-1.5 rounded-full bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-400/50 text-[11px] font-bold text-violet-300 flex items-center gap-2 animate-pulse shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                    <Sparkles className="w-3.5 h-3.5 text-violet-300" />
+                    Vedic Planetary Transits & Auspicious Muhurtas
                   </div>
-                ))}
+                )}
+                <p className="text-white/60 text-lg max-w-2xl text-center">
+                  Track planetary shifts, lunar phases, favorable Muhurtas (*Abhijit, Brahma Muhurta*), and inauspicious windows (*Rahu Kaal*) to time your actions.
+                </p>
+
+                {/* Quick Action Buttons */}
+                <div className="flex items-center gap-3 mt-6">
+                  <button
+                    onClick={handleToday}
+                    className="px-4 py-2 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/10 transition"
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)] transition"
+                  >
+                    <Plus className="w-4 h-4" /> Add Event
+                  </button>
+                  <a
+                    href={getExportIcsUrl()}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/15 text-white/90 border border-white/10 transition"
+                    title="Export to iCal/Google Calendar"
+                  >
+                    <Download className="w-4 h-4 text-amber-400" /> Export ICS
+                  </a>
+                </div>
               </div>
 
-              {/* Days Grid */}
-              <div className="grid grid-cols-7 gap-1.5">
-                {calendarDays.map((day, index) => {
-                  if (day === null) {
-                    return <div key={`empty-${index}`} className="h-16 md:h-20 rounded-xl bg-slate-950/30" />;
-                  }
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Left Calendar Grid */}
+                <div className="lg:col-span-7 space-y-6">
+                  <GlassCard className="p-6">
+                    {/* Month Navigator Header */}
+                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-white">
+                          {MONTH_NAMES[currentMonth - 1]} {currentYear}
+                        </h3>
+                        {isLoading && <LoadingSpinner size="sm" />}
+                      </div>
 
-                  const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                  const isSelected = selectedDate === dateStr;
-                  const isToday =
-                    today.getFullYear() === currentYear &&
-                    today.getMonth() + 1 === currentMonth &&
-                    today.getDate() === day;
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handlePrevMonth}
+                          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white border border-white/10 transition"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={handleNextMonth}
+                          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white border border-white/10 transition"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
 
-                  const dayEvents = events.filter(e => e.date === dateStr);
-                  const hasMoon = dayEvents.some(e => e.icon);
-                  const hasCustom = dayEvents.some(e => !e.isSystem);
-
-                  return (
-                    <div
-                      key={dateStr}
-                      onClick={() => setSelectedDate(dateStr)}
-                      className={`h-16 md:h-20 p-1.5 rounded-xl cursor-pointer transition flex flex-col justify-between border ${
-                        isSelected
-                          ? 'bg-gradient-to-br from-violet-600/30 to-fuchsia-600/30 border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.3)]'
-                          : isToday
-                          ? 'bg-amber-500/10 border-amber-500/50 hover:bg-slate-800/80'
-                          : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-800/60 hover:border-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={`text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full ${
-                            isToday
-                              ? 'bg-amber-400 text-slate-950 font-black'
-                              : isSelected
-                              ? 'text-fuchsia-300 font-extrabold'
-                              : 'text-slate-300'
+                    {/* Weekdays */}
+                    <div className="grid grid-cols-7 gap-1.5 mb-2 text-center">
+                      {DAYS_OF_WEEK.map((day, idx) => (
+                        <div
+                          key={day}
+                          className={`text-xs font-bold uppercase tracking-wider py-1 ${
+                            idx === 0 || idx === 6 ? 'text-amber-400' : 'text-white/50'
                           }`}
                         >
                           {day}
-                        </span>
-
-                        {hasMoon && (
-                          <span className="text-[11px]">
-                            {dayEvents.find(e => e.icon)?.icon}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Event Indicator Pills */}
-                      <div className="flex flex-col gap-0.5 overflow-hidden">
-                        {dayEvents.slice(0, 1).map((ev, i) => (
-                          <div
-                            key={i}
-                            className="text-[10px] truncate px-1 rounded bg-slate-800/90 text-slate-300 border border-slate-700/60"
-                          >
-                            {ev.title.replace(/^[^\w\s]+/, '').trim()}
-                          </div>
-                        ))}
-                        {dayEvents.length > 1 && (
-                          <span className="text-[9px] text-fuchsia-400 font-semibold text-right">
-                            +{dayEvents.length - 1} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </GlassCard>
-
-            {/* Monthly Legend */}
-            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 px-2">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                <span>Purnima (Full Moon)</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
-                <span>Amavasya (New Moon)</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-violet-400" />
-                <span>Planetary Transit / Vedic Muhurta</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-fuchsia-400" />
-                <span>Personal Custom Events</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Panel: Selected Date Detail View */}
-          <div className="lg:col-span-5 space-y-6">
-            {/* Date Summary Card */}
-            <GlassCard className="border-violet-500/30 bg-gradient-to-br from-violet-950/20 via-slate-900 to-slate-950">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <div>
-                  <div className="text-xs uppercase tracking-widest text-violet-400 font-bold">
-                    Selected Day Overview
-                  </div>
-                  <h2 className="text-xl font-extrabold text-slate-100 mt-0.5">
-                    {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
-                  </h2>
-                </div>
-
-                {dailyInsight?.ruling_planet && (
-                  <div className="text-right">
-                    <span className="text-[10px] text-slate-400 uppercase">Ruling Energy</span>
-                    <div className="text-sm font-bold text-amber-300 flex items-center gap-1 justify-end">
-                      <Sun className="w-3.5 h-3.5 text-amber-400" />
-                      {dailyInsight.ruling_planet}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Cosmic Insight */}
-              <div className="mt-4">
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-300 uppercase tracking-wide mb-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-400" /> Daily Cosmic Forecast
-                </div>
-                {isLoadingInsight ? (
-                  <div className="py-4 text-center text-xs text-slate-500">Calculating cosmic weather...</div>
-                ) : (
-                  <p className="text-xs text-slate-300 leading-relaxed bg-slate-950/40 p-3 rounded-xl border border-slate-800">
-                    {dailyInsight?.cosmic_summary || 'Synchronized astrological influences active for this day.'}
-                  </p>
-                )}
-              </div>
-
-              {/* Auspicious & Inauspicious Muhurta Timing Windows */}
-              <div className="mt-5 space-y-3">
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-wide flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-emerald-400" /> Traditional Muhurta Windows
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5 text-xs">
-                  {/* Abhijit */}
-                  <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/30">
-                    <div className="font-semibold text-emerald-400 text-[11px] flex items-center gap-1">
-                      <Check className="w-3 h-3" /> Abhijit Muhurta
-                    </div>
-                    <div className="text-slate-200 font-bold mt-0.5">{muhurta.abhijit}</div>
-                    <span className="text-[10px] text-slate-400">Prime auspicious time</span>
-                  </div>
-
-                  {/* Brahma */}
-                  <div className="p-2.5 rounded-lg bg-sky-950/20 border border-sky-500/30">
-                    <div className="font-semibold text-sky-400 text-[11px] flex items-center gap-1">
-                      <Moon className="w-3 h-3" /> Brahma Muhurta
-                    </div>
-                    <div className="text-slate-200 font-bold mt-0.5">{muhurta.brahma}</div>
-                    <span className="text-[10px] text-slate-400">Meditation & clarity</span>
-                  </div>
-
-                  {/* Rahu Kaal */}
-                  <div className="p-2.5 rounded-lg bg-rose-950/20 border border-rose-500/30">
-                    <div className="font-semibold text-rose-400 text-[11px] flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" /> Rahu Kaal
-                    </div>
-                    <div className="text-slate-200 font-bold mt-0.5">{muhurta.rahuKaal}</div>
-                    <span className="text-[10px] text-slate-400">Avoid new beginnings</span>
-                  </div>
-
-                  {/* Yamaganda */}
-                  <div className="p-2.5 rounded-lg bg-amber-950/20 border border-amber-500/30">
-                    <div className="font-semibold text-amber-400 text-[11px] flex items-center gap-1">
-                      <Flame className="w-3 h-3" /> Yamaganda
-                    </div>
-                    <div className="text-slate-200 font-bold mt-0.5">{muhurta.yamaganda}</div>
-                    <span className="text-[10px] text-slate-400">Caution in travel</span>
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
-
-            {/* Events for this specific date */}
-            <GlassCard className="border-slate-800">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2">
-                  <Star className="w-4 h-4 text-fuchsia-400" />
-                  Events on This Day ({selectedDayEvents.length})
-                </h3>
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="text-xs text-fuchsia-400 hover:text-fuchsia-300 flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add
-                </button>
-              </div>
-
-              {selectedDayEvents.length > 0 ? (
-                <div className="space-y-2.5">
-                  {selectedDayEvents.map(event => (
-                    <div
-                      key={event.id}
-                      className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-start justify-between gap-3"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-slate-100">{event.title}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${getEventBadgeColor(event.category)}`}>
-                            {event.category || 'General'}
-                          </span>
                         </div>
-                        {event.description && (
-                          <p className="text-xs text-slate-400 leading-relaxed">{event.description}</p>
-                        )}
+                      ))}
+                    </div>
+
+                    {/* Calendar Days */}
+                    <div className="grid grid-cols-7 gap-1.5">
+                      {calendarDays.map((day, index) => {
+                        if (day === null) {
+                          return <div key={`empty-${index}`} className="h-16 md:h-20 rounded-xl bg-white/[0.02]" />;
+                        }
+
+                        const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const isSelected = selectedDate === dateStr;
+                        const isToday =
+                          today.getFullYear() === currentYear &&
+                          today.getMonth() + 1 === currentMonth &&
+                          today.getDate() === day;
+
+                        const dayEvents = events.filter(e => e.date === dateStr);
+                        const hasMoon = dayEvents.some(e => e.icon);
+
+                        return (
+                          <div
+                            key={dateStr}
+                            onClick={() => setSelectedDate(dateStr)}
+                            className={`h-16 md:h-20 p-1.5 rounded-xl cursor-pointer transition flex flex-col justify-between border ${
+                              isSelected
+                                ? 'bg-gradient-to-br from-violet-600/30 to-fuchsia-600/30 border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.4)]'
+                                : isToday
+                                ? 'bg-amber-500/15 border-amber-500/60 hover:bg-white/10'
+                                : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span
+                                className={`text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full ${
+                                  isToday
+                                    ? 'bg-amber-400 text-black font-extrabold'
+                                    : isSelected
+                                    ? 'text-fuchsia-300 font-extrabold'
+                                    : 'text-white/80'
+                                }`}
+                              >
+                                {day}
+                              </span>
+
+                              {hasMoon && (
+                                <span className="text-xs">
+                                  {dayEvents.find(e => e.icon)?.icon}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex flex-col gap-0.5 overflow-hidden">
+                              {dayEvents.slice(0, 1).map((ev, i) => (
+                                <div
+                                  key={i}
+                                  className="text-[10px] truncate px-1 rounded bg-white/10 text-white/90 border border-white/10"
+                                >
+                                  {ev.title.replace(/^[^\w\s]+/, '').trim()}
+                                </div>
+                              ))}
+                              {dayEvents.length > 1 && (
+                                <span className="text-[9px] text-fuchsia-400 font-bold text-right">
+                                  +{dayEvents.length - 1}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </GlassCard>
+
+                  {/* Calendar Legend */}
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-white/50 px-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                      <span>Full Moon (Purnima)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                      <span>New Moon (Amavasya)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-violet-400" />
+                      <span>Planetary Transits</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-fuchsia-400" />
+                      <span>Custom Events</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Details Panel */}
+                <div className="lg:col-span-5 space-y-6">
+                  {/* Selected Day Cosmic Insights */}
+                  <GlassCard className="p-6 border-fuchsia-500/30">
+                    <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                      <div>
+                        <span className="text-xs uppercase tracking-widest text-fuchsia-400 font-semibold">
+                          Selected Day Weather
+                        </span>
+                        <h3 className="text-xl font-bold text-white mt-0.5">
+                          {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </h3>
                       </div>
 
-                      {!event.isSystem && (
-                        <button
-                          onClick={() => handleDeleteEvent(event.id)}
-                          className="p-1 text-slate-500 hover:text-rose-400 transition"
-                          title="Delete event"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      {dailyInsight?.ruling_planet && (
+                        <div className="text-right">
+                          <span className="text-[10px] text-white/50 uppercase">Ruling Planet</span>
+                          <div className="text-sm font-bold text-amber-300 flex items-center gap-1 justify-end">
+                            <Sun className="w-3.5 h-3.5 text-amber-400" />
+                            {dailyInsight.ruling_planet}
+                          </div>
+                        </div>
                       )}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6 text-xs text-slate-500">
-                  No specific planetary transits or custom events scheduled for this day.
-                </div>
-              )}
-            </GlassCard>
-          </div>
-        </div>
 
-        {/* Modal: Add Custom Event */}
-        {showAddModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                  <CalendarIcon className="w-5 h-5 text-fuchsia-400" />
-                  Add Calendar Event
-                </h3>
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                    {/* Cosmic Forecast */}
+                    <div className="mt-4">
+                      <div className="flex items-center gap-2 text-xs font-bold text-white/80 uppercase tracking-wide mb-2">
+                        <Sparkles className="w-4 h-4 text-fuchsia-400" /> Daily Cosmic Forecast
+                      </div>
+                      {isLoadingInsight ? (
+                        <div className="py-3 text-center text-xs text-white/40">Calculating cosmic weather...</div>
+                      ) : (
+                        <p className="text-sm text-white/85 leading-relaxed bg-white/5 p-3.5 rounded-xl border border-white/10">
+                          {dailyInsight?.cosmic_summary || 'Positive planetary aspects aligning for steady progress.'}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Muhurta Windows */}
+                    <div className="mt-5 space-y-3">
+                      <div className="text-xs font-bold text-white/80 uppercase tracking-wide flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-emerald-400" /> Auspicious & Inauspicious Windows
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30">
+                          <div className="font-semibold text-emerald-400 flex items-center gap-1">
+                            <Check className="w-3 h-3" /> Abhijit Muhurta
+                          </div>
+                          <div className="text-white font-bold text-sm mt-1">{muhurta.abhijit}</div>
+                          <span className="text-[10px] text-white/50">Most auspicious start</span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-sky-950/20 border border-sky-500/30">
+                          <div className="font-semibold text-sky-400 flex items-center gap-1">
+                            <Moon className="w-3 h-3" /> Brahma Muhurta
+                          </div>
+                          <div className="text-white font-bold text-sm mt-1">{muhurta.brahma}</div>
+                          <span className="text-[10px] text-white/50">Meditation & study</span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-rose-950/20 border border-rose-500/30">
+                          <div className="font-semibold text-rose-400 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" /> Rahu Kaal
+                          </div>
+                          <div className="text-white font-bold text-sm mt-1">{muhurta.rahuKaal}</div>
+                          <span className="text-[10px] text-white/50">Avoid major investments</span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-500/30">
+                          <div className="font-semibold text-amber-400 flex items-center gap-1">
+                            <Flame className="w-3 h-3" /> Yamaganda
+                          </div>
+                          <div className="text-white font-bold text-sm mt-1">{muhurta.yamaganda}</div>
+                          <span className="text-[10px] text-white/50">Caution in transit</span>
+                        </div>
+                      </div>
+                    </div>
+                  </GlassCard>
+
+                  {/* Events List */}
+                  <GlassCard className="p-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-base font-bold text-white flex items-center gap-2">
+                        <Star className="w-4 h-4 text-fuchsia-400" />
+                        Events on This Day ({selectedDayEvents.length})
+                      </h4>
+                      <button
+                        onClick={() => setShowAddModal(true)}
+                        className="text-xs text-fuchsia-400 hover:text-fuchsia-300 font-semibold flex items-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Add
+                      </button>
+                    </div>
+
+                    {selectedDayEvents.length > 0 ? (
+                      <div className="space-y-2.5">
+                        {selectedDayEvents.map(event => (
+                          <div
+                            key={event.id}
+                            className="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-start justify-between gap-3"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-white">{event.title}</span>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${getEventBadgeColor(event.category)}`}>
+                                  {event.category || 'General'}
+                                </span>
+                              </div>
+                              {event.description && (
+                                <p className="text-xs text-white/70 leading-relaxed">{event.description}</p>
+                              )}
+                            </div>
+
+                            {!event.isSystem && (
+                              <button
+                                onClick={() => handleDeleteEvent(event.id)}
+                                className="p-1 text-white/40 hover:text-rose-400 transition"
+                                title="Delete event"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-xs text-white/40">
+                        No planetary transits or custom events scheduled for this day.
+                      </div>
+                    )}
+                  </GlassCard>
+                </div>
               </div>
 
-              <form onSubmit={handleCreateCustomEvent} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Date</label>
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={e => setSelectedDate(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-violet-500"
-                    required
-                  />
-                </div>
+              {/* Add Custom Event Modal */}
+              {showAddModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                  <div className="w-full max-w-md bg-slate-900 border border-white/15 rounded-2xl p-6 shadow-2xl space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                      <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <CalendarIcon className="w-5 h-5 text-fuchsia-400" />
+                        Add Calendar Event
+                      </h3>
+                      <button
+                        onClick={() => setShowAddModal(false)}
+                        className="p-1 rounded-lg text-white/50 hover:text-white"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Event Title</label>
-                  <input
-                    type="text"
-                    placeholder="e.g., Birthday, Project Launch, Fasting"
-                    value={newTitle}
-                    onChange={e => setNewTitle(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-violet-500"
-                    required
-                  />
-                </div>
+                    <form onSubmit={handleCreateCustomEvent} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-white/70 mb-1">Date</label>
+                        <input
+                          type="date"
+                          value={selectedDate}
+                          onChange={e => setSelectedDate(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-fuchsia-500"
+                          required
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Category</label>
-                  <select
-                    value={newCategory}
-                    onChange={e => setNewCategory(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-violet-500"
-                  >
-                    <option value="personal">Personal / Life</option>
-                    <option value="muhurta">Auspicious Activity</option>
-                    <option value="fasting">Fasting / Vrat</option>
-                    <option value="career">Career / Business</option>
-                  </select>
-                </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-white/70 mb-1">Event Title</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Birthday, Auspicious Launch, Vrat"
+                          value={newTitle}
+                          onChange={e => setNewTitle(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-fuchsia-500"
+                          required
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">Notes / Description (Optional)</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Add details, intentions or reminders..."
-                    value={newDesc}
-                    onChange={e => setNewDesc(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-white/70 mb-1">Category</label>
+                        <select
+                          value={newCategory}
+                          onChange={e => setNewCategory(e.target.value)}
+                          className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-fuchsia-500"
+                        >
+                          <option value="personal">Personal / Life</option>
+                          <option value="muhurta">Auspicious Activity</option>
+                          <option value="fasting">Fasting / Vrat</option>
+                          <option value="career">Career / Business</option>
+                        </select>
+                      </div>
 
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddModal(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmittingEvent}
-                    className="px-5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-600/20"
-                  >
-                    {isSubmittingEvent ? 'Saving...' : 'Save Event'}
-                  </button>
+                      <div>
+                        <label className="block text-xs font-semibold text-white/70 mb-1">Description (Optional)</label>
+                        <textarea
+                          rows={3}
+                          placeholder="Add intentions or reminders..."
+                          value={newDesc}
+                          onChange={e => setNewDesc(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-fuchsia-500"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-end gap-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowAddModal(false)}
+                          className="px-4 py-2 rounded-lg text-xs font-semibold text-white/60 hover:text-white bg-white/5"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSubmittingEvent}
+                          className="px-5 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg"
+                        >
+                          {isSubmittingEvent ? 'Saving...' : 'Save Event'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
-              </form>
+              )}
             </div>
           </div>
-        )}
-      </main>
-    </div>
+        </div>
+      </div>
+    </CosmicBackground>
   );
 };
 
