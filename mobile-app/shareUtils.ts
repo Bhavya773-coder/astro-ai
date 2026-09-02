@@ -1,9 +1,12 @@
 import { Share, Platform, Alert } from 'react-native';
+import * as Sharing from 'expo-sharing';
 
 export interface ShareCardHighlight {
   label: string;
   value: string;
 }
+
+export type ShareCardTemplate = 'zodiac_alignment' | 'power_window' | 'memory_insight' | 'hope_advice' | 'general';
 
 export interface ShareCardData {
   category: string; // e.g. 'DAILY HOROSCOPE', 'BIRTH CHART', 'TAROT READING', etc.
@@ -12,6 +15,11 @@ export interface ShareCardData {
   readingText: string; // The core reading insight
   highlights?: ShareCardHighlight[]; // Key bullet points or metrics
   zodiac?: string;
+  zodiacIndex?: number;
+  zodiacTraits?: string;
+  timeWindow?: string;
+  eventName?: string;
+  templateType?: ShareCardTemplate;
   shareUrl?: string;
 }
 
@@ -79,6 +87,39 @@ export const executeNativeShare = async (data: ShareCardData): Promise<boolean> 
   } catch (error: any) {
     console.error('Error sharing card:', error);
     Alert.alert('Share Failed', error?.message || 'Could not trigger native share.');
+    return false;
+  }
+};
+
+/**
+ * Share a captured image URI (PNG/JPG) using expo-sharing or native share
+ */
+export const executeImageShare = async (uri: string, dialogTitle: string = 'Share AstroAi4u Card'): Promise<boolean> => {
+  try {
+    const isAvailable = await Sharing.isAvailableAsync();
+    if (isAvailable) {
+      await Sharing.shareAsync(uri, {
+        mimeType: 'image/png',
+        dialogTitle,
+        UTI: 'public.png',
+      });
+      return true;
+    } else {
+      // Fallback for platforms where expo-sharing is unavailable
+      if (Platform.OS === 'web') {
+        const link = document.createElement('a');
+        link.href = uri;
+        link.download = `AstroAi4U_Card_${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return true;
+      }
+      return false;
+    }
+  } catch (err: any) {
+    console.error('Error sharing image card:', err);
+    Alert.alert('Share Failed', err?.message || 'Could not export image card.');
     return false;
   }
 };

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 620">
+  <defs><filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#210B3A" flood-opacity=".18"/></filter><filter id="grain"><feTurbulence baseFrequency=".75" numOctaves="3" seed="11" type="fractalNoise"/><feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .06 0"/><feBlend in="SourceGraphic" mode="multiply"/></filter></defs>
+  <path filter="url(#shadow)" fill="#FFF9EB" d="M44 53L93 39l51 8 54-12 57 13 62-9 51 10 66-13 55 12 61-10 54 9 69-11 53 12 59-9 60 12 56-8 68 13 48 1 8 43-7 48 12 52-11 56 10 50-8 62 12 55-10 49 8 61-10 47 6 53-44 7-56-10-52 13-61-11-54 9-68-12-53 10-62-8-58 11-54-12-66 9-51-10-61 13-54-9-55 10-46-8-7-50 9-51-12-59 10-51-9-58 11-53-8-55 10-52-8-49z"/>
+  <path fill="none" stroke="#C89B43" stroke-width="3" stroke-opacity=".62" d="M69 76C265 51 410 71 542 58c171-17 319 12 469 5M72 551c181 19 342-6 482 8 168 17 305-16 456-5"/>
+  <path filter="url(#grain)" opacity=".55" fill="#EBDCC2" d="M44 53L93 39l51 8 54-12 57 13 62-9 51 10 66-13 55 12 61-10 54 9 69-11 53 12 59-9 60 12 56-8 68 13 48 1 8 43-7 48 12 52-11 56 10 50-8 62 12 55-10 49 8 61-10 47 6 53-44 7-56-10-52 13-61-11-54 9-68-12-53 10-62-8-58 11-54-12-66 9-51-10-61 13-54-9-55 10-46-8-7-50 9-51-12-59 10-51-9-58 11-53-8-55 10-52-8-49z"/>
+</svg>

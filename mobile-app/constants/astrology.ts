@@ -245,3 +245,103 @@ export const DAILY_LUCKY_MATRIX: Record<string, { color: string; colorCode: stri
   Aquarius: { color: 'Electric Cyan', colorCode: '#5B8DEF', num: '8 & 11', dir: 'West', crystal: 'Aquamarine', element: 'Air ✦' },
   Pisces: { color: 'Ocean Lavender', colorCode: '#7209B7', num: '3 & 12', dir: 'North-East', crystal: 'Amethyst', element: 'Water ✦' }
 };
+
+export const ZODIAC_MODALITY_TRAITS: Record<string, { element: string; modality: string; trait: string; subtitle: string; watercolorBg: string; quote: string }> = {
+  Aries: {
+    element: 'Fire',
+    modality: 'Cardinal',
+    trait: 'Pioneering',
+    subtitle: 'Fire • Cardinal • Pioneering',
+    watercolorBg: '#FF6B6B',
+    quote: 'Bold moves invite cosmic favor today. Take the lead and trust your instinct.'
+  },
+  Taurus: {
+    element: 'Earth',
+    modality: 'Fixed',
+    trait: 'Grounded',
+    subtitle: 'Earth • Fixed • Grounded',
+    watercolorBg: '#4ECDC4',
+    quote: 'Patience and steady determination turn current ideas into lasting abundance.'
+  },
+  Gemini: {
+    element: 'Air',
+    modality: 'Mutable',
+    trait: 'Expressive',
+    subtitle: 'Air • Mutable • Expressive',
+    watercolorBg: '#FFD93D',
+    quote: 'Your curiosity and sharp words unlock unexpected doors and delightful connections.'
+  },
+  Cancer: {
+    element: 'Water',
+    modality: 'Cardinal',
+    trait: 'Intuitive',
+    subtitle: 'Water • Cardinal • Intuitive',
+    watercolorBg: '#A8DADC',
+    quote: 'Honor your inner emotional compass; deep clarity reveals the right path forward.'
+  },
+  Leo: {
+    element: 'Fire',
+    modality: 'Fixed',
+    trait: 'Radiant',
+    subtitle: 'Fire • Fixed • Radiant',
+    watercolorBg: '#FFA07A',
+    quote: 'Your radiant warmth and creative authority naturally inspire everyone around you.'
+  },
+  Virgo: {
+    element: 'Earth',
+    modality: 'Mutable',
+    trait: 'Diligent',
+    subtitle: 'Earth • Mutable • Diligent',
+    watercolorBg: '#81C784',
+    quote: 'Order brings tranquility. Small refined tweaks create monumental breakthroughs.'
+  },
+  Libra: {
+    element: 'Air',
+    modality: 'Cardinal',
+    trait: 'Harmonious',
+    subtitle: 'Air • Cardinal • Harmonious',
+    watercolorBg: '#F48FB1',
+    quote: 'Graceful diplomacy and aesthetic balance bring auspicious relationship milestones.'
+  },
+  Scorpio: {
+    element: 'Water',
+    modality: 'Fixed',
+    trait: 'Strategic',
+    subtitle: 'Water • Fixed • Strategic',
+    watercolorBg: '#BA68C8',
+    quote: 'Quiet focus holds profound transformative power. Trust the deeper current today.'
+  },
+  Sagittarius: {
+    element: 'Fire',
+    modality: 'Mutable',
+    trait: 'Expansive',
+    subtitle: 'Fire • Mutable • Expansive',
+    watercolorBg: '#FFB74D',
+    quote: 'Broaden your perspective. Optimism and adventurous spirit attract luck today.'
+  },
+  Capricorn: {
+    element: 'Earth',
+    modality: 'Cardinal',
+    trait: 'Resolute',
+    subtitle: 'Earth • Cardinal • Resolute',
+    watercolorBg: '#90A4AE',
+    quote: 'Disciplined focus and steadfast vision solidify the milestone you have been building.'
+  },
+  Aquarius: {
+    element: 'Air',
+    modality: 'Fixed',
+    trait: 'Humanitarian',
+    subtitle: 'Air • Fixed • Humanitarian',
+    watercolorBg: '#7E57C2',
+    quote: 'The stars align in your favor today. Embrace the flow and trust your intuition.'
+  },
+  Pisces: {
+    element: 'Water',
+    modality: 'Mutable',
+    trait: 'Compassionate',
+    subtitle: 'Water • Mutable • Compassionate',
+    watercolorBg: '#4FC3F7',
+    quote: 'Let imagination and empathy guide you; celestial harmony aligns around your vision.'
+  }
+};
+

@@ -17,14 +17,14 @@ export interface ThemeTokens {
 
 export const tokens: { light: ThemeTokens; dark: ThemeTokens } = {
   light: {
-    bg: { primary: '#F3EFFF', secondary: '#FFFFFF', card: '#FFFFFF', chat: 'rgba(255,255,255,0.4)', input: '#FFFFFF' },
+    bg: { primary: '#F8F5EE', secondary: '#F3EFE4', card: '#FDFBF7', chat: 'rgba(253, 251, 247, 0.85)', input: '#FAF7F0' },
     text: { primary: '#2C2B3D', secondary: '#726F8D', inverse: '#FFFFFF', muted: '#9E9BB3' },
     accent: { purple: '#7209B7', pink: '#F72585', gold: '#D9730D', blue: '#5B8DEF', green: '#12A594', red: '#E5484D' },
-    border: 'rgba(114, 111, 141, 0.08)',
-    borderStrong: 'rgba(114, 111, 141, 0.18)',
+    border: '#ECE2CD',
+    borderStrong: '#E6DCB8',
     shadow: '#7209B7',
-    gradient: ['#F3EFFF', '#E9F3FF', '#FFFDF2'],
-    skeleton: '#E8E7ED',
+    gradient: ['#F8F5EE', '#F5EFE3', '#FAF6EB'],
+    skeleton: '#ECE5D5',
   },
   dark: {
     bg: { primary: '#090714', secondary: 'rgba(18, 14, 36, 0.85)', card: 'rgba(22, 19, 41, 0.72)', chat: 'rgba(22, 19, 41, 0.75)', input: 'rgba(31, 27, 56, 0.80)' },
