@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const CosmicBackground: React.FC<{ children: React.ReactNode; className?: string }> = ({
+export const CosmicBackground: React.FC<{ children?: React.ReactNode; className?: string }> = ({
   children,
   className = ''
 }) => {

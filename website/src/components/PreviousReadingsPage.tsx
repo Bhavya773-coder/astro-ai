@@ -3,19 +3,19 @@ import toast from 'react-hot-toast';
 import Sidebar from './Sidebar';
 import { CosmicBackground } from './CosmicBackground';
 import { GlassCard, GradientText, LoadingSpinner } from './CosmicUI';
-import { Hand, Coffee, User, ChevronLeft, Sparkles, Calendar, Eye, Heart, Brain, Star, Target, Zap } from 'lucide-react';
+import { Hand, Coffee, User, ChevronLeft, Sparkles, Calendar, Eye, Heart, Brain, Star, Target, Zap, Compass, Home, CheckCircle2, AlertTriangle, Lightbulb } from 'lucide-react';
 import { getReadingHistory } from '../api/client';
 
 interface Reading {
   _id: string;
-  reading_type: 'palm' | 'coffee' | 'face';
+  reading_type: 'palm' | 'coffee' | 'face' | 'vastu';
   image_data?: string;
   mime_type?: string;
   result: any;
   created_at: string;
 }
 
-type ReadingType = 'palm' | 'coffee' | 'face';
+type ReadingType = 'palm' | 'coffee' | 'face' | 'vastu';
 
 const PreviousReadingsPage: React.FC = () => {
   const [selectedType, setSelectedType] = useState<ReadingType | null>(null);
@@ -44,6 +44,13 @@ const PreviousReadingsPage: React.FC = () => {
       icon: <User className="w-8 h-8" />,
       color: 'from-rose-500 to-pink-500',
       description: 'View your past face physiognomy analyses'
+    },
+    {
+      id: 'vastu' as ReadingType,
+      name: 'Vastu Consultations',
+      icon: <Compass className="w-8 h-8" />,
+      color: 'from-amber-500 to-orange-600',
+      description: 'View your past floor plan & space analyses'
     }
   ];
 
@@ -274,6 +281,68 @@ const PreviousReadingsPage: React.FC = () => {
                 )}
               </>
             )}
+
+            {selectedReading.reading_type === 'vastu' && (
+              <>
+                <div className="p-4 bg-gradient-to-r from-amber-600/20 to-orange-600/20 rounded-xl border border-amber-500/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-lg font-bold text-white capitalize">{result.verdict || 'Vastu'} Analysis</h4>
+                    <span className="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full font-bold text-sm">
+                      Score: {result.score ?? 'N/A'}/100
+                    </span>
+                  </div>
+                  <p className="text-white/80 text-sm leading-relaxed">{result.summary}</p>
+                </div>
+
+                {result.positives && result.positives.length > 0 && (
+                  <div className="p-3.5 bg-emerald-950/20 border border-emerald-500/30 rounded-xl">
+                    <h5 className="text-xs font-bold text-emerald-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" /> Supportive Alignments
+                    </h5>
+                    <ul className="space-y-1">
+                      {result.positives.map((pos: string, idx: number) => (
+                        <li key={idx} className="text-xs text-slate-300 flex items-start gap-2">
+                          <span className="text-emerald-400">•</span>
+                          <span>{pos}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {result.negatives && result.negatives.length > 0 && (
+                  <div className="p-3.5 bg-rose-950/20 border border-rose-500/30 rounded-xl">
+                    <h5 className="text-xs font-bold text-rose-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4" /> Vastu Concerns
+                    </h5>
+                    <ul className="space-y-1">
+                      {result.negatives.map((neg: string, idx: number) => (
+                        <li key={idx} className="text-xs text-slate-300 flex items-start gap-2">
+                          <span className="text-rose-400">•</span>
+                          <span>{neg}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {result.recommendations && result.recommendations.length > 0 && (
+                  <div className="p-3.5 bg-amber-950/20 border border-amber-500/30 rounded-xl">
+                    <h5 className="text-xs font-bold text-amber-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                      <Lightbulb className="w-4 h-4" /> Remedies
+                    </h5>
+                    <ul className="space-y-1.5">
+                      {result.recommendations.map((rec: string, idx: number) => (
+                        <li key={idx} className="text-xs text-slate-300 flex items-start gap-2">
+                          <span className="text-amber-400 font-bold">{idx + 1}.</span>
+                          <span>{rec}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </GlassCard>
@@ -295,7 +364,7 @@ const PreviousReadingsPage: React.FC = () => {
 
               {!selectedType ? (
                 /* Type Selection Cards */
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
                   {readingTypes.map((type) => (
                     <button
                       key={type.id}

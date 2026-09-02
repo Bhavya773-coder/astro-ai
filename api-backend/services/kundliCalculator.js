@@ -87,27 +87,13 @@ function getJulianDayUTC(dateStr, timeStr, timezoneOffsetHours = 5.5) {
   const { year, month, day } = parseDateComponents(dateStr);
   const localHour = parseTimeComponents(timeStr);
 
-  // Convert local hour to UTC hour
-  let utcHour = localHour - timezoneOffsetHours;
-  let adjDay = day;
-  let adjMonth = month;
-  let adjYear = year;
-
-  if (utcHour < 0) {
-    utcHour += 24;
-    adjDay -= 1;
-    if (adjDay < 1) {
-      adjMonth -= 1;
-      if (adjMonth < 1) {
-        adjMonth = 12;
-        adjYear -= 1;
-      }
-      adjDay = 28; // safe approximate day
-    }
-  } else if (utcHour >= 24) {
-    utcHour -= 24;
-    adjDay += 1;
-  }
+  // Exact calendar rollover arithmetic using Date.UTC
+  const totalMinutes = Math.round((localHour - timezoneOffsetHours) * 60);
+  const dateObj = new Date(Date.UTC(year, month - 1, day, 0, totalMinutes, 0));
+  const adjYear = dateObj.getUTCFullYear();
+  const adjMonth = dateObj.getUTCMonth() + 1;
+  const adjDay = dateObj.getUTCDate();
+  const utcHour = dateObj.getUTCHours() + (dateObj.getUTCMinutes() / 60) + (dateObj.getUTCSeconds() / 3600);
 
   try {
     return swisseph.julianDay(adjYear, adjMonth, adjDay, utcHour);
@@ -211,8 +197,10 @@ function calculateSiderealHousesAndAscendant(jdUt, latitude = 0, longitude = 0, 
 async function calculateKundliChart(birthDetails) {
   const { date_of_birth, time_of_birth, latitude = 0, longitude = 0 } = birthDetails;
 
-  // Determine timezone offset (India standard +5.5 hours)
-  const timezoneOffsetHours = 5.5;
+  // Determine timezone offset (default India standard +5.5 hours if not provided)
+  const timezoneOffsetHours = birthDetails.timezone_offset !== undefined
+    ? Number(birthDetails.timezone_offset)
+    : (birthDetails.timezoneOffsetHours !== undefined ? Number(birthDetails.timezoneOffsetHours) : 5.5);
   const jdUt = getJulianDayUTC(date_of_birth, time_of_birth, timezoneOffsetHours);
   const ayanamsha = getLahiriAyanamsha(jdUt);
 

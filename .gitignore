@@ -88,6 +88,7 @@ temp/
 # Test files
 test_*.js
 *.test.js
+!api-backend/tests/*.test.js
 __tests__/
 
 # Python

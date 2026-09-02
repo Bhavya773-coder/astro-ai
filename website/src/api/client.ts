@@ -177,6 +177,9 @@ export const getCoffeeReading = (imageBase64: string, mimeType: string, forceReg
 export const getFaceReading = (imageBase64: string, mimeType: string, forceRegenerate = false) =>
   apiFetch('/api/face-reading', { method: 'POST', body: JSON.stringify({ imageBase64, mimeType, forceRegenerate }) });
 
+export const getVastuConsultation = (imageBase64: string, mimeType: string) =>
+  apiFetch('/api/vastu-consultant', { method: 'POST', body: JSON.stringify({ imageBase64, mimeType }) });
+
 // Share APIs
 export const shareFaceReading = (userName: string, faceReadingData: any, imageUrl?: string) =>
   apiFetch('/api/share/face-reading', { method: 'POST', body: JSON.stringify({ user_name: userName, face_reading_data: faceReadingData, image_url: imageUrl }) });
@@ -188,7 +191,7 @@ export const sharePalmReading = (userName: string, palmReadingData: any, imageUr
   apiFetch('/api/share/palm-reading', { method: 'POST', body: JSON.stringify({ user_name: userName, palm_reading_data: palmReadingData, image_url: imageUrl }) });
 
 // Reading History API
-export const getReadingHistory = (type: 'palm' | 'coffee' | 'face') =>
+export const getReadingHistory = (type: 'palm' | 'coffee' | 'face' | 'vastu') =>
   apiFetch(`/api/reading-history/${type}`);
 
 // Payment APIs
@@ -260,4 +263,32 @@ export const interpretTarotCard = (cardData: {
   apiFetch('/api/tarot-reading/interpret', { 
     method: 'POST', 
     body: JSON.stringify(cardData) 
+  });
+
+// Astro Calendar APIs
+export const fetchCalendarEvents = (year: number, month: number) =>
+  apiFetch(`/api/calendar/events?year=${year}&month=${month}`, { method: 'GET' });
+
+export const createCustomCalendarEvent = (data: {
+  title: string;
+  date: string;
+  description?: string;
+  category?: string;
+  isRecurring?: boolean;
+}) =>
+  apiFetch('/api/calendar/custom-events', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+export const deleteCustomCalendarEvent = (id: string) =>
+  apiFetch(`/api/calendar/custom-events/${id}`, { method: 'DELETE' });
+
+export const getExportIcsUrl = () =>
+  `${getBaseUrl()}/api/calendar/export-ics`;
+
+export const fetchDailyInsight = (date: string) =>
+  apiFetch('/api/calendar/daily-insight', {
+    method: 'POST',
+    body: JSON.stringify({ date }),
   });

@@ -34,6 +34,10 @@ import OracleHistoryPage from './components/OracleHistoryPage';
 import DressingStylerPage from './components/DressingStylerPage';
 import AdminDashboardPage from './components/AdminDashboardPage';
 import SettingsPage from './components/SettingsPage';
+import AstroCalendarPage from './components/AstroCalendarPage';
+import VastuConsultantPage from './components/VastuConsultantPage';
+import Astrology8BallPage from './components/Astrology8BallPage';
+import ExplorePage from './components/ExplorePage';
 import SharedChatPage from './components/SharedChatPage';
 import SharedHoroscopePage from './components/SharedHoroscopePage';
 import SharedNumerologyPage from './components/SharedNumerologyPage';
@@ -210,6 +214,46 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DressingStylerPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/explore"
+              element={
+                <ProtectedRoute>
+                  <ExplorePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/astro-calendar"
+              element={
+                <ProtectedRoute>
+                  <AstroCalendarPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vastu-consultant"
+              element={
+                <ProtectedRoute>
+                  <VastuConsultantPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cosmic-8-ball"
+              element={
+                <ProtectedRoute>
+                  <Astrology8BallPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/astrology-8-ball"
+              element={
+                <ProtectedRoute>
+                  <Astrology8BallPage />
                 </ProtectedRoute>
               }
             />

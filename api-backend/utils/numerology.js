@@ -22,10 +22,17 @@ const MASTER_NUMBERS = [11, 22, 33];
  * Reduce number to single digit unless it's a master number
  */
 function reduceNumber(num) {
-  if (MASTER_NUMBERS.includes(num)) {
-    return num;
+  let sum = num;
+  while (sum > 9 && !MASTER_NUMBERS.includes(sum)) {
+    sum = sum.toString().split('').reduce((acc, digit) => acc + parseInt(digit), 0);
   }
+  return sum;
+}
 
+/**
+ * Force reduce number to single digit (1-9) even for master numbers
+ */
+function reduceToSingleDigit(num) {
   let sum = num;
   while (sum > 9) {
     sum = sum.toString().split('').reduce((acc, digit) => acc + parseInt(digit), 0);
@@ -42,7 +49,7 @@ function calculateLifePath(dateOfBirth) {
   const sum = digits.reduce((acc, digit) => acc + parseInt(digit), 0);
 
   const lifePath = reduceNumber(sum);
-  const lifePathReduced = MASTER_NUMBERS.includes(lifePath) ? reduceNumber(lifePath) : lifePath;
+  const lifePathReduced = reduceToSingleDigit(sum);
 
   return {
     lifePath,
