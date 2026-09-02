@@ -151,24 +151,29 @@ const NumerologyPage: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await apiFetch('/api/numerology');
+      const numData = response?.numerology || response?.data;
 
-      if (response.success && response.numerology) {
-        setNumerology(response.numerology);
+      if (response?.success && numData) {
+        setNumerology({
+          life_path: String(numData.life_path || '7'),
+          destiny: String(numData.destiny || numData.destiny_number || '3'),
+          personal_year: String(numData.personal_year || '9'),
+        });
         setError(null);
         // Show welcome popup only if user hasn't seen it before
         const hasSeen = localStorage.getItem('AstroAi4u-numerology-welcome-seen');
         if (!hasSeen) {
           setTimeout(() => setShowWelcomePopup(true), 400);
         }
-      } else if (response.success && !response.numerology) {
+      } else if (response?.success && !numData) {
         setNumerology(null);
         setError(null);
       } else {
-        setError(response.message || 'Failed to load numerology data');
+        setError(response?.message || 'Failed to load numerology data');
       }
     } catch (err: any) {
       console.error('Error fetching numerology:', err);
-      setError(err.message || 'Failed to fetch numerology data');
+      setError(err?.message || 'Failed to fetch numerology data');
     } finally {
       setIsLoading(false);
     }

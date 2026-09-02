@@ -321,9 +321,9 @@ export function NumerologyScreen({
   };
 
   // Real calculation from backend or profile calculations
-  const numObj = apiNumerology?.data || apiNumerology || {};
+  const numObj = apiNumerology?.numerology || apiNumerology?.data || apiNumerology || {};
   const apiLifePath = numObj.life_path ? String(numObj.life_path) : String(lifePathNumber || '7');
-  const apiDestiny = numObj.destiny_number || numObj.destiny ? String(numObj.destiny_number || numObj.destiny) : String(destinyNumber || '3');
+  const apiDestiny = numObj.destiny || numObj.destiny_number ? String(numObj.destiny || numObj.destiny_number) : String(destinyNumber || '3');
   const apiPersonalYear = numObj.personal_year ? String(numObj.personal_year) : '9';
 
   const currentHour = new Date().getHours();
