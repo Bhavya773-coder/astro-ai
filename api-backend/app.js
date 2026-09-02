@@ -90,15 +90,15 @@ app.options('*', cors(corsOptions));  // Handle ALL preflight requests explicitl
 app.use('/api/payment/webhook', express.raw({ type: 'application/json' }));
 
 // Increased body limits for image reading routes (BEFORE route handlers)
-app.use('/api/palm-reading', express.json({ limit: '15mb' }));
-app.use('/api/coffee-reading', express.json({ limit: '15mb' }));
-app.use('/api/face-reading', express.json({ limit: '15mb' }));
-app.use('/api/vastu-consultant', express.json({ limit: '15mb' }));
-app.use('/api/dressing-styler', express.json({ limit: '15mb' }));
-app.use('/api/share/style', express.json({ limit: '15mb' }));
+app.use('/api/palm-reading', express.json({ limit: '50mb' }));
+app.use('/api/coffee-reading', express.json({ limit: '50mb' }));
+app.use('/api/face-reading', express.json({ limit: '50mb' }));
+app.use('/api/vastu-consultant', express.json({ limit: '50mb' }));
+app.use('/api/dressing-styler', express.json({ limit: '50mb' }));
+app.use('/api/share/style', express.json({ limit: '50mb' }));
 
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Universal Request Logger for Debugging
 app.use((req, res, next) => {
